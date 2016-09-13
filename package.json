@@ -1,0 +1,60 @@
+{
+  "name": "accesscontrol",
+  "version": "1.0.0",
+  "description": "Role and Attribute based Access Control for Node.js",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/onury/accesscontrol.git"
+  },
+  "keywords": [
+    "access",
+    "access-control",
+    "role",
+    "attribute",
+    "grant",
+    "deny",
+    "allow",
+    "permission",
+    "action",
+    "possession",
+    "rbac",
+    "abac",
+    "crud",
+    "create",
+    "read",
+    "update",
+    "delete",
+    "resource",
+    "express",
+    "admin",
+    "user"
+  ],
+  "author": "Onur Yildirim <onur@cutepilot.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/onury/accesscontrol/issues"
+  },
+  "homepage": "https://github.com/onury/accesscontrol#readme",
+  "devDependencies": {
+    "babel": "^6.5.2",
+    "babel-preset-es2015": "^6.14.0",
+    "eslint": "^3.5.0",
+    "eslint-config-xo": "^0.15.4",
+    "grunt": "^1.0.1",
+    "grunt-babel": "^6.0.0",
+    "grunt-contrib-clean": "^1.0.0",
+    "grunt-docma": "^0.6.4",
+    "grunt-jasmine-nodejs": "^1.5.4",
+    "matchdep": "^1.0.1"
+  },
+  "dependencies": {
+    "notation": "^1.0.0"
+  }
+}
