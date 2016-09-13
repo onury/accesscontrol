@@ -208,6 +208,10 @@ ac.setGrants(grantsObject);
 console.log(ac.getGrants());
 ```
 
+## Documentation
+
+You can read the full [**API reference**][docs] here.
+
 ## Change-Log
 
 **v1.0.0** (2016-09-10)  
@@ -217,7 +221,7 @@ console.log(ac.getGrants());
 
 MIT.
 
-
+[docs]:http://onury.github.io/accesscontrol/?api=ac
 [rbac]:https://en.wikipedia.org/wiki/Role-based_access_control
 [abac]:https://en.wikipedia.org/wiki/Attribute-Based_Access_Control
 [crud]:https://en.wikipedia.org/wiki/Create,_read,_update_and_delete
