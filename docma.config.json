@@ -1,0 +1,99 @@
+{
+    "debug": 5,
+    "jsdoc": {
+        "encoding": "utf8",
+        "recurse": false,
+        "pedantic": false,
+        "access": ["public"],
+        "package": null,
+        "module": true,
+        "undocumented": false,
+        "undescribed": false,
+        "hierarchy": true,
+        "sort": "alphabetic",
+        "relativePath": null,
+        "filter": null
+    },
+    "markdown": {
+        "gfm": true,
+        "tables": true,
+        "breaks": false,
+        "pedantic": false,
+        "sanitize": false,
+        "smartLists": true,
+        "smartypants": false,
+        "tasks": true,
+        "emoji": true
+    },
+    "app": {
+        "title": "AccessControl",
+        "meta": null,
+        "base": "/accesscontrol",
+        "entrance": "content:guide",
+        "routing": "query",
+        "server": "github"
+    },
+    "template": {
+        "path": "default",
+        "options": {
+            "title": "AccessControl",
+            "sidebar": true,
+            "collapsed": false,
+            "badges": true,
+            "search": true,
+            "navbar": true,
+            "navItems": [
+                {
+                    "iconClass": "ico-mouse-pointer",
+                    "label": "Guide",
+                    "href": "./?content=guide"
+                },
+                {
+                    "iconClass": "ico-book",
+                    "label": "API Reference",
+                    "href": "./?api=ac"
+                },
+                {
+                    "iconClass": "ico-md ico-download",
+                    "label": "Download",
+                    "items": [
+                        // {
+                        //     "label": "Link via CDNJS",
+                        //     "href": "https://cdnjs.com/libraries/re",
+                        //     "target": "_blank"
+                        // },
+                        // { "separator": true },
+                        { "label": "<code>npm install accesscontrol</code>" },
+                        { "separator": true },
+                        {
+                            "label": "Download as Archive",
+                            "href": "https://github.com/onury/accesscontrol/releases",
+                            "target": "_blank"
+                        }
+                        // , { "separator": true },
+                        // { "label": "Change Log", "href": "?content=changelog" }
+                    ]
+                },
+                {
+                    "iconClass": "ico-md ico-github",
+                    "label": "GitHub",
+                    "href": "https://github.com/onury/accesscontrol",
+                    "target": "_blank"
+                }
+            ]
+        }
+    },
+    "src": [
+        {
+            "ac": [
+                "./src/AccessControl.js",
+                "./src/enums.js"
+            ]
+        },
+        // "./CHANGELOG.md",
+        {
+            "guide": "./README.md"
+        }
+    ],
+    "dest": "../../onury.github.io/accesscontrol"
+}
