@@ -4,3 +4,4 @@ npm-debug.log
 tmp
 TODO.md
 /docs/
+.DS_Store
