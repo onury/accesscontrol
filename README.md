@@ -156,7 +156,7 @@ permission.granted;       // true
 permission.attributes;    // ['*', '!record.id']
 permission.filter(data);  // filtered data (without record.id)
 ```
-See [express.js example](express-js-example).
+See [express.js example](#express-js-example).
 
 #### Defining All Grants at Once
 
