@@ -1,18 +1,27 @@
-'use strict';Object.defineProperty(exports, "__esModule", { value: true });
-var _notation = require('notation');var _notation2 = _interopRequireDefault(_notation);
+'use strict';
 
-var _enums = require('../enums');var _enums2 = _interopRequireDefault(_enums);function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };} // dep modules
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 
+var _notation = require('notation');
+
+var _notation2 = _interopRequireDefault(_notation);
+
+var _enums = require('../enums');
+
+var _enums2 = _interopRequireDefault(_enums);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// dep modules
 var helper = {
-
     type: function type(o) {
         return Object.prototype.toString.call(o).match(/\s(\w+)/i)[1].toLowerCase();
     },
-
     hasDefined: function hasDefined(o, propName) {
         return o.hasOwnProperty(propName) && o[propName] !== undefined;
     },
-
     asArray: function asArray(value, delim) {
         if (!value) return;
         if (Array.isArray(value)) return value;
@@ -21,33 +30,31 @@ var helper = {
         }
         return [value];
     },
-
     uniqConcat: function uniqConcat(arrA, arrB) {
         arrB.forEach(function (b) {
             if (arrA.indexOf(b) < 0) arrA.push(b);
         });
         return arrA;
     },
-
     subtractArray: function subtractArray(arrA, arrB) {
-        return arrA.filter(function (a) {return arrB.indexOf(a) === -1;});
+        return arrA.filter(function (a) {
+            return arrB.indexOf(a) === -1;
+        });
     },
-
     eachKey: function eachKey(o, callback) {
         return Object.keys(o).forEach(callback);
     },
 
+
     // "create" + "own" = "createOwn"
     getMethodName: function getMethodName(action, possession) {
-        return action.toLowerCase() +
-        possession.charAt(0).toUpperCase() +
-        possession.slice(1).toLowerCase();
+        return action.toLowerCase() + possession.charAt(0).toUpperCase() + possession.slice(1).toLowerCase();
     },
+
 
     // Converts the given role(s) to an array, checks the role(s) and resource.
     normalizeRoleAndResource: function normalizeRoleAndResource(o) {
-        var valid = (typeof o.role === 'string' || Array.isArray(o.role)) &&
-        o.role.length > 0;
+        var valid = (typeof o.role === 'string' || Array.isArray(o.role)) && o.role.length > 0;
         if (!valid) {
             throw new Error('AccessControl: Invalid role(s): ' + o.role);
         }
@@ -61,6 +68,7 @@ var helper = {
         // o.resource = valid ? o.resource : '';
         return o;
     },
+
 
     // Normalizes base properties of an access object such as role, resource,
     // action and possession. This method also validates these properties and
@@ -77,8 +85,8 @@ var helper = {
         // { action: 'create', possession: 'any' }
         // The latter is also the normalized version for us to process.
         var ap = String(o.action || '').split(':'),
-        a = ap[0].toLowerCase(),
-        p = (o.possession || ap[1] || 'any').toLowerCase();
+            a = ap[0].toLowerCase(),
+            p = (o.possession || ap[1] || 'any').toLowerCase();
         if (_enums2.default.actions.indexOf(a) < 0) {
             throw new Error('AccessControl: Invalid action: ' + o.action);
         }
@@ -89,15 +97,13 @@ var helper = {
         o.possession = p;
         return o;
     },
-
     filter: function filter(object, attributes) {
         if (!Array.isArray(attributes) || attributes.length === 0) {
             return {};
         }
         var notation = new _notation2.default(object);
-        return notation.filter(attributes).value();
+        return notation.filter(attributes).value;
     },
-
     filterAll: function filterAll(arrOrObj, attributes) {
         if (!Array.isArray(arrOrObj)) {
             return helper.filter(arrOrObj, attributes);
@@ -105,8 +111,7 @@ var helper = {
         return arrOrObj.map(function (o) {
             return helper.filter(o, attributes);
         });
-    } }; // own modules
-exports.default =
-
-
-helper;
+    }
+};
+// own modules
+exports.default = helper;

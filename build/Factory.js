@@ -1,10 +1,31 @@
-'use strict';Object.defineProperty(exports, "__esModule", { value: true });var _createClass = function () {function defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}return function (Constructor, protoProps, staticProps) {if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;};}(); // dep modules
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); // dep modules
 
 // own modules
-var _notation = require('notation');var _notation2 = _interopRequireDefault(_notation);var _enums = require('./enums');var _enums2 = _interopRequireDefault(_enums);
-var _helper = require('./lib/helper');var _helper2 = _interopRequireDefault(_helper);function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}exports.default =
 
-function (ac) {
+
+var _notation = require('notation');
+
+var _notation2 = _interopRequireDefault(_notation);
+
+var _enums = require('./enums');
+
+var _enums2 = _interopRequireDefault(_enums);
+
+var _helper = require('./lib/helper');
+
+var _helper2 = _interopRequireDefault(_helper);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+exports.default = function (ac) {
 
     // -------------------------------
     //  CLASS: Permission
@@ -26,20 +47,14 @@ function (ac) {
 
     // See AccessControl#permission
     var Permission = function () {
+        function Permission(perm) {
+            _classCallCheck(this, Permission);
 
-        function Permission(perm) {_classCallCheck(this, Permission);
             this._attributes = this._getUnionAttrsOfRoles(perm);
-        }_createClass(Permission, [{ key: 'filter',
+        }
 
-
-
-
-
-
-
-
-
-
+        _createClass(Permission, [{
+            key: 'filter',
 
 
             // equivalent to AccessControl.filter(data, attributes);
@@ -48,10 +63,13 @@ function (ac) {
             }
 
             /**
-               *  Gets roles and extended roles in a flat array.
-               *  @private
-               */ }, { key: '_getFlatRoles', value: function _getFlatRoles(
-            roles) {
+             *  Gets roles and extended roles in a flat array.
+             *  @private
+             */
+
+        }, {
+            key: '_getFlatRoles',
+            value: function _getFlatRoles(roles) {
                 roles = _helper2.default.asArray(roles);
                 var arr = roles.concat();
                 roles.forEach(function (roleName) {
@@ -64,21 +82,26 @@ function (ac) {
             }
 
             /**
-               *  When more than one role is passed, we union the permitted attributes
-               *  for all given roles; so we can check whether "at least one of these
-               *  roles" have the permission to execute this action.
-               *  e.g. `can(['admin', 'user']).createAny('video')`
-               *  @private
-               */ }, { key: '_getUnionAttrsOfRoles', value: function _getUnionAttrsOfRoles(
-            access) {
+             *  When more than one role is passed, we union the permitted attributes
+             *  for all given roles; so we can check whether "at least one of these
+             *  roles" have the permission to execute this action.
+             *  e.g. `can(['admin', 'user']).createAny('video')`
+             *  @private
+             */
+
+        }, {
+            key: '_getUnionAttrsOfRoles',
+            value: function _getUnionAttrsOfRoles(access) {
                 if (!ac._grants) {
                     throw new Error('AccessControl: Grants are not set.');
                 }
                 // throws if has any invalid property value
                 access = _helper2.default.normalizeAccessObject(access);
 
-                var grantItem = void 0,_resource = void 0,
-                attrsList = [],
+                var grantItem = void 0,
+                    _resource = void 0,
+                    attrsList = [],
+
                 // get roles and extended roles in a flat array
                 roles = this._getFlatRoles(access.role);
                 // iterate through roles and add permission attributes (array) of
@@ -91,11 +114,7 @@ function (ac) {
                             // e.g. _resource['create:own']
                             // If action has possession "any", it will also return
                             // `granted=true` for "own", if "own" is not defined.
-                            attrsList.push(
-                            _resource[access.action + ':' + access.possession] ||
-                            _resource[access.action + ':any'] ||
-                            []);
-
+                            attrsList.push(_resource[access.action + ':' + access.possession] || _resource[access.action + ':any'] || []);
                             // console.log(_resource, 'for:', action + '.' + possession);
                         }
                     }
@@ -104,7 +123,7 @@ function (ac) {
                 // union all arrays of (permitted resource) attributes (for each role)
                 // into a single array.
                 var attrs = [],
-                len = attrsList.length;
+                    len = attrsList.length;
                 if (len > 0) {
                     attrs = attrsList[0];
                     var i = 1;
@@ -114,17 +133,36 @@ function (ac) {
                     }
                 }
                 return attrs;
-            } }, { key: 'attributes', get: function get() {return this._attributes;} }, { key: 'granted', get: function get() {// check for a non-negated attribute
-                return this.attributes.some(function (attr) {return attr.slice(0, 1) !== '!';});} }]);return Permission;}();
+            }
+        }, {
+            key: 'attributes',
+            get: function get() {
+                return this._attributes;
+            }
+        }, {
+            key: 'granted',
+            get: function get() {
+                // check for a non-negated attribute
+                return this.attributes.some(function (attr) {
+                    return attr.slice(0, 1) !== '!';
+                });
+            }
+        }]);
+
+        return Permission;
+    }();
 
     // -------------------------------
     //  CLASS: Access
     // -------------------------------
 
     // See AccessControl#can
-    var Access = function () {
 
-        function Access(rolesOrAccess) {_classCallCheck(this, Access);
+
+    var Access = function () {
+        function Access(rolesOrAccess) {
+            _classCallCheck(this, Access);
+
             // if this is a (permission) object, we directly build attributes from
             // grants.
             if (_helper2.default.type(rolesOrAccess) === 'object') {
@@ -133,34 +171,44 @@ function (ac) {
                 // if this is just role(s); a string or array; we start building
                 // the grant object for this.
                 this._access = {
-                    role: rolesOrAccess };
-
+                    role: rolesOrAccess
+                };
             }
-        }_createClass(Access, [{ key: 'role', value: function role(
+        }
 
-            roles) {
+        _createClass(Access, [{
+            key: 'role',
+            value: function role(roles) {
                 this._access.role = roles;
                 return this;
-            } }, { key: 'resource', value: function resource(
-
-            _resource2) {
+            }
+        }, {
+            key: 'resource',
+            value: function resource(_resource2) {
                 this._access.resource = _resource2;
                 return this;
-            } }]);return Access;}();
+            }
+        }]);
 
+        return Access;
+    }();
 
     // -------------------------------
     //  CLASS: Grant
     // -------------------------------
 
     // See AccessControl#grant
+
+
     var Grant = function () {
 
         // If a grant object is passed, possession and attributes properties are
         // optional. CAUTION: if attributes is omitted, it will default to `['*']`
         // which means "all attributes allowed". If possession is omitted, it will
         // default to "any".
-        function Grant(rolesOrGrant) {_classCallCheck(this, Grant);
+        function Grant(rolesOrGrant) {
+            _classCallCheck(this, Grant);
+
             // if this is a (access grant) object, we directly add it to grants
             if (_helper2.default.type(rolesOrGrant) === 'object') {
                 this._grant = rolesOrGrant;
@@ -174,65 +222,83 @@ function (ac) {
                 // if this is just role(s); a string or array; we start building
                 // the grant object for this.
                 this._grant = {
-                    role: rolesOrGrant };
-
+                    role: rolesOrGrant
+                };
             }
-        }_createClass(Grant, [{ key: 'role', value: function role(
+        }
 
-            roles) {
+        _createClass(Grant, [{
+            key: 'role',
+            value: function role(roles) {
                 this._grant.role = roles;
                 return this;
-            } }, { key: 'resource', value: function resource(
-
-            _resource3) {
+            }
+        }, {
+            key: 'resource',
+            value: function resource(_resource3) {
                 this._grant.resource = _resource3;
                 return this;
-            } }, { key: 'attributes', value: function attributes(
-
-            _attributes) {
+            }
+        }, {
+            key: 'attributes',
+            value: function attributes(_attributes) {
                 this._grant.attributes = _attributes;
                 return this;
-            } }, { key: 'extend', value: function extend(
-
-            roles) {
+            }
+        }, {
+            key: 'extend',
+            value: function extend(roles) {
                 ac.extendRole(this._grant.role, roles);
                 return this;
             }
 
             /**
-               *  Shorthand to switch to a new `Grant` instance with a different role
-               *  within the method chain.
-               *  @example
-               *  ac.grant('user').createOwn('video')
-               *    .grant('admin').updateAny('video');
-               */ }, { key: 'grant', value: function grant(
-            rolesOrGrant) {
+             *  Shorthand to switch to a new `Grant` instance with a different role
+             *  within the method chain.
+             *  @example
+             *  ac.grant('user').createOwn('video')
+             *    .grant('admin').updateAny('video');
+             */
+
+        }, {
+            key: 'grant',
+            value: function grant(rolesOrGrant) {
                 if (!rolesOrGrant) rolesOrGrant = this._grant.role;
                 return new Grant(rolesOrGrant);
             }
 
             /**
-               *  Shorthand to switch to a new `Deny` instance with a different
-               *  (or same) role within the method chain.
-               *  @example
-               *  ac.grant('user').createOwn('video')
-               *    .grant('admin').updateAny('video');
-               */ }, { key: 'deny', value: function deny(
-            rolesOrDeny) {
+             *  Shorthand to switch to a new `Deny` instance with a different
+             *  (or same) role within the method chain.
+             *  @example
+             *  ac.grant('user').createOwn('video')
+             *    .grant('admin').updateAny('video');
+             */
+
+        }, {
+            key: 'deny',
+            value: function deny(rolesOrDeny) {
                 if (!rolesOrDeny) rolesOrDeny = this._grant.role;
                 return new Deny(rolesOrDeny); // eslint-disable-line
-            } }]);return Grant;}();
+            }
+        }]);
 
+        return Grant;
+    }();
 
     // -------------------------------
     //  CLASS: Deny
     // -------------------------------
 
     // See AccessControl#deny
+
+
     var Deny = function () {
 
         // See AccessControl.Deny
-        function Deny(rolesOrDeny) {_classCallCheck(this, Deny);
+        function Deny(rolesOrDeny) {
+            _classCallCheck(this, Deny);
+
             // if this is a (access grant) object, we directly add it to grants
             if (_helper2.default.type(rolesOrDeny) === 'object') {
                 this._deny = rolesOrDeny;
@@ -243,44 +309,57 @@ function (ac) {
                 // if this is just role(s); a string or array; we start building
                 // the grant object for this.
                 this._deny = {
-                    role: rolesOrDeny };
-
+                    role: rolesOrDeny
+                };
             }
-        }_createClass(Deny, [{ key: 'role', value: function role(
-            roles) {
+        }
+
+        _createClass(Deny, [{
+            key: 'role',
+            value: function role(roles) {
                 this._deny.role = roles;
                 return this;
-            } }, { key: 'resource', value: function resource(
-
-            _resource4) {
+            }
+        }, {
+            key: 'resource',
+            value: function resource(_resource4) {
                 this._deny.resource = _resource4;
                 return this;
             }
 
             /**
-               *  Shorthand to switch to a new `Deny` instance with a different role
-               *  within the method chain.
-               *  @example
-               *  ac.grant('user').createOwn('video')
-               *    .grant('admin').updateAny('video');
-               */ }, { key: 'deny', value: function deny(
-            rolesOrDeny) {
+             *  Shorthand to switch to a new `Deny` instance with a different role
+             *  within the method chain.
+             *  @example
+             *  ac.grant('user').createOwn('video')
+             *    .grant('admin').updateAny('video');
+             */
+
+        }, {
+            key: 'deny',
+            value: function deny(rolesOrDeny) {
                 if (!rolesOrDeny) rolesOrDeny = this._deny.role;
                 return new Deny(rolesOrDeny);
             }
 
             /**
-               *  Shorthand to switch to a new `Grant` instance with a different
-               *  (or same) role within the method chain.
-               *  @example
-               *  ac.grant('user').createOwn('video')
-               *    .grant('admin').updateAny('video');
-               */ }, { key: 'grant', value: function grant(
-            rolesOrGrant) {
+             *  Shorthand to switch to a new `Grant` instance with a different
+             *  (or same) role within the method chain.
+             *  @example
+             *  ac.grant('user').createOwn('video')
+             *    .grant('admin').updateAny('video');
+             */
+
+        }, {
+            key: 'grant',
+            value: function grant(rolesOrGrant) {
                 if (!rolesOrGrant) rolesOrGrant = this._deny.role;
                 return new Grant(rolesOrGrant);
-            } }]);return Deny;}();
+            }
+        }]);
 
+        return Deny;
+    }();
 
     // -------------------------------
     //  INSTANCE (PROTOTYPE) METHODS
@@ -296,8 +375,10 @@ function (ac) {
     // .create() .read() .update() .delete()
 
     var method = void 0;
-    _enums2.default.actions.forEach(function (action) {// create|read|update|delete
-        _enums2.default.possessions.forEach(function (possession) {// any|own
+    _enums2.default.actions.forEach(function (action) {
+        // create|read|update|delete
+        _enums2.default.possessions.forEach(function (possession) {
+            // any|own
             method = _helper2.default.getMethodName(action, possession);
             // Access.prototype.<action+Possession>
             // e.g. Access.prototype.createAny
@@ -369,7 +450,6 @@ function (ac) {
         Permission: Permission,
         Access: Access,
         Grant: Grant,
-        Deny: Deny };
-
-
+        Deny: Deny
+    };
 };
