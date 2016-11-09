@@ -373,4 +373,39 @@ describe('Test Suite: Access Control (core)', function () {
 
     });
 
+    it('should filter granted attributes', function () {
+        var ac = this.ac,
+            attrs = ['*', '!account.balance.credit', '!account.id', '!secret'],
+            data = {
+                name: 'Company, LTD.',
+                address: {
+                    city: 'istanbul',
+                    country: 'TR'
+                },
+                account: {
+                    id: 33,
+                    taxNo: 12345,
+                    balance: {
+                        credit: 100,
+                        deposit: 0
+                    }
+                },
+                secret: {
+                    value: 'hidden'
+                }
+            };
+        ac.grant('user').createOwn('company', attrs);
+        var permission = ac.can('user').createOwn('company');
+        expect(permission.granted).toEqual(true);
+        var filtered = permission.filter(data);
+        expect(filtered.name).toEqual(jasmine.any(String));
+        expect(filtered.address).toEqual(jasmine.any(Object));
+        expect(filtered.address.city).toEqual('istanbul');
+        expect(filtered.account).toBeDefined();
+        expect(filtered.account.id).toBeUndefined();
+        expect(filtered.account.balance).toBeDefined();
+        expect(filtered.account.credit).toBeUndefined();
+        expect(filtered.secret).toBeUndefined();
+    });
+
 });
