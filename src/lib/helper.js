@@ -95,7 +95,7 @@ const helper = {
             return {};
         }
         let notation = new Notation(object);
-        return notation.filter(attributes).value();
+        return notation.filter(attributes).value;
     },
 
     filterAll(arrOrObj, attributes) {
