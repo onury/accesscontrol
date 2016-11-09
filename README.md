@@ -1,4 +1,7 @@
 # AccessControl
+[![version](http://img.shields.io/npm/v/accesscontrol.svg)](https://www.npmjs.com/package/accesscontrol)
+![dependencies](https://david-dm.org/onury/accesscontrol.svg)
+![license](http://img.shields.io/npm/l/accesscontrol.svg)  
 
 > © 2016, Onur Yıldırım (@onury). MIT License.  
 
@@ -210,9 +213,13 @@ console.log(ac.getGrants());
 
 ## Documentation
 
-You can read the full [**API reference**][docs] here.
+You can read the full [**API reference** here][docs].
 
 ## Change-Log
+
+**v1.0.1** (2016-11-09)  
+- Bug-Fix: Permission filter would throw an error due to syntax. Fixes [issue #1](https://github.com/onury/accesscontrol/issues/1).
+- (Dev) added filter test.
 
 **v1.0.0** (2016-09-10)  
 - initial release.
