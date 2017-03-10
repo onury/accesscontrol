@@ -1,110 +1,327 @@
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _notation = require('notation');
-
-var _notation2 = _interopRequireDefault(_notation);
-
-var _enums = require('../enums');
-
-var _enums2 = _interopRequireDefault(_enums);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 // dep modules
+var Notation = require("notation");
+// own modules
+var enums_1 = require("../enums");
+var core_1 = require("../core");
 var helper = {
-    type: function type(o) {
+    type: function (o) {
         return Object.prototype.toString.call(o).match(/\s(\w+)/i)[1].toLowerCase();
     },
-    hasDefined: function hasDefined(o, propName) {
+    hasDefined: function (o, propName) {
         return o.hasOwnProperty(propName) && o[propName] !== undefined;
     },
-    asArray: function asArray(value, delim) {
-        if (!value) return;
-        if (Array.isArray(value)) return value;
-        if (typeof value === 'string' && typeof delim === 'string') {
-            return value.split(delim);
+    toStringArray: function (value) {
+        if (Array.isArray(value))
+            return value;
+        if (typeof value === 'string')
+            return value.trim().split(/\s*[;,]\s*/);
+        throw new core_1.AccessControlError('Cannot convert value to array!');
+    },
+    isFilledStringArray: function (arr) {
+        for (var _i = 0, arr_1 = arr; _i < arr_1.length; _i++) {
+            var s = arr_1[_i];
+            if (typeof s !== 'string' || s.trim() === '')
+                return false;
         }
-        return [value];
+        return true;
     },
-    uniqConcat: function uniqConcat(arrA, arrB) {
+    isStringOrArray: function (value) {
+        return typeof value === 'string' || helper.isFilledStringArray(value);
+    },
+    isEmptyArray: function (value) {
+        return Array.isArray(value) && value.length === 0;
+    },
+    uniqConcat: function (arrA, arrB) {
+        var arr = arrA.concat();
         arrB.forEach(function (b) {
-            if (arrA.indexOf(b) < 0) arrA.push(b);
+            if (arr.indexOf(b) < 0)
+                arr.push(b);
         });
-        return arrA;
+        return arr;
     },
-    subtractArray: function subtractArray(arrA, arrB) {
-        return arrA.filter(function (a) {
-            return arrB.indexOf(a) === -1;
-        });
+    subtractArray: function (arrA, arrB) {
+        return arrA.concat().filter(function (a) { return arrB.indexOf(a) === -1; });
     },
-    eachKey: function eachKey(o, callback) {
+    eachKey: function (o, callback) {
         return Object.keys(o).forEach(callback);
     },
-
-
-    // "create" + "own" = "createOwn"
-    getMethodName: function getMethodName(action, possession) {
-        return action.toLowerCase() + possession.charAt(0).toUpperCase() + possession.slice(1).toLowerCase();
+    /**
+     *  Gets roles and extended roles in a flat array.
+     */
+    getFlatRoles: function (grants, roles) {
+        roles = helper.toStringArray(roles);
+        var arr = roles.concat();
+        roles.forEach(function (roleName) {
+            var role = grants[roleName];
+            if (Array.isArray(role.$extend)) {
+                arr = helper.uniqConcat(arr, role.$extend);
+            }
+        });
+        return arr;
     },
-
-
-    // Converts the given role(s) to an array, checks the role(s) and resource.
-    normalizeRoleAndResource: function normalizeRoleAndResource(o) {
-        var valid = (typeof o.role === 'string' || Array.isArray(o.role)) && o.role.length > 0;
-        if (!valid) {
-            throw new Error('AccessControl: Invalid role(s): ' + o.role);
+    normalizeActionPossession: function (info) {
+        // validate and normalize action
+        if (typeof info.action !== 'string') {
+            throw new core_1.AccessControlError("Invalid action: " + info.action);
         }
-        o.role = helper.asArray(o.role);
-        // o.role = valid ? _asArray(o.role) : [];
-
-        valid = typeof o.resource === 'string' && o.resource.length > 0;
-        if (!valid) {
-            throw new Error('AccessControl: Invalid resource: ' + o.resource);
+        var s = info.action.split(':');
+        if (enums_1.actions.indexOf(s[0].trim().toLowerCase()) < 0) {
+            throw new core_1.AccessControlError("Invalid action: " + s[0]);
         }
-        // o.resource = valid ? o.resource : '';
-        return o;
+        info.action = s[0].trim().toLowerCase();
+        // validate and normalize possession
+        var poss = info.possession || s[1];
+        if (poss) {
+            if (enums_1.possessions.indexOf(poss.trim().toLowerCase()) < 0) {
+                throw new core_1.AccessControlError("Invalid action possession: " + poss);
+            }
+            else {
+                info.possession = poss.trim().toLowerCase();
+            }
+        }
+        else {
+            // if no possession is set, we'll default to "any".
+            info.possession = enums_1.Possession.ANY;
+        }
+        return info;
     },
-
-
-    // Normalizes base properties of an access object such as role, resource,
-    // action and possession. This method also validates these properties and
-    // throws if any of them is invalid.
-    normalizeAccessObject: function normalizeAccessObject(o) {
-        o = helper.normalizeRoleAndResource(o);
-        // when access is built (by user) via chain methods or by passing an
-        // already defined object to the constructor (such as Grant, Deny
-        // classes); the `action` and `possession` can be defined in 3 ways:
-        // { action: 'create:any' }
-        // equivalent to:
-        // { action: 'create' } // possession defaults to 'any'
-        // equivalent to:
-        // { action: 'create', possession: 'any' }
-        // The latter is also the normalized version for us to process.
-        var ap = String(o.action || '').split(':'),
-            a = ap[0].toLowerCase(),
-            p = (o.possession || ap[1] || 'any').toLowerCase();
-        if (_enums2.default.actions.indexOf(a) < 0) {
-            throw new Error('AccessControl: Invalid action: ' + o.action);
+    normalizeQueryInfo: function (query, all) {
+        if (all === void 0) { all = false; }
+        // clone the object
+        query = Object.assign({}, query);
+        // validate and normalize role(s)
+        query.role = helper.toStringArray(query.role);
+        if (!helper.isFilledStringArray(query.role)) {
+            throw new core_1.AccessControlError("Invalid role(s): " + JSON.stringify(query.role));
         }
-        if (_enums2.default.possessions.indexOf(String(p).toLowerCase()) < 0) {
-            throw new Error('AccessControl: Invalid action possession: ' + p);
+        // validate resource
+        if (typeof query.resource !== 'string' || query.resource.trim() === '') {
+            throw new core_1.AccessControlError("Invalid resource: \"" + query.resource + "\"");
         }
-        o.action = a;
-        o.possession = p;
-        return o;
+        query.resource = query.resource.trim();
+        // this part is not necessary if this is invoked from a comitter method
+        // such as `createAny()`. So we'll check if we need to validate all
+        // properties such as `action` and `possession`.
+        if (all)
+            query = helper.normalizeActionPossession(query);
+        return query;
     },
-    filter: function filter(object, attributes) {
+    normalizeAccessInfo: function (access, all) {
+        if (all === void 0) { all = false; }
+        // clone the object
+        access = Object.assign({}, access);
+        // validate and normalize role(s)
+        access.role = helper.toStringArray(access.role);
+        if (!helper.isFilledStringArray(access.role)) {
+            throw new core_1.AccessControlError("Invalid role(s): " + JSON.stringify(access.role));
+        }
+        // validate and normalize resource
+        access.resource = helper.toStringArray(access.resource);
+        if (!helper.isFilledStringArray(access.resource)) {
+            throw new core_1.AccessControlError("Invalid resource(s): " + JSON.stringify(access.resource));
+        }
+        // normalize attributes
+        if (access.denied || (Array.isArray(access.attributes) && access.attributes.length === 0)) {
+            access.attributes = [];
+        }
+        else {
+            // if omitted and not denied, all attributes are allowed
+            access.attributes = !access.attributes ? ['*'] : helper.toStringArray(access.attributes);
+        }
+        // this part is not necessary if this is invoked from a comitter method
+        // such as `createAny()`. So we'll check if we need to validate all
+        // properties such as `action` and `possession`.
+        if (all)
+            access = helper.normalizeActionPossession(access);
+        return access;
+    },
+    /**
+     *  Used to re-set (prepare) the `attributes` of an `IAccessInfo` object
+     *  when it's first initialized with e.g. `.grant()` or `.deny()` chain
+     *  methods.
+     *  @param {IAccessInfo} access
+     *  @returns {IAccessInfo}
+     */
+    resetAttributes: function (access) {
+        if (access.denied) {
+            access.attributes = [];
+            return access;
+        }
+        if (!access.attributes || helper.isEmptyArray(access.attributes)) {
+            access.attributes = ['*'];
+        }
+        return access;
+    },
+    /**
+     *  Checks whether the given access info can be commited to grants model.
+     *  @param {IAccessInfo|IQueryInfo} info
+     *  @returns {Boolean}
+     */
+    isInfoFulfilled: function (info) {
+        return helper.hasDefined(info, 'role')
+            && helper.hasDefined(info, 'action')
+            && helper.hasDefined(info, 'resource');
+    },
+    /**
+     *  Commits the given `IAccessInfo` object to the grants model.
+     *  CAUTION: if attributes is omitted, it will default to `['*']` which
+     *  means "all attributes allowed".
+     *  @param {Any} grants
+     *  @param {IAccessInfo} access
+     *  @param {Boolean} normalizeAll
+     *         Specifies whether to validate and normalize all properties of
+     *         the inner `IAccessInfo` object, including `action` and `possession`.
+     *  @throws {Error} If `IAccessInfo` object fails validation.
+     */
+    commitToGrants: function (grants, access, normalizeAll) {
+        if (normalizeAll === void 0) { normalizeAll = false; }
+        access = helper.normalizeAccessInfo(access, normalizeAll);
+        // console.log(access);
+        // grant.role also accepts an array, so treat it like it.
+        access.role.forEach(function (role) {
+            if (!grants.hasOwnProperty(role))
+                grants[role] = {};
+            var grantItem = grants[role];
+            var ap = access.action + ':' + access.possession;
+            access.resource.forEach(function (res) {
+                if (!grantItem.hasOwnProperty(res))
+                    grantItem[res] = {};
+                // If possession (in action value or as a separate property) is
+                // omitted, it will default to "any". e.g. "create" —>
+                // "create:any"
+                grantItem[res][ap] = access.attributes;
+            });
+        });
+        // console.log('======================');
+        // console.log('committing >>> ', JSON.stringify(access));
+        // console.log('----------------------');
+        // console.log('committed >>>\n', JSON.stringify(grants, null, '  '));
+        // console.log('======================');
+    },
+    /**
+     *  When more than one role is passed, we union the permitted attributes
+     *  for all given roles; so we can check whether "at least one of these
+     *  roles" have the permission to execute this action.
+     *  e.g. `can(['admin', 'user']).createAny('video')`
+     *
+     *  @param {Any} grants
+     *  @param {IQueryInfo} query
+     *
+     *  @returns {Array<String>} - Array of union'ed attributes.
+     */
+    getUnionAttrsOfRoles: function (grants, query) {
+        if (!grants) {
+            throw new core_1.AccessControlError('Grants are not set.');
+        }
+        // throws if has any invalid property value
+        query = helper.normalizeQueryInfo(query);
+        var grantItem;
+        var resource;
+        var attrsList = [];
+        // get roles and extended roles in a flat array
+        var roles = helper.getFlatRoles(grants, query.role);
+        // iterate through roles and add permission attributes (array) of
+        // each role to attrsList (array).
+        roles.forEach(function (role, index) {
+            grantItem = grants[role];
+            if (grantItem) {
+                resource = grantItem[query.resource];
+                if (resource) {
+                    // e.g. resource['create:own']
+                    // If action has possession "any", it will also return
+                    // `granted=true` for "own", if "own" is not defined.
+                    attrsList.push((resource[query.action + ':' + query.possession]
+                        || resource[query.action + ':any']
+                        || []).concat());
+                    // console.log(resource, 'for:', action + '.' + possession);
+                }
+            }
+        });
+        // union all arrays of (permitted resource) attributes (for each role)
+        // into a single array.
+        var attrs = [];
+        var len = attrsList.length;
+        if (len > 0) {
+            attrs = attrsList[0];
+            var i = 1;
+            while (i < len) {
+                attrs = Notation.Glob.union(attrs, attrsList[i]);
+                i++;
+            }
+        }
+        return attrs;
+    },
+    /**
+     *  Checks the given grants model and gets an array of non-existent roles
+     *  from the given roles.
+     *  @param {Any} grants - Grants model to be checked.
+     *  @param {Array<string>} roles - Roles to be checked.
+     *  @returns {Array<String>} - Array of non-existent roles. Empty array if
+     *  all exist.
+     */
+    getNonExistentRoles: function (grants, roles) {
+        var non = [];
+        for (var _i = 0, roles_1 = roles; _i < roles_1.length; _i++) {
+            var role = roles_1[_i];
+            if (!grants.hasOwnProperty(role))
+                non.push(role);
+        }
+        return non;
+    },
+    /**
+     *  Extends the given role(s) with privileges of one or more other roles.
+     *
+     *  @param {Any} grants
+     *  @param {String|Array<String>} roles
+     *         Role(s) to be extended.
+     *         Single role as a `String` or multiple roles as an `Array`.
+     *         Note that if a role does not exist, it will be automatically
+     *         created.
+     *
+     *  @param {String|Array<String>} extenderRoles
+     *         Role(s) to inherit from.
+     *         Single role as a `String` or multiple roles as an `Array`.
+     *         Note that if a extender role does not exist, it will throw.
+     *
+     *  @throws {Error}
+     *          If a role is extended by itself or a non-existent role.
+     */
+    extendRole: function (grants, roles, extenderRoles) {
+        var arrExtRoles = helper.toStringArray(extenderRoles);
+        var nonExistentExtRoles = helper.getNonExistentRoles(grants, arrExtRoles);
+        if (nonExistentExtRoles.length > 0) {
+            throw new core_1.AccessControlError("Cannot extend with non-existent role(s): \"" + nonExistentExtRoles.join(', ') + "\"");
+        }
+        helper.toStringArray(roles).forEach(function (role) {
+            if (arrExtRoles.indexOf(role) >= 0) {
+                throw new core_1.AccessControlError("Attempted to extend role \"" + role + "\" by itself.");
+            }
+            if (!grants.hasOwnProperty(role)) {
+                grants[role] = {
+                    $extend: arrExtRoles.concat()
+                };
+            }
+            else {
+                var r = grants[role];
+                if (Array.isArray(r.$extend)) {
+                    r.$extend = helper.uniqConcat(r.$extend, arrExtRoles);
+                }
+                else {
+                    r.$extend = arrExtRoles.concat();
+                }
+            }
+        });
+    },
+    filter: function (object, attributes) {
         if (!Array.isArray(attributes) || attributes.length === 0) {
             return {};
         }
-        var notation = new _notation2.default(object);
+        var notation = new Notation(object);
         return notation.filter(attributes).value;
     },
-    filterAll: function filterAll(arrOrObj, attributes) {
+    filterAll: function (arrOrObj, attributes) {
         if (!Array.isArray(arrOrObj)) {
             return helper.filter(arrOrObj, attributes);
         }
@@ -113,5 +330,5 @@ var helper = {
         });
     }
 };
-// own modules
 exports.default = helper;
+//# sourceMappingURL=helper.js.map
