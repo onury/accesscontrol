@@ -7,7 +7,7 @@
 
 var AccessControl = require('../index');
 
-describe('Test Suite: Access Control (core)', function () {
+describe('Test Suite: Access Control', function () {
     'use strict';
 
     // grant list fetched from DB (to be converted to a valid grants object)
@@ -85,7 +85,7 @@ describe('Test Suite: Access Control (core)', function () {
         expect(ac.getGrants().user.photo['create:any']).toEqual(attrs);
         expect(ac.can('user').createAny('photo').attributes).toEqual(attrs);
 
-        ac.deny('user').createAny('photo');
+        ac.deny('user').createAny('photo', attrs); // <- denied even with attrs
         expect(ac.can('user').createAny('photo').granted).toEqual(false);
         expect(ac.can('user').createAny('photo').attributes).toEqual([]);
 
@@ -98,8 +98,8 @@ describe('Test Suite: Access Control (core)', function () {
         ac.grant(['user', 'admin']).readAny('photo', attrs);
         expect(ac.can('user').readAny('photo').granted).toEqual(true);
         expect(ac.can('admin').readAny('photo').granted).toEqual(true);
-        // deny multiple roles the same permission for the same resource
-        ac.deny(['user', 'admin']).readAny('photo');
+        // deny multiple roles (comma-separated) the same permission for the same resource
+        ac.deny('user, admin').readAny('photo');
         expect(ac.can('user').readAny('photo').granted).toEqual(false);
         expect(ac.can('admin').readAny('photo').granted).toEqual(false);
 
@@ -160,16 +160,14 @@ describe('Test Suite: Access Control (core)', function () {
             attributes: ['*'] // grant only
         };
 
-        ac.grant(o1);
-        ac.grant(o2);
+        ac.grant(o1).grant(o2);
         ac.grant(o3).updateAny();
 
         expect(ac.can('moderator').createAny('post').granted).toEqual(true);
         expect(ac.can('moderator').readOwn('news').granted).toEqual(true);
         expect(ac.can('moderator').updateAny('book').granted).toEqual(true);
 
-        ac.deny(o1);
-        ac.deny(o2);
+        ac.deny(o1).deny(o2);
         ac.deny(o3).updateAny();
 
         expect(ac.can('moderator').createAny('post').granted).toEqual(false);
@@ -278,12 +276,43 @@ describe('Test Suite: Access Control (core)', function () {
         // console.log(JSON.stringify(ac.getGrants(), null, '  '));
     });
 
+    it('deny should auto-set attributes to []', function () {
+        var ac = this.ac;
+        ac.deny('user').createAny('book', ['*']);
+        expect(ac.getGrants().user.book['create:any']).toEqual([]);
+    });
+
+    it('should grant comma/semi-colon separated roles', function () {
+        var ac = this.ac;
+        // also supporting comma/semi-colon separated roles
+        ac.grant('role2; role3, editor; viewer, agent').createOwn('book');
+        expect(ac.hasRole('role3')).toEqual(true);
+        expect(ac.hasRole('editor')).toEqual(true);
+        expect(ac.hasRole('agent')).toEqual(true);
+    });
+
+    it('permission should also return queried role(s) and resource', function () {
+        var ac = this.ac;
+        // also supporting comma/semi-colon separated roles
+        ac.grant('foo, bar').createOwn('baz');
+        expect(ac.can('bar').createAny('baz').granted).toEqual(false);
+        expect(ac.can('bar').createOwn('baz').granted).toEqual(true);
+        // returned permission should provide queried role(s) as array
+        expect(ac.can('foo').create('baz').roles).toContain('foo');
+        // returned permission should provide queried resource
+        expect(ac.can('foo').create('baz').resource).toEqual('baz');
+        // create is createAny. but above only returns the queried value, not the result.
+    });
+
     it('should extend / remove roles', function () {
         var ac = this.ac;
 
+        ac.grant('admin').createOwn('book');
         ac.extendRole('onur', 'admin');
         expect(ac.getGrants().onur.$extend.length).toEqual(1);
         expect(ac.getGrants().onur.$extend[0]).toEqual('admin');
+
+        ac.grant('role2, role3, editor, viewer, agent').createOwn('book');
 
         ac.extendRole('onur', ['role2', 'role3']);
         expect(ac.getGrants().onur.$extend).toEqual(['admin', 'role2', 'role3']);
@@ -373,6 +402,20 @@ describe('Test Suite: Access Control (core)', function () {
 
     });
 
+    it('should throw `AccessControlError`', function () {
+        var ac = this.ac;
+        function grant() {
+            ac.grant().createOwn();
+        }
+        expect(grant).toThrow();
+        try {
+            grant();
+        } catch (err) {
+            expect(err instanceof AccessControl.Error).toEqual(true);
+            expect(AccessControl.isACError(err)).toEqual(true);
+        }
+    });
+
     it('should filter granted attributes', function () {
         var ac = this.ac,
             attrs = ['*', '!account.balance.credit', '!account.id', '!secret'],
@@ -406,6 +449,52 @@ describe('Test Suite: Access Control (core)', function () {
         expect(filtered.account.balance).toBeDefined();
         expect(filtered.account.credit).toBeUndefined();
         expect(filtered.secret).toBeUndefined();
+    });
+
+    it('Check with multiple roles changes grant list (issue #2)', function () {
+        var ac = this.ac;
+        ac.grant('admin').updateAny('video')
+            .grant(['user', 'admin']).updateOwn('video');
+
+        // Admin can update any video
+        expect(ac.can(['admin']).updateAny('video').granted).toEqual(true);
+
+        // console.log('grants before', JSON.stringify(ac.getGrants(), null, '  '));
+
+        // This check actually changes the underlying grants
+        ac.can(['user', 'admin']).updateOwn('video');
+
+        // console.log('grants after', JSON.stringify(ac.getGrants(), null, '  '));
+
+        // Admin can update any or own video
+        expect(ac.can(['admin']).updateAny('video').granted).toEqual(true);
+        expect(ac.can(['admin']).updateOwn('video').granted).toEqual(true);
+    });
+
+    it('should grant/deny multiple roles and multiple resources', function () {
+        var ac = this.ac;
+
+        ac.grant('admin, user').createAny('profile, video');
+        expect(ac.can('admin').createAny('profile').granted).toEqual(true);
+        expect(ac.can('admin').createAny('video').granted).toEqual(true);
+        expect(ac.can('user').createAny('profile').granted).toEqual(true);
+        expect(ac.can('user').createAny('video').granted).toEqual(true);
+
+        ac.grant('admin, user').createAny('profile, video', '*,!id');
+        expect(ac.can('admin').createAny('profile').attributes).toEqual(['*', '!id']);
+        expect(ac.can('admin').createAny('video').attributes).toEqual(['*', '!id']);
+        expect(ac.can('user').createAny('profile').attributes).toEqual(['*', '!id']);
+        expect(ac.can('user').createAny('video').attributes).toEqual(['*', '!id']);
+
+        ac.deny('admin, user').readAny('photo, book', '*,!id');
+        expect(ac.can('admin').readAny('photo').attributes).toEqual([]);
+        expect(ac.can('admin').readAny('book').attributes).toEqual([]);
+        expect(ac.can('user').readAny('photo').attributes).toEqual([]);
+        expect(ac.can('user').readAny('book').attributes).toEqual([]);
+
+        expect(ac.can('user').createAny('non-existent').granted).toEqual(false);
+
+        // console.log(JSON.stringify(ac.getGrants(), null, '  '));
     });
 
 });
