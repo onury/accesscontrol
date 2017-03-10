@@ -1,0 +1,25 @@
+import { IAccessInfo, IQueryInfo } from '../core';
+declare const helper: {
+    type(o: any): string;
+    hasDefined(o: any, propName: string): boolean;
+    toStringArray(value: any): string[];
+    isFilledStringArray(arr: any[]): boolean;
+    isStringOrArray(value: any): boolean;
+    isEmptyArray(value: any): boolean;
+    uniqConcat(arrA: string[], arrB: string[]): string[];
+    subtractArray(arrA: string[], arrB: string[]): string[];
+    eachKey(o: any, callback: (key: string, index?: number) => void): void;
+    getFlatRoles(grants: any, roles: string | string[]): string[];
+    normalizeActionPossession(info: IAccessInfo | IQueryInfo): IAccessInfo | IQueryInfo;
+    normalizeQueryInfo(query: IQueryInfo, all?: boolean): IQueryInfo;
+    normalizeAccessInfo(access: IAccessInfo, all?: boolean): IAccessInfo;
+    resetAttributes(access: IAccessInfo): IAccessInfo;
+    isInfoFulfilled(info: IAccessInfo | IQueryInfo): boolean;
+    commitToGrants(grants: any, access: IAccessInfo, normalizeAll?: boolean): void;
+    getUnionAttrsOfRoles(grants: any, query: IQueryInfo): string[];
+    getNonExistentRoles(grants: any, roles: string[]): string[];
+    extendRole(grants: any, roles: string | string[], extenderRoles: string | string[]): void;
+    filter(object: any, attributes: string[]): any;
+    filterAll(arrOrObj: any, attributes: string[]): any;
+};
+export default helper;
