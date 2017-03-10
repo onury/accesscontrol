@@ -1,5 +1,5 @@
 {
-    "debug": 5,
+    "debug": 31,
     "jsdoc": {
         "encoding": "utf8",
         "recurse": false,
@@ -9,10 +9,14 @@
         "module": true,
         "undocumented": false,
         "undescribed": false,
+        "ignored": false,
         "hierarchy": true,
-        "sort": "alphabetic",
+        "sort": "grouped",
         "relativePath": null,
-        "filter": null
+        "filter": null,
+        "allowUnknownTags": true,
+        "plugins": [],
+        "includePattern": ".+\\.js(doc|x)?$"
     },
     "markdown": {
         "gfm": true,
@@ -40,6 +44,8 @@
             "sidebar": true,
             "collapsed": false,
             "badges": true,
+            "outline": "tree",
+            "symbolMeta": true,
             "search": true,
             "navbar": true,
             "navItems": [
@@ -63,7 +69,7 @@
                         //     "target": "_blank"
                         // },
                         // { "separator": true },
-                        { "label": "<code>npm install accesscontrol</code>" },
+                        { "label": "<code>npm i accesscontrol --save</code>" },
                         { "separator": true },
                         {
                             "label": "Download as Archive",
@@ -86,8 +92,8 @@
     "src": [
         {
             "ac": [
-                "./src/AccessControl.js",
-                "./src/enums.js"
+                "./build/**/*.js",
+                "!./build/lib/helper.js"
             ]
         },
         // "./CHANGELOG.md",
