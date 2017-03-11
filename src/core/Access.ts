@@ -1,6 +1,6 @@
 import { IAccessInfo } from '../core';
 import { Action, Possession, actions, possessions } from '../enums';
-import helper from '../lib/helper';
+import utils from '../utils';
 
 /**
  *  Represents the inner `Access` class that helps build an access information
@@ -48,12 +48,12 @@ class Access {
         this._.denied = denied;
         if (typeof roleOrInfo === 'string' || Array.isArray(roleOrInfo)) {
             this.role(roleOrInfo);
-        } else if (helper.type(roleOrInfo) === 'object') {
+        } else if (utils.type(roleOrInfo) === 'object') {
             // if an IAccessInfo instance is passed and it has 'action' defined, we
             // should directly commit it to grants.
             roleOrInfo.denied = denied;
-            this._ = helper.resetAttributes(roleOrInfo);
-            if (helper.isInfoFulfilled(this._)) helper.commitToGrants(this._grants, this._, true);
+            this._ = utils.resetAttributes(roleOrInfo);
+            if (utils.isInfoFulfilled(this._)) utils.commitToGrants(this._grants, this._, true);
         }
     }
 
@@ -119,7 +119,7 @@ class Access {
      *           Self instance of `Access`.
      */
     extend(roles:string|string[]):Access {
-        helper.extendRole(this._grants, this._.role, roles);
+        utils.extendRole(this._grants, this._.role, roles);
         return this;
     }
 
@@ -432,9 +432,9 @@ class Access {
             this._.attributes = [];
         } else {
             // if omitted and not denied, all attributes are allowed
-            this._.attributes = this._.attributes ? helper.toStringArray(this._.attributes) : ['*'];
+            this._.attributes = this._.attributes ? utils.toStringArray(this._.attributes) : ['*'];
         }
-        helper.commitToGrants(this._grants, this._, false);
+        utils.commitToGrants(this._grants, this._, false);
         // important: reset attributes for chained methods
         this._.attributes = undefined;
         return this;

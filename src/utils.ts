@@ -1,10 +1,10 @@
 // dep modules
 import * as Notation from 'notation';
 // own modules
-import { Action, actions, Possession, possessions } from '../enums';
-import { IAccessInfo, IQueryInfo, AccessControlError } from '../core';
+import { Action, actions, Possession, possessions } from './enums';
+import { IAccessInfo, IQueryInfo, AccessControlError } from './core';
 
-const helper = {
+const utils = {
 
     type(o:any):string {
         return Object.prototype.toString.call(o).match(/\s(\w+)/i)[1].toLowerCase();
@@ -28,7 +28,7 @@ const helper = {
     },
 
     isStringOrArray(value:any):boolean {
-        return typeof value === 'string' || helper.isFilledStringArray(value);
+        return typeof value === 'string' || utils.isFilledStringArray(value);
     },
 
     isEmptyArray(value:any):boolean {
@@ -55,12 +55,12 @@ const helper = {
      *  Gets roles and extended roles in a flat array.
      */
     getFlatRoles(grants:any, roles:string|string[]):string[] {
-        roles = helper.toStringArray(roles);
+        roles = utils.toStringArray(roles);
         let arr:string[] = roles.concat();
         roles.forEach((roleName:string) => {
             let role:any = grants[roleName];
             if (Array.isArray(role.$extend)) {
-                arr = helper.uniqConcat(arr, role.$extend);
+                arr = utils.uniqConcat(arr, role.$extend);
             }
         });
         return arr;
@@ -98,8 +98,8 @@ const helper = {
         // clone the object
         query = Object.assign({}, query);
         // validate and normalize role(s)
-        query.role = helper.toStringArray(query.role);
-        if (!helper.isFilledStringArray(query.role)) {
+        query.role = utils.toStringArray(query.role);
+        if (!utils.isFilledStringArray(query.role)) {
             throw new AccessControlError(`Invalid role(s): ${JSON.stringify(query.role)}`);
         }
 
@@ -112,7 +112,7 @@ const helper = {
         // this part is not necessary if this is invoked from a comitter method
         // such as `createAny()`. So we'll check if we need to validate all
         // properties such as `action` and `possession`.
-        if (all) query = helper.normalizeActionPossession(query) as IQueryInfo;
+        if (all) query = utils.normalizeActionPossession(query) as IQueryInfo;
 
         return query;
     },
@@ -121,14 +121,14 @@ const helper = {
         // clone the object
         access = Object.assign({}, access);
         // validate and normalize role(s)
-        access.role = helper.toStringArray(access.role);
-        if (!helper.isFilledStringArray(access.role)) {
+        access.role = utils.toStringArray(access.role);
+        if (!utils.isFilledStringArray(access.role)) {
             throw new AccessControlError(`Invalid role(s): ${JSON.stringify(access.role)}`);
         }
 
         // validate and normalize resource
-        access.resource = helper.toStringArray(access.resource);
-        if (!helper.isFilledStringArray(access.resource)) {
+        access.resource = utils.toStringArray(access.resource);
+        if (!utils.isFilledStringArray(access.resource)) {
             throw new AccessControlError(`Invalid resource(s): ${JSON.stringify(access.resource)}`);
         }
 
@@ -137,13 +137,13 @@ const helper = {
             access.attributes = [];
         } else {
             // if omitted and not denied, all attributes are allowed
-            access.attributes = !access.attributes ? ['*'] : helper.toStringArray(access.attributes);
+            access.attributes = !access.attributes ? ['*'] : utils.toStringArray(access.attributes);
         }
 
         // this part is not necessary if this is invoked from a comitter method
         // such as `createAny()`. So we'll check if we need to validate all
         // properties such as `action` and `possession`.
-        if (all) access = helper.normalizeActionPossession(access) as IAccessInfo;
+        if (all) access = utils.normalizeActionPossession(access) as IAccessInfo;
 
         return access;
     },
@@ -160,7 +160,7 @@ const helper = {
             access.attributes = [];
             return access;
         }
-        if (!access.attributes || helper.isEmptyArray(access.attributes)) {
+        if (!access.attributes || utils.isEmptyArray(access.attributes)) {
             access.attributes = ['*'];
         }
         return access;
@@ -172,9 +172,9 @@ const helper = {
      *  @returns {Boolean}
      */
     isInfoFulfilled(info:IAccessInfo|IQueryInfo):boolean {
-        return helper.hasDefined(info, 'role')
-            && helper.hasDefined(info, 'action')
-            && helper.hasDefined(info, 'resource');
+        return utils.hasDefined(info, 'role')
+            && utils.hasDefined(info, 'action')
+            && utils.hasDefined(info, 'resource');
     },
 
     /**
@@ -189,7 +189,7 @@ const helper = {
      *  @throws {Error} If `IAccessInfo` object fails validation.
      */
     commitToGrants(grants:any, access:IAccessInfo, normalizeAll:boolean = false) {
-        access = helper.normalizeAccessInfo(access, normalizeAll);
+        access = utils.normalizeAccessInfo(access, normalizeAll);
         // console.log(access);
         // grant.role also accepts an array, so treat it like it.
         (access.role as Array<string>).forEach((role:string) => {
@@ -228,13 +228,13 @@ const helper = {
             throw new AccessControlError('Grants are not set.');
         }
         // throws if has any invalid property value
-        query = helper.normalizeQueryInfo(query);
+        query = utils.normalizeQueryInfo(query);
 
         let grantItem;
         let resource:string;
         let attrsList:Array<string[]> = [];
         // get roles and extended roles in a flat array
-        let roles:string[] = helper.getFlatRoles(grants, query.role);
+        let roles:string[] = utils.getFlatRoles(grants, query.role);
         // iterate through roles and add permission attributes (array) of
         // each role to attrsList (array).
         roles.forEach((role:string, index:number) => {
@@ -305,13 +305,13 @@ const helper = {
      *          If a role is extended by itself or a non-existent role.
      */
     extendRole(grants:any, roles:string|string[], extenderRoles:string|string[]) {
-        let arrExtRoles:string[] = helper.toStringArray(extenderRoles);
-        let nonExistentExtRoles:string[] = helper.getNonExistentRoles(grants, arrExtRoles);
+        let arrExtRoles:string[] = utils.toStringArray(extenderRoles);
+        let nonExistentExtRoles:string[] = utils.getNonExistentRoles(grants, arrExtRoles);
         if (nonExistentExtRoles.length > 0) {
             throw new AccessControlError(`Cannot extend with non-existent role(s): "${nonExistentExtRoles.join(', ')}"`);
         }
 
-        helper.toStringArray(roles).forEach((role:string) => {
+        utils.toStringArray(roles).forEach((role:string) => {
             if (arrExtRoles.indexOf(role) >= 0) {
                 throw new AccessControlError(`Attempted to extend role "${role}" by itself.`);
             }
@@ -322,7 +322,7 @@ const helper = {
             } else {
                 let r = grants[role];
                 if (Array.isArray(r.$extend)) {
-                    r.$extend = helper.uniqConcat(r.$extend, arrExtRoles);
+                    r.$extend = utils.uniqConcat(r.$extend, arrExtRoles);
                 } else {
                     r.$extend = arrExtRoles.concat();
                 }
@@ -340,13 +340,13 @@ const helper = {
 
     filterAll(arrOrObj:any, attributes:string[]):any {
         if (!Array.isArray(arrOrObj)) {
-            return helper.filter(arrOrObj, attributes);
+            return utils.filter(arrOrObj, attributes);
         }
         return arrOrObj.map(o => {
-            return helper.filter(o, attributes);
+            return utils.filter(o, attributes);
         });
     }
 
 };
 
-export default helper;
+export default utils;

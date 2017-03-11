@@ -1,6 +1,6 @@
-import helper from './lib/helper';
 import { Access, IAccessInfo, Query, IQueryInfo, Permission, AccessControlError } from './core';
 import { Action, Possession, actions, possessions } from './enums';
+import utils from './utils';
 
 /**
  *  @classdesc
@@ -100,7 +100,7 @@ class AccessControl {
     /**
      *  @private
      */
-    private _grants:any = {};
+    private _grants:any;
 
     /**
      *  Initializes a new instance of `AccessControl` with the given grants.
@@ -177,11 +177,11 @@ class AccessControl {
      */
     setGrants(grantsObject:any):AccessControl {
         this._grants = {};
-        let type:string = helper.type(grantsObject);
+        let type:string = utils.type(grantsObject);
         if (type === 'object') {
             this._grants = grantsObject;
         } else if (type === 'array') {
-            grantsObject.forEach((item:any) => helper.commitToGrants(this._grants, item, true));
+            grantsObject.forEach((item:any) => utils.commitToGrants(this._grants, item, true));
         }
         return this;
     }
@@ -218,7 +218,7 @@ class AccessControl {
      *          If a role is extended by itself or a non-existent role.
      */
     extendRole(roles:string|string[], extenderRoles:string|string[]):AccessControl {
-        helper.extendRole(this._grants, roles, extenderRoles);
+        utils.extendRole(this._grants, roles, extenderRoles);
         return this;
     }
 
@@ -232,14 +232,14 @@ class AccessControl {
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
      */
     removeRoles(roles:string|string[]):AccessControl {
-        let rolesToRemove:string[] = helper.toStringArray(roles);
+        let rolesToRemove:string[] = utils.toStringArray(roles);
         rolesToRemove.forEach((role:string) => {
             delete this._grants[role];
         });
         // also remove these roles from $extend list of each remaining role.
         this._each((role:string, roleItem:any) => {
             if (Array.isArray(roleItem.$extend)) {
-                roleItem.$extend = helper.subtractArray(roleItem.$extend, rolesToRemove);
+                roleItem.$extend = utils.subtractArray(roleItem.$extend, rolesToRemove);
             }
         });
         return this;
@@ -529,14 +529,14 @@ class AccessControl {
      *  @private
      */
     private _each(callback:(role:string, roleDefinition:any) => void) {
-        helper.eachKey(this._grants, (role:string) => callback(role, this._grants[role]));
+        utils.eachKey(this._grants, (role:string) => callback(role, this._grants[role]));
     }
 
     /**
      *  @private
      */
     private _eachRole(callback:(role:string) => void) {
-        helper.eachKey(this._grants, (role:string) => callback(role));
+        utils.eachKey(this._grants, (role:string) => callback(role));
     }
 
     /**
@@ -546,7 +546,7 @@ class AccessControl {
         let resources, resourceDefinition;
         this._eachRole((role:string) => {
             resources = this._grants[role];
-            helper.eachKey(resources, (resource:string) => {
+            utils.eachKey(resources, (resource:string) => {
                 resourceDefinition = role[resource];
                 callback(role, resource, resourceDefinition);
             });
@@ -557,8 +557,8 @@ class AccessControl {
      *  @private
      */
     _removePermission(resources:string|string[], roles?:string|string[], actionPossession?:string) {
-        resources = helper.toStringArray(resources);
-        if (roles) roles = helper.toStringArray(roles);
+        resources = utils.toStringArray(resources);
+        if (roles) roles = utils.toStringArray(roles);
         this._eachRoleResource((role:string, resource:string, permissions:any) => {
             if (resources.indexOf(resource) >= 0
                     // roles is optional. so remove if role is not defined.
@@ -645,7 +645,7 @@ class AccessControl {
      *  console.log(assets); // {}
      */
     static filter(data:any, attributes:string[]):any {
-        helper.filterAll(data, attributes);
+        utils.filterAll(data, attributes);
     }
 
     /**

@@ -1,6 +1,6 @@
 import { IQueryInfo, Permission } from '../core';
 import { Action, Possession } from '../enums';
-import helper from '../lib/helper';
+import utils from '../utils';
 
  /**
   *  Represents the inner `Query` class that helps build an access information
@@ -42,7 +42,7 @@ class Query {
         this._grants = grants;
         // if this is a (permission) object, we directly build attributes from
         // grants.
-        if (helper.type(role) === 'object') {
+        if (utils.type(role) === 'object') {
             this._ = <IQueryInfo>role;
         } else {
             // if this is just role(s); a string or array; we start building
