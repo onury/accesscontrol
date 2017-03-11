@@ -8,14 +8,13 @@
   },
   "files": [
     "index.js",
-    "build",
-    "types",
+    "lib",
     "LICENSE"
   ],
-  "types": "types/AccessControl.d.ts",
+  "types": "lib/AccessControl",
   "scripts": {
-    "clean": "rimraf ./build",
-    "build": "npm run clean && mkdirp ./build && tsc",
+    "clean": "rimraf ./lib",
+    "build": "npm run clean && mkdirp ./lib && tsc",
     "test": "npm run build && node test",
     "docs": "tsc && docma -c ./docma.config.json"
   },
