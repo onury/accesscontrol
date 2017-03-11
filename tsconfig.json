@@ -2,7 +2,7 @@
     "compileOnSave": false,
     "compilerOptions": {
         "declaration": true,
-        "declarationDir": "./types",
+        "declarationDir": "./lib",
         "target": "es5",
         "module": "commonjs",
         "removeComments": false,
@@ -27,14 +27,14 @@
         "types": [
             "node"
         ],
-        "outDir": "./build"
+        "outDir": "./lib"
     },
     "include": [
         "./src/**/*.ts"
     ],
     "exclude": [
         "./node_modules",
-        "./build",
+        "./lib",
         "./dev",
         "./docs",
         "./test",
