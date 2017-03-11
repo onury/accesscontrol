@@ -1,1 +1,1 @@
-module.exports = require('./build/AccessControl.js').default;
+module.exports = require('./lib/AccessControl').default;
