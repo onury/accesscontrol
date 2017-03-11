@@ -63,21 +63,15 @@
                     "iconClass": "ico-md ico-download",
                     "label": "Download",
                     "items": [
-                        // {
-                        //     "label": "Link via CDNJS",
-                        //     "href": "https://cdnjs.com/libraries/re",
-                        //     "target": "_blank"
-                        // },
-                        // { "separator": true },
                         { "label": "<code>npm i accesscontrol --save</code>" },
                         { "separator": true },
                         {
                             "label": "Download as Archive",
                             "href": "https://github.com/onury/accesscontrol/releases",
                             "target": "_blank"
-                        }
-                        // , { "separator": true },
-                        // { "label": "Change Log", "href": "?content=changelog" }
+                        },
+                        { "separator": true },
+                        { "label": "Change Log", "href": "?content=changelog" }
                     ]
                 },
                 {
@@ -96,7 +90,7 @@
                 "!./lib/utils.js"
             ]
         },
-        // "./CHANGELOG.md",
+        "./CHANGELOG.md",
         {
             "guide": "./README.md"
         }
