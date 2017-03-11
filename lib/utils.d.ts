@@ -1,5 +1,5 @@
-import { IAccessInfo, IQueryInfo } from '../core';
-declare const helper: {
+import { IAccessInfo, IQueryInfo } from './core';
+declare const utils: {
     type(o: any): string;
     hasDefined(o: any, propName: string): boolean;
     toStringArray(value: any): string[];
@@ -22,4 +22,4 @@ declare const helper: {
     filter(object: any, attributes: string[]): any;
     filterAll(arrOrObj: any, attributes: string[]): any;
 };
-export default helper;
+export default utils;
