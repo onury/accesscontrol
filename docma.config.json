@@ -92,8 +92,8 @@
     "src": [
         {
             "ac": [
-                "./build/**/*.js",
-                "!./build/lib/helper.js"
+                "./lib/**/*.js",
+                "!./lib/utils.js"
             ]
         },
         // "./CHANGELOG.md",
