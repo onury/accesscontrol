@@ -10,7 +10,7 @@
 
 Role and Attribute based Access Control for Node.js  
 
-`npm i accesscontrol`  
+`npm i accesscontrol --save`  
 
 Many [RBAC][rbac] (Role-Based Access Control) implementations differ, but the basics is widely adopted since it simulates real life role (job) assignments. But while data is getting more and more complex; you need to define policies on resources, subjects or even environments. This is called [ABAC][abac] (Attribute-Based Access Control).
 
