@@ -220,7 +220,7 @@ You can read the full [**API reference** here][docs].
 
 ## Change-Log
 
-See [CHANGELOG.md]
+See [CHANGELOG.md](https://github.com/onury/accesscontrol/blob/master/CHANGELOG.md).
 
 ## License
 
