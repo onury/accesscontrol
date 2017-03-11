@@ -4,7 +4,8 @@
   "description": "Role and Attribute based Access Control for Node.js",
   "main": "index.js",
   "directories": {
-    "test": "test"
+    "lib": "./lib",
+    "test": "./test"
   },
   "files": [
     "index.js",
