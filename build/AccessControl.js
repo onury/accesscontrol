@@ -166,7 +166,6 @@ var AccessControl = (function () {
      *  Sets all access grants at once, from an object or array.
      *  Note that this will reset the object and remove all previous grants.
      *  @chainable
-     *  @deprecated
      *
      *  @param {Object|Array} grantsObject - A list containing the access grant
      *         definitions.
