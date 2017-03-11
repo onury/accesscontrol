@@ -6,7 +6,7 @@
 ![maintained](https://img.shields.io/maintenance/yes/2017.svg)
 ![TypeScript](https://img.shields.io/badge/written%20in-%20TypeScript%20-6575ff.svg)  
 
-> © 2016, Onur Yıldırım (@onury). MIT License.  
+> © 2017, Onur Yıldırım (@onury). MIT License.  
 
 Role and Attribute based Access Control for Node.js  
 
