@@ -2,6 +2,7 @@
 [![version](http://img.shields.io/npm/v/accesscontrol.svg)](https://www.npmjs.com/package/accesscontrol)
 ![dependencies](https://david-dm.org/onury/accesscontrol.svg)
 ![license](http://img.shields.io/npm/l/accesscontrol.svg)  
+![TypeScript](https://img.shields.io/badge/written%20in-%20TypeScript%20-6575ff.svg)
 
 > © 2016, Onur Yıldırım (@onury). MIT License.  
 
