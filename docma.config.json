@@ -55,6 +55,11 @@
                     "href": "./?content=guide"
                 },
                 {
+                    "iconClass": "ico-md ico-info",
+                    "label": "F.A.Q.",
+                    "href": "./?content=faq"
+                },
+                {
                     "iconClass": "ico-book",
                     "label": "API Reference",
                     "href": "./?api=ac"
@@ -91,6 +96,7 @@
             ]
         },
         "./CHANGELOG.md",
+        "./FAQ.md",
         {
             "guide": "./README.md"
         }
