@@ -17,7 +17,7 @@
     "clean": "rimraf ./lib",
     "build": "npm run clean && mkdirp ./lib && tsc",
     "test": "npm run build && node test",
-    "docs": "tsc && docma -c ./docma.config.json"
+    "docs": "docma -c ./docma.config.json"
   },
   "repository": {
     "type": "git",
@@ -55,7 +55,7 @@
   "homepage": "https://github.com/onury/accesscontrol#readme",
   "devDependencies": {
     "@types/node": "^7.0.5",
-    "docma": "^1.4.7",
+    "docma": "^1.5.1",
     "jasmine": "^2.5.3",
     "jasmine-console-reporter": "^1.2.7",
     "mkdirp": "^0.5.1",
