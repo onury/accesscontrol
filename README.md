@@ -1,4 +1,5 @@
-# AccessControl
+<img align="center" width="512" height="170" src="https://raw.github.com/onury/accesscontrol/master/ac-logo.png" />
+---
 ![npm](https://img.shields.io/npm/v/accesscontrol.svg)
 ![release](https://img.shields.io/github/release/onury/accesscontrol.svg)
 ![license](http://img.shields.io/npm/l/accesscontrol.svg)
@@ -17,13 +18,15 @@ With the idea of merging the best features of the two (see this [NIST paper][nis
 
 ### Core Features
 
+- Chainable, friendly API.  
+e.g. `ac.can(role).createOwn(resource)`
 - Role hierarchical inheritance.
 - Define grants at once (e.g. from database result) or one by one.
-- Grant/deny permissions by attributes defined by glob notation.
+- Grant/deny permissions by attributes defined by glob notation (with nested object support).
 - Ability to filter data (model) instance by allowed attributes.
-- Nested object support for attributes.
+- Ability to control access on "own" or "any" resources.
+- Fast. (Grants are stored in memory, no database queries.)
 - TypeScript support.
-- Chainable, friendly API.
 
 _In order to build on more solid foundations, this library (v1.5.0+) is completely re-written in TypeScript._
 
@@ -218,18 +221,21 @@ console.log(ac.getGrants());
 
 ## Documentation
 
-You can read the full [**API reference** here][docs].
+You can read the full [**API reference**][docs] with lots of details, features and examples.  
+And more at the [F.A.Q. section][faq].
 
 ## Change-Log
 
-See [CHANGELOG.md](https://github.com/onury/accesscontrol/blob/master/CHANGELOG.md).
+See [CHANGELOG](https://github.com/onury/accesscontrol/blob/master/CHANGELOG.md).
 
 ## License
 
-MIT.
+[MIT][license].
 
 [docs]:http://onury.github.io/accesscontrol/?api=ac
+[faq]:http://onury.github.io/accesscontrol/?content=faq
 [rbac]:https://en.wikipedia.org/wiki/Role-based_access_control
 [abac]:https://en.wikipedia.org/wiki/Attribute-Based_Access_Control
 [crud]:https://en.wikipedia.org/wiki/Create,_read,_update_and_delete
 [nist-paper]:http://csrc.nist.gov/groups/SNS/rbac/documents/kuhn-coyne-weil-10.pdf
+[license]:https://github.com/onury/accesscontrol/blob/master/LICENSE
