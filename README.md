@@ -1,4 +1,4 @@
-<img align="center" width="512" height="170" src="https://raw.github.com/onury/accesscontrol/master/ac-logo.png" />
+<p align="center"><img width="465" height="170" src="https://raw.github.com/onury/accesscontrol/master/ac-logo.png" /></p>
 
 
 ![npm](https://img.shields.io/npm/v/accesscontrol.svg)
