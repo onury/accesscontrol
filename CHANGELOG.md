@@ -1,5 +1,9 @@
 ## AccessControl - Change Log
 
+### **v1.5.1** (2017-05-24)
+
+- Fixed TS import issue. Use `import { AccessControl } from 'accesscontrol'` in TypeScript projects.
+
 ### **v1.5.0** (2017-03-08)
 
 - Migrated whole code base to TypeScript.
