@@ -672,4 +672,4 @@ class AccessControl {
     }
 }
 
-export default AccessControl;
+export { AccessControl };
