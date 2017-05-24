@@ -39,7 +39,7 @@ var AccessControl = require('accesscontrol');
 // import { AccessControl } from 'accesscontrol';
 ```
 
-#### Basic Example
+### Basic Example
 
 Define roles and grants one by one.
 ```js
@@ -62,7 +62,7 @@ console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['title']
 ```
 
-#### Express.js Example
+### Express.js Example
 
 Check role permissions for the requested resource and action, if granted; respond with filtered attributes.
 
@@ -84,7 +84,7 @@ router.get('/videos/:title', function (req, res, next) {
 });
 ```
 
-#### Roles
+### Roles
 
 You can create/define roles simply by calling `.grant(<role>)` or `.deny(<role>)` methods on an `AccessControl` instance.  
 
@@ -99,7 +99,7 @@ ac.grant('admin').extend(['user', 'editor']);
 ac.grant(['admin', 'superadmin']).extend('moderator');
 ```
 
-#### Actions and Action-Attributes
+### Actions and Action-Attributes
 
 [CRUD][crud] operations are the actions you can perform on a resource. There are two action-attributes which define the **possession** of the resource: *own* and *any*.
 
@@ -135,7 +135,7 @@ ac.grant('role').readOwn('resource');
 ac.deny('role').deleteAny('resource');
 ```
 
-#### Resources and Resource-Attributes
+### Resources and Resource-Attributes
 
 Multiple roles can have access to a specific resource. But depending on the context, you may need to limit the contents of the resource for specific roles.  
 
@@ -160,7 +160,7 @@ You can also use nested objects (attributes).
 ac.grant('user').readOwn('account', ['*', '!record.id']);
 ```
 
-#### Checking Permissions and Filtering Attributes
+### Checking Permissions and Filtering Attributes
 
 You can call `.can(<role>).<action>(<resource>)` on an `AccessControl` instance to check for granted permissions for a specific resource and action.
 
@@ -172,7 +172,7 @@ permission.filter(data);  // filtered data (without record.id)
 ```
 See [express.js example](#expressjs-example).
 
-#### Defining All Grants at Once
+### Defining All Grants at Once
 
 You can pass the grants directly to the `AccessControl` constructor.
 It accepts either an `Object`:
