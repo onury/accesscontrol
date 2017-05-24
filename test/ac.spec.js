@@ -5,7 +5,7 @@
  *  @author   Onur Yıldırım (onur@cutepilot.com)
  */
 
-var AccessControl = require('../index');
+var AccessControl = require('../lib').AccessControl;
 
 describe('Test Suite: Access Control', function () {
     'use strict';
