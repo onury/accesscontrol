@@ -104,4 +104,4 @@ declare class Permission {
      */
     filter(data: any): any;
 }
-export default Permission;
+export { Permission };

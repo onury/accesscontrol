@@ -214,4 +214,4 @@ declare class Query {
      */
     private _getPermission(action, possession, resource?);
 }
-export default Query;
+export { Query };

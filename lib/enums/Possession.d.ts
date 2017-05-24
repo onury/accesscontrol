@@ -10,4 +10,4 @@ declare const Possession: {
     OWN: string;
     ANY: string;
 };
-export default Possession;
+export { Possession };

@@ -13,4 +13,4 @@ declare const Action: {
     UPDATE: string;
     DELETE: string;
 };
-export default Action;
+export { Action };

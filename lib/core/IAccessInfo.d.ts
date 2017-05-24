@@ -45,4 +45,4 @@ interface IAccessInfo {
      */
     denied?: boolean;
 }
-export default IAccessInfo;
+export { IAccessInfo };

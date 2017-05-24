@@ -160,7 +160,7 @@ declare class Access {
      */
     createAny(resource?: string | string[], attributes?: string | string[]): Access;
     /**
-     *  Alias if `createAny`
+     *  Alias of `createAny`
      *  @private
      */
     create(resource?: string | string[], attributes?: string | string[]): Access;
@@ -214,7 +214,7 @@ declare class Access {
      */
     readAny(resource?: string | string[], attributes?: string | string[]): Access;
     /**
-     *  Alias if `readAny`
+     *  Alias of `readAny`
      *  @private
      */
     read(resource?: string | string[], attributes?: string | string[]): Access;
@@ -268,7 +268,7 @@ declare class Access {
      */
     updateAny(resource?: string | string[], attributes?: string | string[]): Access;
     /**
-     *  Alias if `updateAny`
+     *  Alias of `updateAny`
      *  @private
      */
     update(resource?: string | string[], attributes?: string | string[]): Access;
@@ -322,7 +322,7 @@ declare class Access {
      */
     deleteAny(resource?: string | string[], attributes?: string | string[]): Access;
     /**
-     *  Alias if `deleteAny`
+     *  Alias of `deleteAny`
      *  @private
      */
     delete(resource?: string | string[], attributes?: string | string[]): Access;
@@ -337,4 +337,4 @@ declare class Access {
      */
     private _prepareAndCommit(action, possession, resource?, attributes?);
 }
-export default Access;
+export { Access };

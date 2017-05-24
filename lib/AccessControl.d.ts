@@ -515,4 +515,4 @@ declare class AccessControl {
      */
     static isAccessControlError(object: any): boolean;
 }
-export default AccessControl;
+export { AccessControl };

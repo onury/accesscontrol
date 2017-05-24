@@ -32,4 +32,4 @@ interface IQueryInfo {
      */
     possession?: string;
 }
-export default IQueryInfo;
+export { IQueryInfo };

@@ -10,4 +10,4 @@ declare class AccessControlError extends Error {
     name: string;
     constructor(message?: string);
 }
-export default AccessControlError;
+export { AccessControlError };
