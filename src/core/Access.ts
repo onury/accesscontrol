@@ -217,7 +217,7 @@ class Access {
         return this._prepareAndCommit(Action.CREATE, Possession.ANY, resource, attributes);
     }
     /**
-     *  Alias if `createAny`
+     *  Alias of `createAny`
      *  @private
      */
     create(resource?:string|string[], attributes?:string|string[]):Access {
@@ -279,7 +279,7 @@ class Access {
         return this._prepareAndCommit(Action.READ, Possession.ANY, resource, attributes);
     }
     /**
-     *  Alias if `readAny`
+     *  Alias of `readAny`
      *  @private
      */
     read(resource?:string|string[], attributes?:string|string[]):Access {
@@ -341,7 +341,7 @@ class Access {
         return this._prepareAndCommit(Action.UPDATE, Possession.ANY, resource, attributes);
     }
     /**
-     *  Alias if `updateAny`
+     *  Alias of `updateAny`
      *  @private
      */
     update(resource?:string|string[], attributes?:string|string[]):Access {
@@ -403,7 +403,7 @@ class Access {
         return this._prepareAndCommit(Action.DELETE, Possession.ANY, resource, attributes);
     }
     /**
-     *  Alias if `deleteAny`
+     *  Alias of `deleteAny`
      *  @private
      */
     delete(resource?:string|string[], attributes?:string|string[]):Access {
@@ -442,4 +442,4 @@ class Access {
 
 }
 
-export default Access;
+export { Access };
