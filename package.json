@@ -2,7 +2,7 @@
   "name": "accesscontrol",
   "version": "1.5.0",
   "description": "Role and Attribute based Access Control for Node.js",
-  "main": "index.js",
+  "main": "./index.js",
   "directories": {
     "lib": "./lib",
     "test": "./test"
@@ -12,7 +12,7 @@
     "lib",
     "LICENSE"
   ],
-  "types": "lib/AccessControl",
+  "types": "./lib/index.d.ts",
   "scripts": {
     "clean": "rimraf ./lib",
     "build": "npm run clean && mkdirp ./lib && tsc",
@@ -54,14 +54,14 @@
   },
   "homepage": "https://github.com/onury/accesscontrol#readme",
   "devDependencies": {
-    "@types/node": "^7.0.5",
+    "@types/node": "^7.0.22",
     "docma": "^1.5.1",
-    "jasmine": "^2.5.3",
+    "jasmine": "^2.6.0",
     "jasmine-console-reporter": "^1.2.7",
     "mkdirp": "^0.5.1",
     "ncp": "^2.0.0",
     "rimraf": "^2.6.1",
-    "typescript": "^2.2.1"
+    "typescript": "^2.3.3"
   },
   "dependencies": {
     "notation": "^1.0.0"
