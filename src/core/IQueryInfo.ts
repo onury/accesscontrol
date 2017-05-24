@@ -33,7 +33,7 @@ interface IQueryInfo {
     possession?:string;
 }
 
-export default IQueryInfo;
+export { IQueryInfo };
 
 // tsc removes the code above so we document for JSDoc below.
 

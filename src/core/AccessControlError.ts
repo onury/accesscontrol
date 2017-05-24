@@ -14,4 +14,4 @@ class AccessControlError extends Error {
     }
 }
 
-export default AccessControlError;
+export { AccessControlError };

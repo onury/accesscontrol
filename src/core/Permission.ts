@@ -136,4 +136,4 @@ class Permission {
 
 }
 
-export default Permission;
+export { Permission };

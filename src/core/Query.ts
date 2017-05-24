@@ -286,4 +286,4 @@ class Query {
     }
 }
 
-export default Query;
+export { Query };

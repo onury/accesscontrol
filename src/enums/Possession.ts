@@ -21,4 +21,4 @@ const Possession = {
     ANY: 'any'
 };
 
-export default Possession;
+export { Possession };

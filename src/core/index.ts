@@ -1,15 +1,6 @@
-import AccessControlError from './AccessControlError';
-import IAccessInfo from './IAccessInfo';
-import Access from './Access';
-import IQueryInfo from './IQueryInfo';
-import Query from './Query';
-import Permission from './Permission';
-
-export {
-    AccessControlError,
-    IAccessInfo,
-    Access,
-    IQueryInfo,
-    Query,
-    Permission
-};
+export * from './AccessControlError';
+export * from './IAccessInfo';
+export * from './Access';
+export * from './IQueryInfo';
+export * from './Query';
+export * from './Permission';

@@ -34,4 +34,4 @@ const Action = {
     DELETE: 'delete'
 };
 
-export default Action;
+export { Action };

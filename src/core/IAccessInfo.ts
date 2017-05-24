@@ -46,7 +46,7 @@ interface IAccessInfo {
     denied?:boolean;
 }
 
-export default IAccessInfo;
+export { IAccessInfo };
 
 // tsc removes the code above so we document for JSDoc below.
 
