@@ -110,7 +110,7 @@ class AccessControl {
      *      definitions. See the structure of this object in the examples.
      */
     constructor(grants:any = {}) {
-        this._grants = grants;
+        this.setGrants(grants);
     }
 
     // -------------------------------

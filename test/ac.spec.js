@@ -1,17 +1,19 @@
-/* eslint brace-style:0, max-statements-per-line:0 */
-
 /**
  *  Test Suite: AccessControl (Core)
- *  @author   Onur Yıldırım (onur@cutepilot.com)
+ *  @author   Onur Yıldırım <onur@cutepilot.com>
  */
 
-var AccessControl = require('../lib').AccessControl;
+const AccessControl = require('../lib').AccessControl;
+
+function type(o) {
+    return Object.prototype.toString.call(o).match(/\s(\w+)/i)[1].toLowerCase();
+}
 
 describe('Test Suite: Access Control', function () {
     'use strict';
 
     // grant list fetched from DB (to be converted to a valid grants object)
-    var grantList = [
+    let grantList = [
         { role: 'admin', resource: 'video', action: 'create:any', attributes: ['*'] },
         { role: 'admin', resource: 'video', action: 'read:any', attributes: ['*'] },
         { role: 'admin', resource: 'video', action: 'update:any', attributes: ['*'] },
@@ -24,7 +26,7 @@ describe('Test Suite: Access Control', function () {
     ];
 
     // valid grants object
-    var grantsObject = {
+    let grantsObject = {
         admin: {
             video: {
                 'create:any': ['*'],
@@ -51,8 +53,24 @@ describe('Test Suite: Access Control', function () {
     //  TESTS
     //----------------------------
 
+    it('should construct with grants array or object, output a grants object', function () {
+        let ac = new AccessControl(grantList);
+        let grants = ac.getGrants();
+        expect(type(grants)).toEqual('object');
+        expect(type(grants.admin)).toEqual('object');
+        expect(grants.admin.video['create:any']).toEqual(jasmine.any(Array));
+        // console.log(grants);
+
+        ac = new AccessControl(grantsObject);
+        grants = ac.getGrants();
+        expect(type(grants)).toEqual('object');
+        expect(type(grants.admin)).toEqual('object');
+        expect(grants.admin.video['create:any']).toEqual(jasmine.any(Array));
+    });
+
+
     it('should add grants from flat list (db), check/remove roles and resources', function () {
-        var ac = this.ac;
+        let ac = this.ac;
         ac.setGrants(grantList);
         // console.log('grants', ac.getGrants());
         // console.log('resources', ac.getResources());
@@ -78,7 +96,7 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('should grant/deny access and check permissions', function () {
-        var ac = this.ac,
+        let ac = this.ac,
             attrs = ['*', '!size'];
 
         ac.grant('user').createAny('photo', attrs);
@@ -121,7 +139,7 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('should chain grant methods and check permissions', function () {
-        var ac = this.ac,
+        let ac = this.ac,
             attrs = ['*'];
 
         ac.grant('superadmin')
@@ -137,23 +155,23 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('should grant/deny access via object and check permissions', function () {
-        var ac = this.ac,
+        let ac = this.ac,
             attrs = ['*'];
 
-        var o1 = {
+        let o1 = {
             role: 'moderator',
             resource: 'post',
             action: 'create:any', // action:possession
             attributes: ['*'] // grant only
         };
-        var o2 = {
+        let o2 = {
             role: 'moderator',
             resource: 'news',
             action: 'read', // separate action
             possession: 'own', // separate possession
             attributes: ['*'] // grant only
         };
-        var o3 = {
+        let o3 = {
             role: 'moderator',
             resource: 'book',
             // no action/possession set
@@ -187,7 +205,7 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('should grant/deny access (variation, chained)', function () {
-        var ac = this.ac;
+        let ac = this.ac;
         ac.setGrants(grantsObject);
 
         expect(ac.can('admin').createAny('video').granted).toEqual(true);
@@ -254,7 +272,7 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('should switch-chain grant/deny roles', function () {
-        var ac = this.ac;
+        let ac = this.ac;
         ac.grant('r1')
                 .createOwn('a')
             .grant('r2')
@@ -277,13 +295,13 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('deny should auto-set attributes to []', function () {
-        var ac = this.ac;
+        let ac = this.ac;
         ac.deny('user').createAny('book', ['*']);
         expect(ac.getGrants().user.book['create:any']).toEqual([]);
     });
 
     it('should grant comma/semi-colon separated roles', function () {
-        var ac = this.ac;
+        let ac = this.ac;
         // also supporting comma/semi-colon separated roles
         ac.grant('role2; role3, editor; viewer, agent').createOwn('book');
         expect(ac.hasRole('role3')).toEqual(true);
@@ -292,7 +310,7 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('permission should also return queried role(s) and resource', function () {
-        var ac = this.ac;
+        let ac = this.ac;
         // also supporting comma/semi-colon separated roles
         ac.grant('foo, bar').createOwn('baz');
         expect(ac.can('bar').createAny('baz').granted).toEqual(false);
@@ -305,7 +323,7 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('should extend / remove roles', function () {
-        var ac = this.ac;
+        let ac = this.ac;
 
         ac.grant('admin').createOwn('book');
         ac.extendRole('onur', 'admin');
@@ -333,14 +351,14 @@ describe('Test Suite: Access Control', function () {
         expect(ac.getGrants().admin.$extend).not.toContain('editor');
         expect(ac.getGrants().admin.$extend).not.toContain('agent');
 
-        expect(function () { ac.grant('roleX').extend('roleX'); }).toThrow();
-        expect(function () { ac.grant(['admin2', 'roleX']).extend(['roleX', 'admin3']); }).toThrow();
+        expect(() => ac.grant('roleX').extend('roleX')).toThrow();
+        expect(() => ac.grant(['admin2', 'roleX']).extend(['roleX', 'admin3'])).toThrow();
 
         // console.log(JSON.stringify(ac.getGrants(), null, '  '));
     });
 
     it('should throw if grant or deny objects are invalid', function () {
-        var o,
+        let o,
             ac = this.ac;
 
         o = {
@@ -349,8 +367,8 @@ describe('Test Suite: Access Control', function () {
             action: 'create:any',
             attributes: ['*'] // grant only
         };
-        expect(function () { ac.grant(o); }).toThrow();
-        expect(function () { ac.deny(o); }).toThrow();
+        expect(() => ac.grant(o)).toThrow();
+        expect(() => ac.deny(o)).toThrow();
 
         o = {
             role: 'moderator',
@@ -358,8 +376,8 @@ describe('Test Suite: Access Control', function () {
             action: 'create:any',
             attributes: ['*'] // grant only
         };
-        expect(function () { ac.grant(o); }).toThrow();
-        expect(function () { ac.deny(o); }).toThrow();
+        expect(() => ac.grant(o)).toThrow();
+        expect(() => ac.deny(o)).toThrow();
 
         o = {
             role: 'admin',
@@ -367,8 +385,8 @@ describe('Test Suite: Access Control', function () {
             action: 'put:any', // invalid action, should be create|read|update|delete
             attributes: ['*'] // grant only
         };
-        expect(function () { ac.grant(o); }).toThrow();
-        expect(function () { ac.deny(o); }).toThrow();
+        expect(() => ac.grant(o)).toThrow();
+        expect(() => ac.deny(o)).toThrow();
 
         o = {
             role: 'admin',
@@ -376,8 +394,8 @@ describe('Test Suite: Access Control', function () {
             action: null, // invalid action, should be create|read|update|delete
             attributes: ['*'] // grant only
         };
-        expect(function () { ac.grant(o); }).toThrow();
-        expect(function () { ac.deny(o); }).toThrow();
+        expect(() => ac.grant(o)).toThrow();
+        expect(() => ac.deny(o)).toThrow();
 
         o = {
             role: 'admin',
@@ -385,8 +403,8 @@ describe('Test Suite: Access Control', function () {
             action: 'create:all', // invalid possession, should be any|own or omitted
             attributes: ['*'] // grant only
         };
-        expect(function () { ac.grant(o); }).toThrow();
-        expect(function () { ac.deny(o); }).toThrow();
+        expect(() => ac.grant(o)).toThrow();
+        expect(() => ac.deny(o)).toThrow();
 
         o = {
             role: 'admin2',
@@ -394,16 +412,16 @@ describe('Test Suite: Access Control', function () {
             action: 'create', // possession omitted, will be set to any
             attributes: ['*'] // grant only
         };
-        expect(function () { ac.grant(o); }).not.toThrow();
+        expect(() => ac.grant(o)).not.toThrow();
         expect(ac.can('admin2').createAny('post').granted).toEqual(true);
         // possession "any" will also return granted=true for "own"
         expect(ac.can('admin2').createOwn('post').granted).toEqual(true);
-        expect(function () { ac.deny(o); }).not.toThrow();
+        expect(() => ac.deny(o)).not.toThrow();
 
     });
 
     it('should throw `AccessControlError`', function () {
-        var ac = this.ac;
+        let ac = this.ac;
         function grant() {
             ac.grant().createOwn();
         }
@@ -417,7 +435,7 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('should filter granted attributes', function () {
-        var ac = this.ac,
+        let ac = this.ac,
             attrs = ['*', '!account.balance.credit', '!account.id', '!secret'],
             data = {
                 name: 'Company, LTD.',
@@ -438,9 +456,9 @@ describe('Test Suite: Access Control', function () {
                 }
             };
         ac.grant('user').createOwn('company', attrs);
-        var permission = ac.can('user').createOwn('company');
+        let permission = ac.can('user').createOwn('company');
         expect(permission.granted).toEqual(true);
-        var filtered = permission.filter(data);
+        let filtered = permission.filter(data);
         expect(filtered.name).toEqual(jasmine.any(String));
         expect(filtered.address).toEqual(jasmine.any(Object));
         expect(filtered.address.city).toEqual('istanbul');
@@ -452,7 +470,7 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('Check with multiple roles changes grant list (issue #2)', function () {
-        var ac = this.ac;
+        let ac = this.ac;
         ac.grant('admin').updateAny('video')
             .grant(['user', 'admin']).updateOwn('video');
 
@@ -472,7 +490,7 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('should grant/deny multiple roles and multiple resources', function () {
-        var ac = this.ac;
+        let ac = this.ac;
 
         ac.grant('admin, user').createAny('profile, video');
         expect(ac.can('admin').createAny('profile').granted).toEqual(true);

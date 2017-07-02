@@ -54,7 +54,7 @@
   },
   "homepage": "https://github.com/onury/accesscontrol#readme",
   "devDependencies": {
-    "@types/node": "^7.0.22",
+    "@types/node": "^8.0.7",
     "docma": "^1.5.1",
     "jasmine": "^2.6.0",
     "jasmine-console-reporter": "^1.2.7",
