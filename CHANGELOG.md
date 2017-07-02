@@ -2,7 +2,7 @@
 
 ### **v1.5.2** (2017-07-02)
 
-- Fixed an issue where the grants were not processed into the inner grants object structure; if an array is passed to `AccessControl` constructor. Fixes [issue #10](https://github.com/onury/accesscontrol/issues/10).
+- Fixed an issue where the grants were not processed into the inner grants model structure; if an array is passed to `AccessControl` constructor; instead of using `.setGrants()`. Fixes [issue #10](https://github.com/onury/accesscontrol/issues/10).
 
 ### **v1.5.1** (2017-05-24)
 
