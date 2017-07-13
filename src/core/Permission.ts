@@ -1,5 +1,3 @@
-// dep modules
-import * as Notation from 'notation';
 // own modules
 import { IQueryInfo } from '../core';
 import utils from '../utils';
