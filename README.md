@@ -5,7 +5,7 @@
 [![release](https://img.shields.io/github/release/onury/accesscontrol.svg)](https://github.com/onury/accesscontrol)
 [![dependencies](https://david-dm.org/onury/accesscontrol.svg)](https://david-dm.org/onury/accesscontrol)
 [![license](http://img.shields.io/npm/l/accesscontrol.svg)](https://github.com/onury/accesscontrol/blob/master/LICENSE)
-[![maintained](https://img.shields.io/maintenance/yes/2017.svg)](https://github.com/onury/accesscontrol/graphs/commit-activity)  
+[![maintained](https://img.shields.io/maintenance/yes/2017.svg)](https://github.com/onury/accesscontrol/graphs/commit-activity)
 [![TypeScript](https://img.shields.io/badge/written%20in-%20TypeScript%20-6575ff.svg)](https://www.typescriptlang.org)    
 
 > © 2017, Onur Yıldırım ([@onury](https://github.com/onury)). MIT License.
