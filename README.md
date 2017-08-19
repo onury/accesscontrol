@@ -1,13 +1,14 @@
 <p align="center"><img width="465" height="170" src="https://raw.github.com/onury/accesscontrol/master/ac-logo.png" /></p>
 
 
-![npm](https://img.shields.io/npm/v/accesscontrol.svg)
-![release](https://img.shields.io/github/release/onury/accesscontrol.svg)
-![license](http://img.shields.io/npm/l/accesscontrol.svg)
-![maintained](https://img.shields.io/maintenance/yes/2017.svg)
-![TypeScript](https://img.shields.io/badge/written%20in-%20TypeScript%20-6575ff.svg)  
+[![npm](http://img.shields.io/npm/v/accesscontrol.svg)](https://www.npmjs.com/package/accesscontrol)
+[![release](https://img.shields.io/github/release/onury/accesscontrol.svg)](https://github.com/onury/accesscontrol)
+[![dependencies](https://david-dm.org/onury/accesscontrol.svg)](https://david-dm.org/onury/accesscontrol)
+[![license](http://img.shields.io/npm/l/accesscontrol.svg)](https://github.com/onury/accesscontrol/blob/master/LICENSE)
+[![maintained](https://img.shields.io/maintenance/yes/2017.svg)](https://github.com/onury/accesscontrol/graphs/punch-card)  
+[![TypeScript](https://img.shields.io/badge/written%20in-%20TypeScript%20-6575ff.svg)](https://www.typescriptlang.org)    
 
-> © 2017, Onur Yıldırım (@onury). MIT License.  
+> © 2017, Onur Yıldırım ([@onury](https://github.com/onury)). MIT License.
 
 Role and Attribute based Access Control for Node.js  
 
@@ -229,7 +230,7 @@ And more at the [F.A.Q. section][faq].
 
 ## Change-Log
 
-See [CHANGELOG](https://github.com/onury/accesscontrol/blob/master/CHANGELOG.md).
+See [CHANGELOG][changelog].
 
 ## License
 
@@ -241,4 +242,5 @@ See [CHANGELOG](https://github.com/onury/accesscontrol/blob/master/CHANGELOG.md)
 [abac]:https://en.wikipedia.org/wiki/Attribute-Based_Access_Control
 [crud]:https://en.wikipedia.org/wiki/Create,_read,_update_and_delete
 [nist-paper]:http://csrc.nist.gov/groups/SNS/rbac/documents/kuhn-coyne-weil-10.pdf
+[changelog]:https://github.com/onury/accesscontrol/blob/master/CHANGELOG.md
 [license]:https://github.com/onury/accesscontrol/blob/master/LICENSE
