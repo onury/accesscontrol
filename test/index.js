@@ -9,6 +9,7 @@ const config = {
 
 const jasmine = new Jasmine();
 jasmine.loadConfig(config.jasmine);
+jasmine.jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 jasmine.env.clearReporters();
 jasmine.addReporter(new JasmineConsoleReporter(config.reporter));
 jasmine.execute();
