@@ -54,14 +54,14 @@
   },
   "homepage": "https://github.com/onury/accesscontrol#readme",
   "devDependencies": {
-    "@types/node": "^8.0.7",
+    "@types/node": "^8.0.24",
     "docma": "^1.5.1",
-    "jasmine": "^2.6.0",
+    "jasmine": "^2.7.0",
     "jasmine-console-reporter": "^1.2.7",
     "mkdirp": "^0.5.1",
     "ncp": "^2.0.0",
     "rimraf": "^2.6.1",
-    "typescript": "^2.3.3"
+    "typescript": "^2.4.2"
   },
   "dependencies": {
     "notation": "^1.0.0"
