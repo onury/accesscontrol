@@ -236,8 +236,8 @@ See [CHANGELOG][changelog].
 
 [MIT][license].
 
-[docs]:http://onury.github.io/accesscontrol/?api=ac
-[faq]:http://onury.github.io/accesscontrol/?content=faq
+[docs]:http://onury.io/accesscontrol/?api=ac
+[faq]:http://onury.io/accesscontrol/?content=faq
 [rbac]:https://en.wikipedia.org/wiki/Role-based_access_control
 [abac]:https://en.wikipedia.org/wiki/Attribute-Based_Access_Control
 [crud]:https://en.wikipedia.org/wiki/Create,_read,_update_and_delete
