@@ -1,5 +1,9 @@
 ## AccessControl - Change Log
 
+### **v1.5.3** (2017-08-25)
+
+- Errors thrown with more [meaningful messages](https://github.com/onury/accesscontrol/issues/13#issuecomment-324755478).
+
 ### **v1.5.2** (2017-07-02)
 
 - Fixed an issue where the grants were not processed into the inner grants model structure; if an array is passed to `AccessControl` constructor; instead of using `.setGrants()`. Fixes [issue #10](https://github.com/onury/accesscontrol/issues/10).
