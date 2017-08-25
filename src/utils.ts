@@ -17,10 +17,12 @@ const utils = {
     toStringArray(value:any):string[] {
         if (Array.isArray(value)) return value;
         if (typeof value === 'string') return value.trim().split(/\s*[;,]\s*/);
-        throw new Error('Cannot convert value to array!');
+        // throw new Error('Cannot convert value to array!');
+        return null;
     },
 
     isFilledStringArray(arr:any[]):boolean {
+        if (!arr || !Array.isArray(arr)) return false;
         for (let s of arr) {
            if (typeof s !== 'string' || s.trim() === '') return false;
         }
@@ -56,6 +58,7 @@ const utils = {
      */
     getFlatRoles(grants:any, roles:string|string[]):string[] {
         roles = utils.toStringArray(roles);
+        if (!roles) throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
         let arr:string[] = roles.concat();
         roles.forEach((roleName:string) => {
             let role:any = grants[roleName];
@@ -302,12 +305,14 @@ const utils = {
      */
     extendRole(grants:any, roles:string|string[], extenderRoles:string|string[]) {
         let arrExtRoles:string[] = utils.toStringArray(extenderRoles);
+        if (!arrExtRoles) throw new AccessControlError(`Invalid extender role(s): ${JSON.stringify(extenderRoles)}`);
         let nonExistentExtRoles:string[] = utils.getNonExistentRoles(grants, arrExtRoles);
         if (nonExistentExtRoles.length > 0) {
             throw new AccessControlError(`Cannot extend with non-existent role(s): "${nonExistentExtRoles.join(', ')}"`);
         }
-
-        utils.toStringArray(roles).forEach((role:string) => {
+        roles = utils.toStringArray(roles);
+        if (!roles) throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
+        roles.forEach((role:string) => {
             if (arrExtRoles.indexOf(role) >= 0) {
                 throw new AccessControlError(`Attempted to extend role "${role}" by itself.`);
             }
