@@ -1,6 +1,6 @@
 {
   "name": "accesscontrol",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "Role and Attribute based Access Control for Node.js",
   "main": "./index.js",
   "directories": {
