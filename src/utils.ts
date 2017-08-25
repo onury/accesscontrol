@@ -17,7 +17,7 @@ const utils = {
     toStringArray(value:any):string[] {
         if (Array.isArray(value)) return value;
         if (typeof value === 'string') return value.trim().split(/\s*[;,]\s*/);
-        throw new AccessControlError('Cannot convert value to array!');
+        throw new Error('Cannot convert value to array!');
     },
 
     isFilledStringArray(arr:any[]):boolean {
@@ -59,6 +59,7 @@ const utils = {
         let arr:string[] = roles.concat();
         roles.forEach((roleName:string) => {
             let role:any = grants[roleName];
+            if (!role) throw new AccessControlError(`Role not found: "${roleName}"`);
             if (Array.isArray(role.$extend)) {
                 arr = utils.uniqConcat(arr, role.$extend);
             }
@@ -205,11 +206,6 @@ const utils = {
                 grantItem[res][ap] = access.attributes;
             });
         });
-        // console.log('======================');
-        // console.log('committing >>> ', JSON.stringify(access));
-        // console.log('----------------------');
-        // console.log('committed >>>\n', JSON.stringify(grants, null, '  '));
-        // console.log('======================');
     },
 
     /**
