@@ -9,6 +9,17 @@ function type(o) {
     return Object.prototype.toString.call(o).match(/\s(\w+)/i)[1].toLowerCase();
 }
 
+function throwsAccessControlError(fn, errMsg) {
+    expect(fn).toThrow();
+    try {
+        fn();
+    } catch (err) {
+        expect(err instanceof AccessControl.Error).toEqual(true);
+        expect(AccessControl.isACError(err)).toEqual(true);
+        if (errMsg) expect(err.message).toContain(errMsg);
+    }
+}
+
 describe('Test Suite: Access Control', function () {
     'use strict';
 
@@ -422,16 +433,9 @@ describe('Test Suite: Access Control', function () {
 
     it('should throw `AccessControlError`', function () {
         let ac = this.ac;
-        function grant() {
-            ac.grant().createOwn();
-        }
-        expect(grant).toThrow();
-        try {
-            grant();
-        } catch (err) {
-            expect(err instanceof AccessControl.Error).toEqual(true);
-            expect(AccessControl.isACError(err)).toEqual(true);
-        }
+        throwsAccessControlError(() => ac.grant().createOwn());
+        ac.setGrants(grantsObject);
+        throwsAccessControlError(() => ac.can('invalid-role').createOwn('video'), 'Role not found');
     });
 
     it('should filter granted attributes', function () {
