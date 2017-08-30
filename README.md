@@ -36,7 +36,7 @@ _In order to build on more solid foundations, this library (v1.5.0+) is complete
 
 ```js
 var AccessControl = require('accesscontrol');
-// for TypeScript:
+// or:
 // import { AccessControl } from 'accesscontrol';
 ```
 
