@@ -101,5 +101,5 @@
             "guide": "./README.md"
         }
     ],
-    "dest": "../../onury.github.io/accesscontrol"
+    "dest": "../onury.github.io/accesscontrol"
 }
