@@ -35,7 +35,7 @@ _In order to build on more solid foundations, this library (v1.5.0+) is complete
 ## Guide
 
 ```js
-var AccessControl = require('accesscontrol');
+const AccessControl = require('accesscontrol');
 // or:
 // import { AccessControl } from 'accesscontrol';
 ```
@@ -44,7 +44,7 @@ var AccessControl = require('accesscontrol');
 
 Define roles and grants one by one.
 ```js
-var ac = new AccessControl();
+const ac = new AccessControl();
 ac.grant('user')                    // define new or modify existing role. also takes an array.
     .createOwn('video')             // equivalent to .createOwn('video', ['*'])
     .deleteOwn('video')
@@ -54,7 +54,7 @@ ac.grant('user')                    // define new or modify existing role. also 
     .updateAny('video', ['title'])  // explicitly defined attributes
     .deleteAny('video');
 
-var permission = ac.can('user').createOwn('video');
+const permission = ac.can('user').createOwn('video');
 console.log(permission.granted);    // —> true
 console.log(permission.attributes); // —> ['*'] (all attributes)
 
@@ -68,10 +68,10 @@ console.log(permission.attributes); // —> ['title']
 Check role permissions for the requested resource and action, if granted; respond with filtered attributes.
 
 ```js
-var ac = new AccessControl(grants);
+const ac = new AccessControl(grants);
 // ...
 router.get('/videos/:title', function (req, res, next) {
-    var permission = ac.can(req.user.role).readAny('video');
+    const permission = ac.can(req.user.role).readAny('video');
     if (permission.granted) {
         Video.find(req.params.title, function (err, data) {
             if (err || !data) return res.status(404).end();
@@ -166,7 +166,7 @@ ac.grant('user').readOwn('account', ['*', '!record.id']);
 You can call `.can(<role>).<action>(<resource>)` on an `AccessControl` instance to check for granted permissions for a specific resource and action.
 
 ```js
-var permission = ac.can('user').readOwn('account');
+const permission = ac.can('user').readOwn('account');
 permission.granted;       // true
 permission.attributes;    // ['*', '!record.id']
 permission.filter(data);  // filtered data (without record.id)
@@ -180,7 +180,7 @@ It accepts either an `Object`:
 
 ```js
 // This is actually how the grants are maintained internally.
-var grantsObject = {
+let grantsObject = {
     admin: {
         video: {
             'create:any': ['*'],
@@ -198,12 +198,12 @@ var grantsObject = {
         }
     }
 };
-var ac = new AccessControl(grantsObject);
+const ac = new AccessControl(grantsObject);
 ```
 ... or an `Array` (useful when fetched from a database):
 ```js
 // grant list fetched from DB (to be converted to a valid grants object, internally)
-var grantList = [
+let grantList = [
     { role: 'admin', resource: 'video', action: 'create:any', attributes: ['*'] },
     { role: 'admin', resource: 'video', action: 'read:any', attributes: ['*'] },
     { role: 'admin', resource: 'video', action: 'update:any', attributes: ['*'] },
@@ -214,11 +214,11 @@ var grantList = [
     { role: 'user', resource: 'video', action: 'update:own', attributes: ['*'] },
     { role: 'user', resource: 'video', action: 'delete:own', attributes: ['*'] }
 ];
-var ac = new AccessControl(grantList);
+const ac = new AccessControl(grantList);
 ```
 You can set/get grants any time:
 ```js
-var ac = new AccessControl();
+const ac = new AccessControl();
 ac.setGrants(grantsObject);
 console.log(ac.getGrants());
 ```
