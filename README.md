@@ -136,6 +136,8 @@ ac.grant('role').readOwn('resource');
 ac.deny('role').deleteAny('resource');
 ```
 
+_Note that **own** requires you to also check for the actual possession. See [this](https://github.com/onury/accesscontrol/issues/14#issuecomment-328316670) for more._
+
 ### Resources and Resource-Attributes
 
 Multiple roles can have access to a specific resource. But depending on the context, you may need to limit the contents of the resource for specific roles.  
