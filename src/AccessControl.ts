@@ -645,7 +645,7 @@ class AccessControl {
      *  console.log(assets); // {}
      */
     static filter(data:any, attributes:string[]):any {
-        utils.filterAll(data, attributes);
+        return utils.filterAll(data, attributes);
     }
 
     /**
