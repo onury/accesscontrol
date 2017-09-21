@@ -519,4 +519,22 @@ describe('Test Suite: Access Control', function () {
         // console.log(JSON.stringify(ac.getGrants(), null, '  '));
     });
 
+    fit('should filter given data (static filter method)', function () {
+        let o = {
+            name: 'John',
+            age: 30,
+            account: {
+                id: 1,
+                country: 'US'
+            }
+        };
+        let x = AccessControl.filter(o, ['*', '!account.id', '!age']);
+        expect(x.name).toEqual('John');
+        expect(x.account.id).toBeUndefined();
+        expect(x.account.country).toEqual('US');
+
+        expect(o.account.id).toEqual(1);
+        expect(o).not.toEqual(x);
+    });
+
 });
