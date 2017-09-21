@@ -1,5 +1,9 @@
 ## AccessControl - Change Log
 
+### **v1.5.4** (2017-09-22)
+
+- Static method `AccessControl.filter()` now properly returns filtered data. Fixes [issue #16](https://github.com/onury/accesscontrol/issues/16).
+
 ### **v1.5.3** (2017-08-25)
 
 - Errors thrown with more [meaningful messages](https://github.com/onury/accesscontrol/issues/13#issuecomment-324755478).
