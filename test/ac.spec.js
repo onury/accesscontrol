@@ -519,7 +519,7 @@ describe('Test Suite: Access Control', function () {
         // console.log(JSON.stringify(ac.getGrants(), null, '  '));
     });
 
-    fit('should filter given data (static filter method)', function () {
+    it('should filter given data (static filter method)', function () {
         let o = {
             name: 'John',
             age: 30,
