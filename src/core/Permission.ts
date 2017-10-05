@@ -1,6 +1,6 @@
 // own modules
 import { IQueryInfo } from '../core';
-import utils from '../utils';
+import { utils } from '../utils';
 
 /**
  *  Represents the inner `Permission` class that defines the granted or denied
