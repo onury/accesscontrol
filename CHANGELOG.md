@@ -6,7 +6,7 @@
 - **Breaking-Change**: Grants model cannot be emptied any more by omitting the parameter (e.g. `ac.setGrants()`) or passing `null`, `undefined`. This will throw. You need to either, explicitly call `#reset()` or set grants to an empty object (`{}`) in order to reset/empty grants safely. 
 - **Breaking-Change**: Renamed `#access()` to `#query()`. This is an alias for `#can()` method.  
 - **Fixed** an issue where deeper inherited roles (more than 1 level) would not be taken into account while querying for permissions. Fixes [issue #17](https://github.com/onury/accesscontrol/issues/17).
-- **Added** `AccessControl#lock()` method that freezes the underlying grants model and disables all functionality for modifying it. This is useful when you want to restrict any changes. Any attempts to modify (such as `#setGrants()`, `#grant()`, `#deny()`, etc) will throw after grants are locked. There is no `unlock()` method.
+- **Added** `AccessControl#lock()` method that freezes the underlying grants model and disables all functionality for modifying it. This is useful when you want to restrict any changes. Any attempts to modify (such as `#setGrants()`, `#grant()`, `#deny()`, etc) will throw after grants are locked. There is no `unlock()` method. It's like you lock the door and swallow the key. :yum:
 - **Added** `AccessControl#isLocked` `boolean` property.
 - **Added** `AccessControl#getInheritedRolesOf()` convenience method.
 - **Fixed** a mutation issue occurred when resource attributes are unioned. ([Notation issue #2][notation-issue-2]).
