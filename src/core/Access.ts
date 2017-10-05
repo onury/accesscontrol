@@ -1,6 +1,7 @@
+import { AccessControl } from '../';
 import { IAccessInfo } from '../core';
 import { Action, Possession, actions, possessions } from '../enums';
-import utils from '../utils';
+import { utils } from '../utils';
 
 /**
  *  Represents the inner `Access` class that helps build an access information
@@ -23,6 +24,13 @@ class Access {
     /**
      *  Main grants object.
      *  @protected
+     *  @type {AccessControl}
+     */
+    protected _ac:AccessControl;
+
+    /**
+     *  Main grants object.
+     *  @protected
      *  @type {Any}
      */
     protected _grants:any;
@@ -31,8 +39,8 @@ class Access {
      *  Initializes a new instance of `Access`.
      *  @private
      *
-     *  @param {Any} grants
-     *         Main grants object.
+     *  @param {AccessControl} ac
+     *         AccessControl instance.
      *  @param {String|Array<String>|IAccessInfo} roleOrInfo
      *         Either an `IAccessInfo` object, a single or an array of
      *         roles. If an object is passed, possession and attributes
@@ -43,9 +51,11 @@ class Access {
      *  @param {Boolean} denied
      *         Specifies whether this `Access` is denied.
      */
-    constructor(grants:any, roleOrInfo?:string|string[]|IAccessInfo, denied:boolean = false) {
-        this._grants = grants;
+    constructor(ac:AccessControl, roleOrInfo?:string|string[]|IAccessInfo, denied:boolean = false) {
+        this._ac = ac;
+        this._grants = (ac as any)._grants;
         this._.denied = denied;
+
         if (typeof roleOrInfo === 'string' || Array.isArray(roleOrInfo)) {
             this.role(roleOrInfo);
         } else if (utils.type(roleOrInfo) === 'object') {
@@ -83,6 +93,10 @@ class Access {
      *           Self instance of `Access`.
      */
     role(value:string|string[]):Access {
+        // in case chain is not terminated (e.g. `ac.grant('user')`) we'll
+        // create/commit the roles to grants with an empty object.
+        utils.preCreateRoles(this._grants, value);
+
         this._.role = value;
         return this;
     }
@@ -95,6 +109,8 @@ class Access {
      *           Self instance of `Access`.
      */
     resource(value:string|string[]):Access {
+        // this will throw if any item fails
+        utils.hasValidNames(value, true);
         this._.resource = value;
         return this;
     }
@@ -113,13 +129,32 @@ class Access {
 
     /**
      *  Sets the roles to be extended for this `Access` instance.
+     *  @alias Access#inherit
+     *  @name AccessControl~Access#extend
+     *  @function
+     *
      *  @param {String|Array<String>} roles
      *         A single or array of roles.
      *  @returns {Access}
      *           Self instance of `Access`.
+     *
+     *  @example
+     *  ac.grant('user').createAny('video')
+     *    .grant('admin').extend('user');
+     *  const permission = ac.can('admin').createAny('video');
+     *  console.log(permission.granted); // true
      */
     extend(roles:string|string[]):Access {
         utils.extendRole(this._grants, this._.role, roles);
+        return this;
+    }
+
+    /**
+     *  Alias of `extend`.
+     *  @private
+     */
+    inherit(roles:string|string[]):Access {
+        this.extend(roles);
         return this;
     }
 
@@ -139,7 +174,7 @@ class Access {
      *    .grant('admin').updateAny('video');
      */
     grant(roleOrInfo?:string|string[]|IAccessInfo):Access {
-        return (new Access(this._grants, roleOrInfo, false)).attributes(['*']);
+        return (new Access(this._ac, roleOrInfo, false)).attributes(['*']);
     }
 
     /**
@@ -158,7 +193,16 @@ class Access {
      *    .deny('user').deleteAny('video');
      */
     deny(roleOrInfo?:string|string[]|IAccessInfo):Access {
-        return (new Access(this._grants, roleOrInfo, true)).attributes([]);
+        return (new Access(this._ac, roleOrInfo, true)).attributes([]);
+    }
+
+    /**
+     *  Chainable, convenience shortcut for {@link ?api=ac#AccessControl#lock|`AccessControl#lock()`}.
+     *  @returns {Access}
+     */
+    lock():Access {
+        utils.lockAC(this._ac);
+        return this;
     }
 
     /**
