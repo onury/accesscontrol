@@ -23,12 +23,13 @@ With the idea of merging the best features of the two (see this [NIST paper][nis
 
 - Chainable, friendly API.  
 e.g. `ac.can(role).createOwn(resource)`
-- Role hierarchical inheritance.
-- Define grants at once (e.g. from database result) or one by one.
-- Grant/deny permissions by attributes defined by glob notation (with nested object support).
-- Ability to filter data (model) instance by allowed attributes.
-- Ability to control access on "own" or "any" resources.
-- Fast. (Grants are stored in memory, no database queries.)
+- Role hierarchical **inheritance**.
+- Define grants **at once** (e.g. from database result) or **one by one**.
+- Grant/deny permissions by attributes defined by **glob notation** (with nested object support).
+- Ability to **filter** data (model) instance by allowed attributes.
+- Ability to control access on **own** or **any** resources.
+- Ability to **lock** underlying grants model.
+- **Fast**. (Grants are stored in memory, no database queries.)
 - TypeScript support.
 
 _In order to build on more solid foundations, this library (v1.5.0+) is completely re-written in TypeScript._
