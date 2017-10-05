@@ -6,7 +6,8 @@
 [![license](http://img.shields.io/npm/l/accesscontrol.svg)](https://github.com/onury/accesscontrol/blob/master/LICENSE)
 [![dependencies](https://david-dm.org/onury/accesscontrol.svg)](https://david-dm.org/onury/accesscontrol)
 [![maintained](https://img.shields.io/maintenance/yes/2017.svg)](https://github.com/onury/accesscontrol/graphs/commit-activity)
-[![TypeScript](https://img.shields.io/badge/written%20in-%20TypeScript%20-6575ff.svg)](https://www.typescriptlang.org)    
+[![TypeScript](https://img.shields.io/badge/written%20in-%20TypeScript%20-6575ff.svg)](https://www.typescriptlang.org)
+[![documentation](https://img.shields.io/badge/documentation-click_to_read-c27cf4.svg?documentation=click_to_read)](http://onury.io/accesscontrol/?api=ac)    
 
 > © 2017, Onur Yıldırım ([@onury](https://github.com/onury)). MIT License.
 
@@ -89,7 +90,7 @@ router.get('/videos/:title', function (req, res, next) {
 
 You can create/define roles simply by calling `.grant(<role>)` or `.deny(<role>)` methods on an `AccessControl` instance.  
 
-Roles can extend other roles.
+- Roles can extend other roles.
 
 ```js
 // user role inherits viewer role permissions
@@ -99,6 +100,26 @@ ac.grant('admin').extend(['user', 'editor']);
 // both admin and superadmin roles inherit moderator permissions
 ac.grant(['admin', 'superadmin']).extend('moderator');
 ```
+
+- Inheritance is done by reference, so you can grant resource permissions before or after extending a role. 
+```js
+// case #1
+ac.grant('admin').extend('user') // assuming user role already exists
+  .grant('user').createOwn('video');
+
+// case #2
+ac.grant('user').createOwn('video')
+  .grant('admin').extend('user');
+
+// below results the same for both cases
+const permission = ac.can('admin').createOwn('video');
+console.log(permission.granted); // true
+```
+
+Notes on inheritance:  
+- A role cannot extend itself.
+- Cross-inheritance is not allowed. e.g. `ac.grant('user').extend('admin').grant('admin').extend('user')` will throw.
+- A role cannot (pre)extend a non-existing role. In other words, you should first create the base role. e.g. `ac.grant('baseRole').grant('role').extend('baseRole')`
 
 ### Actions and Action-Attributes
 
@@ -185,17 +206,17 @@ It accepts either an `Object`:
 let grantsObject = {
     admin: {
         video: {
-            'create:any': ['*'],
+            'create:any': ['*', '!views'],
             'read:any': ['*'],
-            'update:any': ['*'],
+            'update:any': ['*', '!views'],
             'delete:any': ['*']
         }
     },
     user: {
         video: {
-            'create:own': ['*'],
+            'create:own': ['*', '!rating', '!views'],
             'read:own': ['*'],
-            'update:own': ['*'],
+            'update:own': ['*', '!rating', '!views'],
             'delete:own': ['*']
         }
     }
@@ -206,23 +227,27 @@ const ac = new AccessControl(grantsObject);
 ```js
 // grant list fetched from DB (to be converted to a valid grants object, internally)
 let grantList = [
-    { role: 'admin', resource: 'video', action: 'create:any', attributes: ['*'] },
-    { role: 'admin', resource: 'video', action: 'read:any', attributes: ['*'] },
-    { role: 'admin', resource: 'video', action: 'update:any', attributes: ['*'] },
-    { role: 'admin', resource: 'video', action: 'delete:any', attributes: ['*'] },
+    { role: 'admin', resource: 'video', action: 'create:any', attributes: '*, !views' },
+    { role: 'admin', resource: 'video', action: 'read:any', attributes: '*' },
+    { role: 'admin', resource: 'video', action: 'update:any', attributes: '*, !views' },
+    { role: 'admin', resource: 'video', action: 'delete:any', attributes: '*' },
 
-    { role: 'user', resource: 'video', action: 'create:own', attributes: ['*'] },
-    { role: 'user', resource: 'video', action: 'read:any', attributes: ['*'] },
-    { role: 'user', resource: 'video', action: 'update:own', attributes: ['*'] },
-    { role: 'user', resource: 'video', action: 'delete:own', attributes: ['*'] }
+    { role: 'user', resource: 'video', action: 'create:own', attributes: '*, !rating, !views' },
+    { role: 'user', resource: 'video', action: 'read:any', attributes: '*' },
+    { role: 'user', resource: 'video', action: 'update:own', attributes: '*, !rating, !views' },
+    { role: 'user', resource: 'video', action: 'delete:own', attributes: '*' }
 ];
 const ac = new AccessControl(grantList);
 ```
-You can set/get grants any time:
+You can set grants any time...
 ```js
 const ac = new AccessControl();
 ac.setGrants(grantsObject);
 console.log(ac.getGrants());
+```
+...unless you lock it:
+```js
+ac.lock().setGrants(); // throws after locked
 ```
 
 ## Documentation
@@ -236,7 +261,7 @@ See [CHANGELOG][changelog].
 
 ## License
 
-[MIT][license].
+[**MIT**][license].
 
 [docs]:http://onury.io/accesscontrol/?api=ac
 [faq]:http://onury.io/accesscontrol/?content=faq
