@@ -185,7 +185,8 @@ declare class AccessControl {
      *  modifying it. This is useful when you want to restrict any changes. Any
      *  attempts to modify (such as `#setGrants()`, `#reset()`, `#grant()`,
      *  `#deny()`, etc) will throw after grants are locked. Note that <b>there
-     *  is no `unlock()` method</b>.
+     *  is no `unlock()` method</b>. It's like you lock the door and swallow the
+     *  key. ;)
      *
      *  Remember that this does not prevent the `AccessControl` instance from
      *  being altered/replaced. Only the grants inner object is locked.
