@@ -104,6 +104,10 @@ class AccessControl {
      *  @private
      */
     private _grants:any;
+
+    /**
+     *  @private
+     */
     private _locked:boolean = false;
 
     /**
@@ -191,10 +195,12 @@ class AccessControl {
      *  @chainable
      *
      *  @param {Object|Array} grantsObject - A list containing the access grant
-     *         definitions. If `null` or `undefined`; grants will be reset
-     *         (emptied).
+     *         definitions.
      *
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
+     *
+     *  @throws {AccessControlError} - If called after `.lock()` is called or if
+     *  passed grants object fails inspection.
      */
     setGrants(grantsObject:any):AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
@@ -207,6 +213,8 @@ class AccessControl {
      *  @chainable
      *
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
+     *
+     *  @throws {AccessControlError} - If called after `.lock()` is called.
      */
     reset():AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
@@ -252,21 +260,18 @@ class AccessControl {
      *  Extends the given role(s) with privileges of one or more other roles.
      *  @chainable
      *
-     *  @param {String|Array<String>} roles
-     *         Role(s) to be extended.
-     *         Single role as a `String` or multiple roles as an `Array`.
-     *         Note that if a role does not exist, it will be automatically
-     *         created.
+     *  @param {String|Array<String>} roles Role(s) to be extended. Single role
+     *         as a `String` or multiple roles as an `Array`. Note that if a
+     *         role does not exist, it will be automatically created.
      *
-     *  @param {String|Array<String>} extenderRoles
-     *         Role(s) to inherit from.
-     *         Single role as a `String` or multiple roles as an `Array`.
-     *         Note that if a extender role does not exist, it will throw.
+     *  @param {String|Array<String>} extenderRoles Role(s) to inherit from.
+     *         Single role as a `String` or multiple roles as an `Array`. Note
+     *         that if a extender role does not exist, it will throw.
      *
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
      *
-     *  @throws {Error}
-     *          If a role is extended by itself or a non-existent role.
+     *  @throws {AccessControlError} - If a role is extended by itself or a
+     *  non-existent role. Or if called after `.lock()` is called.
      */
     extendRole(roles:string|string[], extenderRoles:string|string[]):AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
@@ -282,6 +287,8 @@ class AccessControl {
      *      Also accepts a string that can be used to remove a single role.
      *
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
+     *
+     *  @throws {AccessControlError} - If called after `.lock()` is called.
      */
     removeRoles(roles:string|string[]):AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
@@ -312,6 +319,8 @@ class AccessControl {
      *      resources will be removed.
      *
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
+     *
+     *  @throws {AccessControlError} - If called after `.lock()` is called.
      */
     removeResources(resources:string|string[], roles?:string|string[]):AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
@@ -401,22 +410,23 @@ class AccessControl {
     }
 
     /**
-     *  Gets an instance of `Query` object. This is used to check whether
-     *  the defined access is allowed for the given role(s) and resource.
-     *  This object provides chainable methods to define and query the access
+     *  Gets an instance of `Query` object. This is used to check whether the
+     *  defined access is allowed for the given role(s) and resource. This
+     *  object provides chainable methods to define and query the access
      *  permissions to be checked.
      *  @name AccessControl#can
      *  @alias AccessControl#query
      *  @function
      *  @chainable
      *
-     *  @param {String|Array|IQueryInfo} role - A single role (as a string),
-     *      a list of roles (as an array) or an {@link ?api=ac#AccessControl~IQueryInfo|`IQueryInfo` object}
-     *      that fully or partially defines the access to be checked.
+     *  @param {String|Array|IQueryInfo} role - A single role (as a string), a
+     *  list of roles (as an array) or an
+     *  {@link ?api=ac#AccessControl~IQueryInfo|`IQueryInfo` object} that fully
+     *  or partially defines the access to be checked.
      *
-     *  @returns {Query} - The returned object provides chainable
-     *      methods to define and query the access permissions to be checked.
-     *      See {@link ?api=ac#AccessControl~Query|`Query` inner class}.
+     *  @returns {Query} - The returned object provides chainable methods to
+     *  define and query the access permissions to be checked. See
+     *  {@link ?api=ac#AccessControl~Query|`Query` inner class}.
      *
      *  @example
      *  const ac = new AccessControl(grants);
@@ -444,18 +454,18 @@ class AccessControl {
     }
 
     /**
-     *  Gets an instance of `Permission` object that checks and defines
-     *  the granted access permissions for the target resource and role.
-     *  Normally you would use `AccessControl#can()` method to check for
-     *  permissions but this is useful if you need to check at once by passing
-     *  a `IQueryInfo` object; instead of chaining methods
-     *  (as in `.can(<role>).<action>(<resource>)`).
+     *  Gets an instance of `Permission` object that checks and defines the
+     *  granted access permissions for the target resource and role. Normally
+     *  you would use `AccessControl#can()` method to check for permissions but
+     *  this is useful if you need to check at once by passing a `IQueryInfo`
+     *  object; instead of chaining methods (as in
+     *  `.can(<role>).<action>(<resource>)`).
      *
-     *  @param {IQueryInfo} queryInfo
-     *         A fulfilled {@link ?api=ac#AccessControl~IQueryInfo|`IQueryInfo` object}.
+     *  @param {IQueryInfo} queryInfo - A fulfilled
+     *  {@link ?api=ac#AccessControl~IQueryInfo|`IQueryInfo` object}.
      *
-     *  @returns {Permission} - An object that provides properties
-     *  and methods that defines the granted access permissions. See
+     *  @returns {Permission} - An object that provides properties and methods
+     *  that defines the granted access permissions. See
      *  {@link ?api=ac#AccessControl~Permission|`Permission` inner class}.
      *
      *  @example
@@ -481,15 +491,16 @@ class AccessControl {
      *  @function
      *  @chainable
      *
-     *  @param {String|Array<String>|IAccessInfo} role
-     *         A single role (as a string), a list of roles (as an array) or an
-     *         {@link ?api=ac#AccessControl~IAccessInfo|`IAccessInfo` object}
-     *         that fully or partially defines the access to be granted.
+     *  @param {String|Array<String>|IAccessInfo} role A single role (as a
+     *  string), a list of roles (as an array) or an
+     *  {@link ?api=ac#AccessControl~IAccessInfo|`IAccessInfo` object} that
+     *  fully or partially defines the access to be granted.
      *
-     *  @return {Access}
-     *          The returned object provides chainable properties to build and
-     *          define the access to be granted. See the examples for details.
-     *          See {@link ?api=ac#AccessControl~Access|`Access` inner class}.
+     *  @return {Access} - The returned object provides chainable properties to
+     *  build and define the access to be granted. See the examples for details.
+     *  See {@link ?api=ac#AccessControl~Access|`Access` inner class}.
+     *
+     *  @throws {AccessControlError} - If called after `.lock()` is called.
      *
      *  @example
      *  const ac = new AccessControl();
@@ -541,24 +552,25 @@ class AccessControl {
     }
 
     /**
-     *  Gets an instance of `Access` object. This is used to deny access
-     *  to specified resource(s) for the given role(s). Denying will only remove
-     *  a previously created grant. So if not granted before, you don't need
-     *  to deny an access.
+     *  Gets an instance of `Access` object. This is used to deny access to
+     *  specified resource(s) for the given role(s). Denying will only remove a
+     *  previously created grant. So if not granted before, you don't need to
+     *  deny an access.
      *  @name AccessControl#deny
      *  @alias AccessControl#reject
      *  @function
      *  @chainable
      *
-     *  @param {String|Array<String>|IAccessInfo} role
-     *         A single role (as a string), a list of roles (as an array) or an
-     *         {@link ?api=ac#AccessControl~IAccessInfo|`IAccessInfo` object}
-     *         that fully or partially defines the access to be denied.
+     *  @param {String|Array<String>|IAccessInfo} role A single role (as a
+     *  string), a list of roles (as an array) or an
+     *  {@link ?api=ac#AccessControl~IAccessInfo|`IAccessInfo` object} that
+     *  fully or partially defines the access to be denied.
      *
-     *  @return {Access}
-     *          The returned object provides chainable properties to build and
-     *          define the access to be granted.
-     *          See {@link ?api=ac#AccessControl~Access|`Access` inner class}.
+     *  @return {Access} The returned object provides chainable properties to
+     *  build and define the access to be granted. See
+     *  {@link ?api=ac#AccessControl~Access|`Access` inner class}.
+     *
+     *  @throws {AccessControlError} - If called after `.lock()` is called.
      *
      *  @example
      *  const ac = new AccessControl();
