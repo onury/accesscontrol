@@ -1,6 +1,6 @@
 import { Access, IAccessInfo, Query, IQueryInfo, Permission, AccessControlError } from './core';
 import { Action, Possession, actions, possessions } from './enums';
-import utils from './utils';
+import { utils, ERR_LOCK } from './utils';
 
 /**
  *  @classdesc
@@ -12,7 +12,7 @@ import utils from './utils';
  *  array fetched from database) or simple omit `grants` parameter if you are
  *  willing to build it programmatically.
  *
- *  <p><pre><code> var grants = {
+ *  <p><pre><code> const grants = {
  *      role1: {
  *          resource1: {
  *              "create:any": [ attrs ],
@@ -25,39 +25,39 @@ import utils from './utils';
  *      },
  *      role2: { ... }
  *  };
- *  var ac = new AccessControl(grants);</code></pre></p>
+ *  const ac = new AccessControl(grants);</code></pre></p>
  *
  *  The `grants` object can also be an array, such as a flat list
  *  fetched from a database.
  *
- *  <p><pre><code> var flatList = [
- *      { role: "role1", resource: "resource1", action: "create:any", attributes: [ attrs ] },
- *      { role: "role1", resource: "resource1", action: "read:own", attributes: [ attrs ] },
- *      { role: "role2", ... },
+ *  <p><pre><code> const flatList = [
+ *      { role: 'role1', resource: 'resource1', action: 'create:any', attributes: [ attrs ] },
+ *      { role: 'role1', resource: 'resource1', action: 'read:own', attributes: [ attrs ] },
+ *      { role: 'role2', ... },
  *      ...
  *  ];</code></pre></p>
  *
  *  We turn this list into a hashtable for better performance. We aggregate
  *  the list by roles first, resources second. If possession (in action
  *  value or as a separate property) is omitted, it will default to `"any"`.
- *  e.g. `"create"` —> `"create:any"`
+ *  e.g. `"create"` —» `"create:any"`
  *
  *  Below are equivalent:
- *  <p><pre><code> var grants = { role: "role1", resource: "resource1", action: "create:any", attributes: [ attrs ] }
- *  var same = { role: "role1", resource: "resource1", action: "create", possession: "any", attributes: [ attrs ] }</code></pre></p>
+ *  <p><pre><code> const grants = { role: 'role1', resource: 'resource1', action: 'create:any', attributes: [ attrs ] }
+ *  const same = { role: 'role1', resource: 'resource1', action: 'create', possession: 'any', attributes: [ attrs ] }</code></pre></p>
  *
  *  So we can also initialize with this flat list of grants:
- *  <p><pre><code> var ac = new AccessControl(flatList);
+ *  <p><pre><code> const ac = new AccessControl(flatList);
  *  console.log(ac.getGrants());</code></pre></p>
  *
- *  @author   Onur Yıldırım (onur@cutepilot.com)
+ *  @author   Onur Yıldırım <onur@cutepilot.com>
  *  @license  MIT
  *
  *  @class
  *  @global
  *
  *  @example
- *  var ac = new AccessControl(grants);
+ *  const ac = new AccessControl(grants);
  *
  *  ac.grant('admin').createAny('profile');
  *
@@ -83,7 +83,7 @@ import utils from './utils';
  *      .deleteOwn('video');
  *
  *  // now we can check for granted or denied permissions
- *  var permission = ac.can('admin').readAny('profile');
+ *  const permission = ac.can('admin').readAny('profile');
  *  permission.granted // true
  *  permission.attributes // ["*", "!password"]
  *  permission.filter(data) // { uid, email, address, account }
@@ -94,6 +94,9 @@ import utils from './utils';
  *  // To add a grant but deny access via attributes
  *  ac.grant('admin').createAny('profile', []); // no attributes allowed
  *  ac.can('admin').createAny('profile').granted; // false
+ *
+ *  // To prevent any more changes:
+ *  ac.lock();
  */
 class AccessControl {
 
@@ -101,6 +104,7 @@ class AccessControl {
      *  @private
      */
     private _grants:any;
+    private _locked:boolean = false;
 
     /**
      *  Initializes a new instance of `AccessControl` with the given grants.
@@ -109,8 +113,24 @@ class AccessControl {
      *  @param {Object|Array} grants - A list containing the access grant
      *      definitions. See the structure of this object in the examples.
      */
-    constructor(grants:any = {}) {
+    constructor(grants:any) {
+        // explicit undefined is not allowed
+        if (arguments.length === 0) grants = {};
         this.setGrants(grants);
+    }
+
+    // -------------------------------
+    //  PUBLIC PROPERTIES
+    // -------------------------------
+
+    /**
+     *  Specifies whether the underlying grants object is frozen and all
+     *  functionality for modifying it is disabled.
+     *  @name AccessControl#isLocked
+     *  @type {Boolean}
+     */
+    get isLocked():boolean {
+        return this._locked && Object.isFrozen(this._grants);
     }
 
     // -------------------------------
@@ -166,23 +186,19 @@ class AccessControl {
     }
 
     /**
-     *  Sets all access grants at once, from an object or array.
-     *  Note that this will reset the object and remove all previous grants.
+     *  Sets all access grants at once, from an object or array. Note that this
+     *  will reset the object and remove all previous grants.
      *  @chainable
      *
      *  @param {Object|Array} grantsObject - A list containing the access grant
-     *         definitions.
+     *         definitions. If `null` or `undefined`; grants will be reset
+     *         (emptied).
      *
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
      */
     setGrants(grantsObject:any):AccessControl {
-        this._grants = {};
-        let type:string = utils.type(grantsObject);
-        if (type === 'object') {
-            this._grants = grantsObject;
-        } else if (type === 'array') {
-            grantsObject.forEach((item:any) => utils.commitToGrants(this._grants, item, true));
-        }
+        if (this.isLocked) throw new AccessControlError(ERR_LOCK);
+        this._grants = utils.getInspectedGrants(grantsObject);
         return this;
     }
 
@@ -193,7 +209,41 @@ class AccessControl {
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
      */
     reset():AccessControl {
+        if (this.isLocked) throw new AccessControlError(ERR_LOCK);
         this._grants = {};
+        return this;
+    }
+
+    /**
+     *  Freezes the underlying grants model and disables all functionality for
+     *  modifying it. This is useful when you want to restrict any changes. Any
+     *  attempts to modify (such as `#setGrants()`, `#reset()`, `#grant()`,
+     *  `#deny()`, etc) will throw after grants are locked. Note that <b>there
+     *  is no `unlock()` method</b>.
+     *
+     *  Remember that this does not prevent the `AccessControl` instance from
+     *  being altered/replaced. Only the grants inner object is locked.
+     *
+     *  <b>A note about performance</b>: This uses recursive `Object.freeze()`.
+     *  In NodeJS & V8, enumeration performance is not impacted because of this.
+     *  In fact, it increases the performance because of V8 optimization.
+     *  @chainable
+     *
+     *  @returns {AccessControl} - `AccessControl` instance for chaining.
+     *
+     *  @example
+     *  ac.grant('admin').create('product');
+     *  ac.lock(); // called on the AccessControl instance.
+     *  // or
+     *  ac.grant('admin').create('product').lock(); // called on the chained Access instance.
+     *
+     *  // After this point, any attempt of modification will throw
+     *  ac.setGrants({}); // throws
+     *  ac.grant('user'); // throws..
+     *  // underlying grants model is not changed
+     */
+    lock():AccessControl {
+        utils.lockAC(this);
         return this;
     }
 
@@ -218,6 +268,7 @@ class AccessControl {
      *          If a role is extended by itself or a non-existent role.
      */
     extendRole(roles:string|string[], extenderRoles:string|string[]):AccessControl {
+        if (this.isLocked) throw new AccessControlError(ERR_LOCK);
         utils.extendRole(this._grants, roles, extenderRoles);
         return this;
     }
@@ -232,6 +283,8 @@ class AccessControl {
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
      */
     removeRoles(roles:string|string[]):AccessControl {
+        if (this.isLocked) throw new AccessControlError(ERR_LOCK);
+
         let rolesToRemove:string[] = utils.toStringArray(roles);
         rolesToRemove.forEach((role:string) => {
             delete this._grants[role];
@@ -260,6 +313,8 @@ class AccessControl {
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
      */
     removeResources(resources:string|string[], roles?:string|string[]):AccessControl {
+        if (this.isLocked) throw new AccessControlError(ERR_LOCK);
+
         // _removePermission has a third argument `actionPossession`. if
         // omitted (like below), removes the parent resource object.
         this._removePermission(resources, roles);
@@ -277,6 +332,30 @@ class AccessControl {
      */
     getRoles():string[] {
         return Object.keys(this._grants);
+    }
+
+    /**
+     *  Gets the list of inherited roles by the given role.
+     *  @name AccessControl#getInheritedRolesOf
+     *  @alias AccessControl#getExtendedRolesOf
+     *  @function
+     *
+     *  @param {String} role - Target role name.
+     *
+     *  @returns {Array<String>}
+     */
+    getInheritedRolesOf(role:string):string[] {
+        let roles:string[] = utils.getInheritedRolesOf(this._grants, role);
+        roles.shift();
+        return roles;
+    }
+
+    /**
+     *  Alias of `getInheritedRolesOf`
+     *  @private
+     */
+    getExtendedRolesOf(role:string):string[] {
+        return this.getInheritedRolesOf(role);
     }
 
     /**
@@ -326,7 +405,7 @@ class AccessControl {
      *  This object provides chainable methods to define and query the access
      *  permissions to be checked.
      *  @name AccessControl#can
-     *  @alias AccessControl#access
+     *  @alias AccessControl#query
      *  @function
      *  @chainable
      *
@@ -339,7 +418,7 @@ class AccessControl {
      *      See {@link ?api=ac#AccessControl~Query|`Query` inner class}.
      *
      *  @example
-     *  var ac = new AccessControl(grants);
+     *  const ac = new AccessControl(grants);
      *
      *  ac.can('admin').createAny('profile');
      *  // equivalent to:
@@ -359,7 +438,7 @@ class AccessControl {
      *  Alias of `can()`.
      *  @private
      */
-    access(role:string|string[]|IQueryInfo):Query {
+    query(role:string|string[]|IQueryInfo):Query {
         return this.can(role);
     }
 
@@ -379,8 +458,8 @@ class AccessControl {
      *  {@link ?api=ac#AccessControl~Permission|`Permission` inner class}.
      *
      *  @example
-     *  var ac = new AccessControl(grants);
-     *  var permission = ac.permission({
+     *  const ac = new AccessControl(grants);
+     *  const permission = ac.permission({
      *      role: "user",
      *      action: "update:own",
      *      resource: "profile"
@@ -412,8 +491,8 @@ class AccessControl {
      *          See {@link ?api=ac#AccessControl~Access|`Access` inner class}.
      *
      *  @example
-     *  var ac = new AccessControl(),
-     *      attributes = ['*'];
+     *  const ac = new AccessControl();
+     *  let attributes = ['*'];
      *
      *  ac.grant('admin').createAny('profile', attributes);
      *  // equivalent to:
@@ -448,7 +527,8 @@ class AccessControl {
      *  // which means all attributes (of the resource) are allowed.
      */
     grant(role:string|string[]|IAccessInfo):Access {
-        return new Access(this._grants, role, false);
+        if (this.isLocked) throw new AccessControlError(ERR_LOCK);
+        return new Access(this, role, false);
     }
 
     /**
@@ -480,7 +560,7 @@ class AccessControl {
      *          See {@link ?api=ac#AccessControl~Access|`Access` inner class}.
      *
      *  @example
-     *  var ac = new AccessControl();
+     *  const ac = new AccessControl();
      *
      *  ac.deny('admin').createAny('profile');
      *  // equivalent to:
@@ -510,7 +590,8 @@ class AccessControl {
      *  ac.deny(['admin', 'user']).createOwn('profile');
      */
     deny(role:string|string[]|IAccessInfo):Access {
-         return new Access(this._grants, role, true);
+        if (this.isLocked) throw new AccessControlError(ERR_LOCK);
+        return new Access(this, role, true);
     }
 
     /**
