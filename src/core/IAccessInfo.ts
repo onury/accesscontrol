@@ -49,13 +49,15 @@ interface IAccessInfo {
 export { IAccessInfo };
 
 // tsc removes the code above so we document for JSDoc below.
+// Note that tsc 2.5.3+ throws if @typedef is used below instead of @name.
+// This also prevents Travis-CI builds succeed.
 
 /**
  *  An interface that defines an access information to be granted or denied.
  *  When you start a method chain with `AccessControl#grant` or `AccessControl#deny`
  *  methods, you're actually building this  object which will eventually be
  *  committed to the underlying grants model.
- *  @typedef AccessControl~IAccessInfo
+ *  @name AccessControl~IAccessInfo
  *  @type Object
  *
  *  @property {String|Array<String>} role
