@@ -1,3 +1,4 @@
+import { AccessControl } from '../';
 import { IAccessInfo } from '../core';
 /**
  *  Represents the inner `Access` class that helps build an access information
@@ -18,6 +19,12 @@ declare class Access {
     /**
      *  Main grants object.
      *  @protected
+     *  @type {AccessControl}
+     */
+    protected _ac: AccessControl;
+    /**
+     *  Main grants object.
+     *  @protected
      *  @type {Any}
      */
     protected _grants: any;
@@ -25,8 +32,8 @@ declare class Access {
      *  Initializes a new instance of `Access`.
      *  @private
      *
-     *  @param {Any} grants
-     *         Main grants object.
+     *  @param {AccessControl} ac
+     *         AccessControl instance.
      *  @param {String|Array<String>|IAccessInfo} roleOrInfo
      *         Either an `IAccessInfo` object, a single or an array of
      *         roles. If an object is passed, possession and attributes
@@ -37,7 +44,7 @@ declare class Access {
      *  @param {Boolean} denied
      *         Specifies whether this `Access` is denied.
      */
-    constructor(grants: any, roleOrInfo?: string | string[] | IAccessInfo, denied?: boolean);
+    constructor(ac: AccessControl, roleOrInfo?: string | string[] | IAccessInfo, denied?: boolean);
     /**
      *  Specifies whether this access is initally denied.
      *  @name AccessControl~Access#denied
@@ -71,12 +78,27 @@ declare class Access {
     attributes(value: string | string[]): Access;
     /**
      *  Sets the roles to be extended for this `Access` instance.
+     *  @alias Access#inherit
+     *  @name AccessControl~Access#extend
+     *  @function
+     *
      *  @param {String|Array<String>} roles
      *         A single or array of roles.
      *  @returns {Access}
      *           Self instance of `Access`.
+     *
+     *  @example
+     *  ac.grant('user').createAny('video')
+     *    .grant('admin').extend('user');
+     *  const permission = ac.can('admin').createAny('video');
+     *  console.log(permission.granted); // true
      */
     extend(roles: string | string[]): Access;
+    /**
+     *  Alias of `extend`.
+     *  @private
+     */
+    inherit(roles: string | string[]): Access;
     /**
      *  Shorthand to switch to a new `Access` instance with a different role
      *  within the method chain.
@@ -109,6 +131,11 @@ declare class Access {
      *    .deny('user').deleteAny('video');
      */
     deny(roleOrInfo?: string | string[] | IAccessInfo): Access;
+    /**
+     *  Chainable, convenience shortcut for {@link ?api=ac#AccessControl#lock|`AccessControl#lock()`}.
+     *  @returns {Access}
+     */
+    lock(): Access;
     /**
      *  Sets the action to `"create"` and possession to `"own"` and commits the
      *  current access instance to the underlying grant model.
