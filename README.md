@@ -103,6 +103,7 @@ ac.grant(['admin', 'superadmin']).extend('moderator');
 ```
 
 - Inheritance is done by reference, so you can grant resource permissions before or after extending a role. 
+
 ```js
 // case #1
 ac.grant('admin').extend('user') // assuming user role already exists
@@ -248,7 +249,7 @@ console.log(ac.getGrants());
 ```
 ...unless you lock it:
 ```js
-ac.lock().setGrants(); // throws after locked
+ac.lock().setGrants({}); // throws after locked
 ```
 
 ## Documentation
