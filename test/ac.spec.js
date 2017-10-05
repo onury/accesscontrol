@@ -4,12 +4,11 @@
  */
 
 const AccessControl = require('../lib').AccessControl;
+const Utils = require('../lib/utils');
+const utils = Utils.utils;
+const RESERVED_KEYWORDS = Utils.RESERVED_KEYWORDS;
 
-function type(o) {
-    return Object.prototype.toString.call(o).match(/\s(\w+)/i)[1].toLowerCase();
-}
-
-function throwsAccessControlError(fn, errMsg) {
+function expectACError(fn, errMsg) {
     expect(fn).toThrow();
     try {
         fn();
@@ -30,9 +29,9 @@ describe('Test Suite: Access Control', function () {
         { role: 'admin', resource: 'video', action: 'update:any', attributes: ['*'] },
         { role: 'admin', resource: 'video', action: 'delete:any', attributes: ['*'] },
 
-        { role: 'user', resource: 'video', action: 'create:own', attributes: ['*'] },
-        { role: 'user', resource: 'video', action: 'read:any', attributes: ['*'] },
-        { role: 'user', resource: 'video', action: 'update:own', attributes: ['*'] },
+        { role: 'user', resource: 'video', action: 'create:own', attributes: '*, !id' }, // comma-separated attrs
+        { role: 'user', resource: 'video', action: 'read:any', attributes: '*; !id' }, // semi-colon separated attrs
+        { role: 'user', resource: 'video', action: 'update:own', attributes: ['*', '!id'] }, // Array attrs
         { role: 'user', resource: 'video', action: 'delete:own', attributes: ['*'] }
     ];
 
@@ -64,29 +63,124 @@ describe('Test Suite: Access Control', function () {
     //  TESTS
     //----------------------------
 
+    it('should throw on invalid grants object', function () {
+        const ac = this.ac;
+
+        // `undefined` does/should not throw due to default value
+        let invalid = [null, undefined, true, false, '', NaN, new Date(), function () {}];
+        invalid.forEach(o => {
+            expectACError(() => new AccessControl(o));
+            expectACError(() => ac.setGrants(o));
+        });
+
+        // omitting is allowed (results in empty grants object: {})
+        expect(() => new AccessControl()).not.toThrow();
+        // empty object is allowed
+        expect(() => new AccessControl({})).not.toThrow();
+        expect(new AccessControl({}).getGrants()).toEqual({});
+        // explicit undefined is not allowed
+        expectACError(() => new AccessControl(undefined));
+
+        // Initial Grants as an Object
+        // ----------------------------
+
+        expectACError(() => ac.setGrants({ '$': {} }));
+        expectACError(() => ac.setGrants({ '$extend': {} }));
+        // if $extend is set to an array of strings or empty array, it's valid
+        // (contains inherited roles)
+        expect(() => ac.setGrants({ '$extend': [] })).not.toThrow();
+        // empty string in the $extend array is not allowed
+        expectACError(() => ac.setGrants({ '$extend': [''] }));
+
+        // role definition must be an object
+        invalid = [[], undefined, null, true, new Date];
+        invalid.forEach(o => {
+            expectACError(() => ac.setGrants({ role: invalid }));
+        });
+        // resource definition must be an object
+        invalid.forEach(o => {
+            expectACError(() => ac.setGrants({ role: { resource: invalid } }));
+        });
+        // actions should be one of Action enumeration (with or without possession)
+        expectACError(() => ac.setGrants({ role: { resource: { 'invalid': [] } } }));
+        expectACError(() => ac.setGrants({ role: { resource: { 'remove:any': [] } } }));
+        // missing colon
+        expectACError(() => ac.setGrants({ role: { resource: { 'createany': [] } } }));
+        // action/possession is ok but value is invalid
+        invalid = [undefined, null, true, new Date, {}];
+        invalid.forEach(o => {
+            expectACError(() => ac.setGrants({ role: { resource: { 'create:any': invalid } } }));;
+        });
+
+        // Initial Grants as an Array
+        // ----------------------------
+
+        // empty array is allowed. a flat list will be converted to inner grants
+        // object. empty array results in {}.
+        expect(() => new AccessControl([])).not.toThrow();
+        expect(new AccessControl([]).getGrants()).toEqual({});
+        // array should be an array of objects
+        expectACError(() => ac.setGrants([ [] ]));
+        // no empty grant items
+        expectACError(() => ac.setGrants([ {} ]));
+        // e.g. $extend is not allowed for role or resource names. it's a reserved keyword.
+        RESERVED_KEYWORDS.forEach(name => {
+            expectACError(() => ac.setGrants([ { role: name, resource: 'video', action: 'create:any' } ]));
+            expectACError(() => ac.setGrants([ { role: 'admin', resource: name, action: 'create:any' } ]));
+            expectACError(() => ac.setGrants([ { role: 'admin', resource: 'video', action: name } ]));
+        });
+
+        // attributes property can be omitted
+        expect(() => ac.setGrants([ { role: 'admin', resource: 'video', action: 'create:any' } ])).not.toThrow();
+        // role, resource or action properties cannot be omitted
+        expectACError(() => ac.setGrants([ { resource: 'video', action: 'create:any' } ]));
+        expectACError(() => ac.setGrants([ { role: 'admin', resource: 'video' } ]));
+        expectACError(() => ac.setGrants([ { role: 'admin', action: 'create:any' } ]));
+    });
+
     it('should construct with grants array or object, output a grants object', function () {
         let ac = new AccessControl(grantList);
         let grants = ac.getGrants();
-        expect(type(grants)).toEqual('object');
-        expect(type(grants.admin)).toEqual('object');
+        expect(utils.type(grants)).toEqual('object');
+        expect(utils.type(grants.admin)).toEqual('object');
         expect(grants.admin.video['create:any']).toEqual(jasmine.any(Array));
         // console.log(grants);
 
         ac = new AccessControl(grantsObject);
         grants = ac.getGrants();
-        expect(type(grants)).toEqual('object');
-        expect(type(grants.admin)).toEqual('object');
+        expect(utils.type(grants)).toEqual('object');
+        expect(utils.type(grants.admin)).toEqual('object');
         expect(grants.admin.video['create:any']).toEqual(jasmine.any(Array));
+    });
+
+    it('should reset grants with #reset() only', function () {
+        let ac = new AccessControl(grantsObject);
+        expect(ac.getRoles().length).toBeGreaterThan(0); // make sure not empty
+        expectACError(() => ac.setGrants());
+        expectACError(() => ac.setGrants(null));
+        expectACError(() => ac.setGrants(undefined));
+        expect(ac.reset().getGrants()).toEqual({});
+        expect(ac.setGrants({}).getGrants()).toEqual({});
     });
 
 
     it('should add grants from flat list (db), check/remove roles and resources', function () {
-        let ac = this.ac;
+        const ac = this.ac;
         ac.setGrants(grantList);
         // console.log('grants', ac.getGrants());
         // console.log('resources', ac.getResources());
         // console.log('roles', ac.getRoles());
 
+        // comma/semi-colon separated should be turned into string arrays
+        let attrs1 = ac.can('user').createOwn('video').attributes;
+        let attrs2 = ac.can('user').readAny('video').attributes;
+        let attrs3 = ac.can('user').updateOwn('video').attributes;
+        // console.log(attrs1);
+        expect(attrs1.length).toEqual(2);
+        expect(attrs2.length).toEqual(2);
+        expect(attrs3.length).toEqual(2);
+
+        // check roles & resources
         expect(ac.getRoles().length).toEqual(2);
         expect(ac.getResources().length).toEqual(1);
         expect(ac.hasRole('admin')).toEqual(true);
@@ -94,6 +188,7 @@ describe('Test Suite: Access Control', function () {
         expect(ac.hasRole('moderator')).toEqual(false);
         expect(ac.hasResource('video')).toEqual(true);
         expect(ac.hasResource('photo')).toEqual(false);
+
         // removeRoles should also accept a string
         ac.removeRoles('admin');
         expect(ac.hasRole('admin')).toEqual(false);
@@ -107,7 +202,7 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('should grant/deny access and check permissions', function () {
-        let ac = this.ac,
+        const ac = this.ac,
             attrs = ['*', '!size'];
 
         ac.grant('user').createAny('photo', attrs);
@@ -150,7 +245,7 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('should chain grant methods and check permissions', function () {
-        let ac = this.ac,
+        const ac = this.ac,
             attrs = ['*'];
 
         ac.grant('superadmin')
@@ -166,7 +261,7 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('should grant/deny access via object and check permissions', function () {
-        let ac = this.ac,
+        const ac = this.ac,
             attrs = ['*'];
 
         let o1 = {
@@ -216,7 +311,7 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('should grant/deny access (variation, chained)', function () {
-        let ac = this.ac;
+        const ac = this.ac;
         ac.setGrants(grantsObject);
 
         expect(ac.can('admin').createAny('video').granted).toEqual(true);
@@ -283,7 +378,7 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('should switch-chain grant/deny roles', function () {
-        let ac = this.ac;
+        const ac = this.ac;
         ac.grant('r1')
                 .createOwn('a')
             .grant('r2')
@@ -306,13 +401,13 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('deny should auto-set attributes to []', function () {
-        let ac = this.ac;
+        const ac = this.ac;
         ac.deny('user').createAny('book', ['*']);
         expect(ac.getGrants().user.book['create:any']).toEqual([]);
     });
 
     it('should grant comma/semi-colon separated roles', function () {
-        let ac = this.ac;
+        const ac = this.ac;
         // also supporting comma/semi-colon separated roles
         ac.grant('role2; role3, editor; viewer, agent').createOwn('book');
         expect(ac.hasRole('role3')).toEqual(true);
@@ -321,7 +416,7 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('permission should also return queried role(s) and resource', function () {
-        let ac = this.ac;
+        const ac = this.ac;
         // also supporting comma/semi-colon separated roles
         ac.grant('foo, bar').createOwn('baz');
         expect(ac.can('bar').createAny('baz').granted).toEqual(false);
@@ -334,7 +429,7 @@ describe('Test Suite: Access Control', function () {
     });
 
     it('should extend / remove roles', function () {
-        let ac = this.ac;
+        const ac = this.ac;
 
         ac.grant('admin').createOwn('book');
         ac.extendRole('onur', 'admin');
@@ -366,6 +461,93 @@ describe('Test Suite: Access Control', function () {
         expect(() => ac.grant(['admin2', 'roleX']).extend(['roleX', 'admin3'])).toThrow();
 
         // console.log(JSON.stringify(ac.getGrants(), null, '  '));
+    });
+
+    it('should extend before or after resource permissions are granted', function () {
+        let ac;
+
+        function init() {
+            ac = new AccessControl();
+            // create the roles
+            ac.grant(['user', 'admin']);
+            expect(ac.getRoles().length).toEqual(2);
+        }
+
+        // case #1
+        init();
+        ac.grant('admin').extend('user') // assuming user role already exists
+            .grant('user').createOwn('video');
+        expect(ac.can('admin').createOwn('video').granted).toEqual(true);
+
+        // case #2
+        init();
+        ac.grant('user').createOwn('video')
+            .grant('admin').extend('user');
+        expect(ac.can('admin').createOwn('video').granted).toEqual(true);
+    });
+
+    it('should extend multi-level (deep) roles', function () {
+        let ac = new AccessControl();
+        ac.grant('viewer').readAny('devices');
+        ac.grant('ops').extend('viewer').updateAny('devices', ['*', '!id']);
+        ac.grant('admin').extend('ops').deleteAny('devices');
+        ac.grant('superadmin').extend(['admin', 'ops']).createAny('devices');
+        // ac.extendRole(['ops', 'admin'], 'viewer');
+
+        expect(ac.can('ops').readAny('devices').granted).toEqual(true);
+        expect(ac.can('admin').readAny('devices').granted).toEqual(true);
+        expect(ac.can('admin').updateAny('devices').granted).toEqual(true);
+        expect(ac.can('superadmin').readAny('devices').granted).toEqual(true);
+
+        expect(ac.can('superadmin').updateAny('devices').attributes).toEqual(['*', '!id']);
+        ac.grant('superadmin').updateAny('devices', ['*']);
+        expect(ac.can('superadmin').updateAny('devices').attributes).toEqual(['*']);
+
+        expect(ac.getInheritedRolesOf('viewer')).toEqual([])
+        expect(ac.getInheritedRolesOf('ops')).toEqual(['viewer'])
+        expect(ac.getInheritedRolesOf('admin')).toEqual(['ops', 'viewer'])
+        expect(ac.getInheritedRolesOf('superadmin')).toEqual(['admin', 'ops', 'viewer'])
+
+        // console.log(JSON.stringify(ac.getGrants(), null, '  '));
+    });
+
+    it('should throw if target role or inherited role does not exit', function () {
+        const ac = this.ac;
+        expectACError(() => ac.grant().createOwn());
+        ac.setGrants(grantsObject);
+        expectACError(() => ac.can('invalid-role').createOwn('video'), 'Role not found');
+        expectACError(() => ac.grant('user').extend('invalid-role'));
+        expectACError(() => ac.grant('user').extend(['invalid1', 'invalid2']));
+    });
+
+    it('should throw on reserved names', function () {
+        const ac = new AccessControl();
+        RESERVED_KEYWORDS.forEach(name => {
+            expectACError(() => ac.grant(name));
+            expectACError(() => ac.deny(name));
+            expectACError(() => ac.grant().role(name));
+            expectACError(() => ac.grant('role').resource(name));
+        });
+        expectACError(() => new AccessControl({ $: [] }));
+        expectACError(() => new AccessControl({ $extend: {} }));
+    });
+
+    it('should throw if a role attempts to extend itself', function () {
+        const ac = this.ac;
+        expectACError(() => ac.grant('user').extend('user'));
+    });
+
+    it('should throw on cross-role inheritance', function () {
+        let ac = new AccessControl();
+        ac.grant(['user', 'admin']).createOwn('video');
+        // make sure roles are created
+        expect(ac.getRoles().length).toEqual(2);
+
+        expectACError(() => {
+            ac.grant('admin').extend('user');
+            ac.grant('user').extend('admin');
+        });
+        // console.log(ac.getGrants());
     });
 
     it('should throw if grant or deny objects are invalid', function () {
@@ -431,17 +613,56 @@ describe('Test Suite: Access Control', function () {
 
     });
 
-    it('should throw `AccessControlError`', function () {
-        let ac = this.ac;
-        throwsAccessControlError(() => ac.grant().createOwn());
-        ac.setGrants(grantsObject);
-        throwsAccessControlError(() => ac.can('invalid-role').createOwn('video'), 'Role not found');
+    it('Check with multiple roles changes grant list (issue #2)', function () {
+        const ac = this.ac;
+        ac.grant('admin').updateAny('video')
+            .grant(['user', 'admin']).updateOwn('video');
+
+        // Admin can update any video
+        expect(ac.can(['admin']).updateAny('video').granted).toEqual(true);
+
+        // console.log('grants before', JSON.stringify(ac.getGrants(), null, '  '));
+
+        // This check actually changes the underlying grants
+        ac.can(['user', 'admin']).updateOwn('video');
+
+        // console.log('grants after', JSON.stringify(ac.getGrants(), null, '  '));
+
+        // Admin can update any or own video
+        expect(ac.can(['admin']).updateAny('video').granted).toEqual(true);
+        expect(ac.can(['admin']).updateOwn('video').granted).toEqual(true);
+    });
+
+    it('should grant/deny multiple roles and multiple resources', function () {
+        const ac = this.ac;
+
+        ac.grant('admin, user').createAny('profile, video');
+        expect(ac.can('admin').createAny('profile').granted).toEqual(true);
+        expect(ac.can('admin').createAny('video').granted).toEqual(true);
+        expect(ac.can('user').createAny('profile').granted).toEqual(true);
+        expect(ac.can('user').createAny('video').granted).toEqual(true);
+
+        ac.grant('admin, user').createAny('profile, video', '*,!id');
+        expect(ac.can('admin').createAny('profile').attributes).toEqual(['*', '!id']);
+        expect(ac.can('admin').createAny('video').attributes).toEqual(['*', '!id']);
+        expect(ac.can('user').createAny('profile').attributes).toEqual(['*', '!id']);
+        expect(ac.can('user').createAny('video').attributes).toEqual(['*', '!id']);
+
+        ac.deny('admin, user').readAny('photo, book', '*,!id');
+        expect(ac.can('admin').readAny('photo').attributes).toEqual([]);
+        expect(ac.can('admin').readAny('book').attributes).toEqual([]);
+        expect(ac.can('user').readAny('photo').attributes).toEqual([]);
+        expect(ac.can('user').readAny('book').attributes).toEqual([]);
+
+        expect(ac.can('user').createAny('non-existent').granted).toEqual(false);
+
+        // console.log(JSON.stringify(ac.getGrants(), null, '  '));
     });
 
     it('should filter granted attributes', function () {
-        let ac = this.ac,
-            attrs = ['*', '!account.balance.credit', '!account.id', '!secret'],
-            data = {
+        const ac = this.ac;
+        const attrs = ['*', '!account.balance.credit', '!account.id', '!secret'];
+        const data = {
                 name: 'Company, LTD.',
                 address: {
                     city: 'istanbul',
@@ -473,50 +694,33 @@ describe('Test Suite: Access Control', function () {
         expect(filtered.secret).toBeUndefined();
     });
 
-    it('Check with multiple roles changes grant list (issue #2)', function () {
-        let ac = this.ac;
-        ac.grant('admin').updateAny('video')
-            .grant(['user', 'admin']).updateOwn('video');
+    it('should union granted attributes for extended roles, on query', function () {
+        const ac = this.ac;
+        const restrictedAttrs = ['*', '!id', '!pwd'];
+        // grant user restricted attrs
+        ac.grant('user').updateAny('video', restrictedAttrs)
+            // extend admin with user as is (same attributes)
+            .grant('admin').extend('user');
+        // admin should have the same restricted attributes
+        expect(ac.can('admin').updateAny('video').attributes).toEqual(restrictedAttrs);
+        // grant admin unrestricted attrs (['*'])
+        ac.grant('admin').updateAny('video');
+        // union'ed attributes should be ['*']
+        expect(ac.can('admin').updateAny('video').attributes).toEqual(['*']);
 
-        // Admin can update any video
-        expect(ac.can(['admin']).updateAny('video').granted).toEqual(true);
+        ac.grant('editor').updateAny('video', ['*', '!pwd', 'title']).extend('user');
+        // 'title' is redundant since we have '*'.
+        // '!pwd' exists in both attribute lists, so it should exist in union.
+        expect(ac.can('editor').updateAny('video').attributes).toEqual(['*', '!pwd']);
 
-        // console.log('grants before', JSON.stringify(ac.getGrants(), null, '  '));
-
-        // This check actually changes the underlying grants
-        ac.can(['user', 'admin']).updateOwn('video');
-
-        // console.log('grants after', JSON.stringify(ac.getGrants(), null, '  '));
-
-        // Admin can update any or own video
-        expect(ac.can(['admin']).updateAny('video').granted).toEqual(true);
-        expect(ac.can(['admin']).updateOwn('video').granted).toEqual(true);
-    });
-
-    it('should grant/deny multiple roles and multiple resources', function () {
-        let ac = this.ac;
-
-        ac.grant('admin, user').createAny('profile, video');
-        expect(ac.can('admin').createAny('profile').granted).toEqual(true);
-        expect(ac.can('admin').createAny('video').granted).toEqual(true);
-        expect(ac.can('user').createAny('profile').granted).toEqual(true);
-        expect(ac.can('user').createAny('video').granted).toEqual(true);
-
-        ac.grant('admin, user').createAny('profile, video', '*,!id');
-        expect(ac.can('admin').createAny('profile').attributes).toEqual(['*', '!id']);
-        expect(ac.can('admin').createAny('video').attributes).toEqual(['*', '!id']);
-        expect(ac.can('user').createAny('profile').attributes).toEqual(['*', '!id']);
-        expect(ac.can('user').createAny('video').attributes).toEqual(['*', '!id']);
-
-        ac.deny('admin, user').readAny('photo, book', '*,!id');
-        expect(ac.can('admin').readAny('photo').attributes).toEqual([]);
-        expect(ac.can('admin').readAny('book').attributes).toEqual([]);
-        expect(ac.can('user').readAny('photo').attributes).toEqual([]);
-        expect(ac.can('user').readAny('book').attributes).toEqual([]);
-
-        expect(ac.can('user').createAny('non-existent').granted).toEqual(false);
-
-        // console.log(JSON.stringify(ac.getGrants(), null, '  '));
+        ac.grant('role1').createOwn('photo', ['image', 'name'])
+            .grant('role2').createOwn('photo', ['name', '!location']) // '!location' is redundant here
+            .grant('role3').createOwn('photo', ['*', '!location'])
+            .grant('role4').extend(['role1', 'role2'])
+            .grant('role5').extend(['role1', 'role2', 'role3']);
+            // console.log(ac.can('role4').createOwn('photo').attributes);
+        // expect(ac.can('role4').createOwn('photo').attributes).toEqual(['image', 'name']);
+        expect(ac.can('role5').createOwn('photo').attributes).toEqual(['*', '!location']);
     });
 
     it('should filter given data (static filter method)', function () {
@@ -535,6 +739,40 @@ describe('Test Suite: Access Control', function () {
 
         expect(o.account.id).toEqual(1);
         expect(o).not.toEqual(x);
+    });
+
+    it('should lock AccessControl instance', function () {
+        let ac;
+
+        function test() {
+            expectACError(() => ac.setGrants({}));
+            expectACError(() => ac.reset());
+            expectACError(() => ac.grant('editor'));
+            expectACError(() => ac.deny('admin'));
+            expectACError(() => ac.extendRole('admin', 'user'));
+            expectACError(() => ac.removeRoles(['admin']));
+            expectACError(() => ac.removeResources(['video']));
+
+            expect(ac.getRoles()).toContain('user');
+            expect(ac.getRoles()).toContain('admin');
+            expect(ac.getResources()).toContain('video');
+            expect(ac.getExtendedRolesOf('admin')).not.toContain('user');
+        }
+
+        // locking with Access#lock
+        ac = new AccessControl();
+        ac.grant('user').createAny('video')
+            .grant('admin').createAny('photo')
+            .lock();
+        test();
+
+
+        // locking with AccessControl#lock
+        ac = new AccessControl();
+        ac.grant('user').createAny('video')
+            .grant('admin').createAny('photo');
+        ac.lock();
+        test();
     });
 
 });
