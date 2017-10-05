@@ -1,6 +1,6 @@
 import { IQueryInfo, Permission } from '../core';
 import { Action, Possession } from '../enums';
-import utils from '../utils';
+import { utils } from '../utils';
 
  /**
   *  Represents the inner `Query` class that helps build an access information
