@@ -45,7 +45,7 @@ export { IQueryInfo };
  *  actually building this query object which will be used to check the access
  *  permissions.
  *  @name AccessControl~IQueryInfo
- *  @type Object
+ *  @type {Object}
  *
  *  @property {String|Array<String>} role
  *  Indicates a single or multiple roles to be queried.

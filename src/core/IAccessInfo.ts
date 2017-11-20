@@ -58,7 +58,7 @@ export { IAccessInfo };
  *  methods, you're actually building this  object which will eventually be
  *  committed to the underlying grants model.
  *  @name AccessControl~IAccessInfo
- *  @type Object
+ *  @type {Object}
  *
  *  @property {String|Array<String>} role
  *  Indicates a single or multiple roles for this access information.
