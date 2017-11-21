@@ -4,6 +4,9 @@ node_js:
   - '6'
   - '4'
 before_script: cd $TRAVIS_BUILD_DIR
+script:
+  - yarn run coverage
+  - yarn run coveralls
 notifications:
   email:
     # recipients:
