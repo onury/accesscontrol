@@ -1,5 +1,9 @@
 ## AccessControl - Change Log
 
+- **(Dev)**: Migrated tests to Jest, removed Jasmine and dependencies. Enabled test coverage.
+- **(Dev)**: Added `coveralls` support.
+- **(Dev)**: Adapted `yarn` instead of `npm`.
+
 ### v2.0.0 (2017-10-05)
 
 - **Breaking-Change**: Cross role inheritance is no more allowed. Fixes [issue #18](https://github.com/onury/accesscontrol/issues/18).
