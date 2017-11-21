@@ -37,7 +37,9 @@
       "/coverage/"
     ],
     "collectCoverageFrom": [
-      "lib/**/*.js"
+      "lib/**/*.js",
+      "!**/IAccessInfo.js",
+      "!**/IQueryInfo.js"
     ],
     "coverageDirectory": "./test/coverage"
   },
