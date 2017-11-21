@@ -4,4 +4,6 @@ npm-debug.log
 tmp
 TODO.md
 /docs/
+/test/coverage/
 .DS_Store
+yarn-error.log
