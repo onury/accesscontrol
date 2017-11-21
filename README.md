@@ -1,13 +1,15 @@
 <p align="center"><img width="465" height="170" src="https://raw.github.com/onury/accesscontrol/master/ac-logo.png" /></p>
 
 [![build-status](https://img.shields.io/travis/onury/accesscontrol.svg?branch=master)](https://travis-ci.org/onury/accesscontrol)
+[![Coverage Status](https://coveralls.io/repos/github/onury/accesscontrol/badge.svg?branch=master)](https://coveralls.io/github/onury/accesscontrol?branch=master)
+[![dependencies](https://david-dm.org/onury/accesscontrol.svg)](https://david-dm.org/onury/accesscontrol)
+[![Known Vulnerabilities](https://snyk.io/test/github/onury/accesscontrol/badge.svg)](https://snyk.io/test/github/onury/accesscontrol)
+[![maintained](https://img.shields.io/maintenance/yes/2017.svg)](https://github.com/onury/accesscontrol/graphs/commit-activity)  
 [![npm](http://img.shields.io/npm/v/accesscontrol.svg)](https://www.npmjs.com/package/accesscontrol)
 [![release](https://img.shields.io/github/release/onury/accesscontrol.svg)](https://github.com/onury/accesscontrol)
 [![license](http://img.shields.io/npm/l/accesscontrol.svg)](https://github.com/onury/accesscontrol/blob/master/LICENSE)
-[![dependencies](https://david-dm.org/onury/accesscontrol.svg)](https://david-dm.org/onury/accesscontrol)
-[![maintained](https://img.shields.io/maintenance/yes/2017.svg)](https://github.com/onury/accesscontrol/graphs/commit-activity)
 [![TypeScript](https://img.shields.io/badge/written%20in-%20TypeScript%20-6575ff.svg)](https://www.typescriptlang.org)
-[![documentation](https://img.shields.io/badge/docs-click_to_read-c27cf4.svg?documentation=click_to_read)](http://onury.io/accesscontrol/?api=ac)    
+[![documentation](https://img.shields.io/badge/documentation-click_to_read-c27cf4.svg?documentation=click_to_read)](http://onury.io/accesscontrol/?api=ac)    
 
 > © 2017, Onur Yıldırım ([@onury](https://github.com/onury)). MIT License.
 
