@@ -2,7 +2,7 @@
 
 - **(Dev)**: Migrated tests to Jest, removed Jasmine and dependencies. Enabled test coverage.
 - **(Dev)**: Added `coveralls` support.
-- **(Dev)**: Adapted `yarn` instead of `npm`.
+- **(Dev)**: Adapted `yarn`.
 
 ### v2.0.0 (2017-10-05)
 
