@@ -10,19 +10,19 @@ interface IAccessInfo {
      *  Indicates a single or multiple roles for this access information.
      *  @type {String|Array<String>}
      */
-    role?:string|string[];
+    role?: string | string[];
     /**
      *  Indicates a single or multiple target resources for this access
      *  information.
      *  @type {String|Array<String>}
      */
-    resource?:string|string[];
+    resource?: string | string[];
     /**
      *  Defines the resource attributes which are granted. If denied, this will
      *  default to an empty array.
      *  @type {String|Array<String>}
      */
-    attributes?:string|string[];
+    attributes?: string | string[];
     /**
      *  Defines the type of the operation that is (or not) to be performed on
      *  the resource(s) by the defined role(s).
@@ -30,20 +30,20 @@ interface IAccessInfo {
      *  for possible values.
      *  @type {String}
      */
-    action?:string;
+    action?: string;
     /**
      *  Defines the possession of the resource(s) for the specified action.
      *  See {@link ?api=ac#AccessControl.Possession|`AccessControl.Possession` enumeration}
      *  for possible values.
      *  @type {String}
      */
-    possession?:string;
+    possession?: string;
     /**
      *  Single or multiple roles for this access information.
      *  @private
      *  @type {String|Array<String>}
      */
-    denied?:boolean;
+    denied?: boolean;
 }
 
 export { IAccessInfo };

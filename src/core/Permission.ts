@@ -40,7 +40,7 @@ class Permission {
     /**
      *  @private
      */
-    private _:any = {};
+    private _: any = {};
 
     /**
      *  Initializes a new `Permission` instance.
@@ -49,7 +49,7 @@ class Permission {
      *  @param {IQueryInfo} query
      *         An `IQueryInfo` arbitrary object.
      */
-    constructor(grants:any, query:IQueryInfo) {
+    constructor(grants: any, query: IQueryInfo) {
         this._.role = query.role;
         this._.resource = query.resource;
         this._.attributes = utils.getUnionAttrsOfRoles(grants, query);
@@ -70,7 +70,7 @@ class Permission {
      *  @type {Array<String>}
      *  @readonly
      */
-    get roles():string[] {
+    get roles(): string[] {
         return this._.role;
     }
 
@@ -81,7 +81,7 @@ class Permission {
      *  @type {String}
      *  @readonly
      */
-    get resource():string {
+    get resource(): string {
         return this._.resource;
     }
 
@@ -97,7 +97,7 @@ class Permission {
      *  @type {Array<String>}
      *  @readonly
      */
-    get attributes():string[] {
+    get attributes(): string[] {
         return this._.attributes;
     }
 
@@ -109,10 +109,10 @@ class Permission {
      *  @type {Boolean}
      *  @readonly
      */
-    get granted():boolean {
+    get granted(): boolean {
         if (!this.attributes || this.attributes.length === 0) return false;
         // just one non-negated attribute is enough.
-        return this.attributes.some((attr:string) => {
+        return this.attributes.some((attr: string) => {
             return attr.trim().slice(0, 1) !== '!';
         });
     }
@@ -128,7 +128,7 @@ class Permission {
      *  @returns {Object|Array}
      *           The filtered data object.
      */
-    filter(data:any):any {
+    filter(data: any): any {
         return utils.filterAll(data, this.attributes);
     }
 

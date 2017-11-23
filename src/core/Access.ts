@@ -19,21 +19,21 @@ class Access {
      *  @protected
      *  @type {IAccessInfo}
      */
-    protected _:IAccessInfo = {};
+    protected _: IAccessInfo = {};
 
     /**
      *  Main grants object.
      *  @protected
      *  @type {AccessControl}
      */
-    protected _ac:AccessControl;
+    protected _ac: AccessControl;
 
     /**
      *  Main grants object.
      *  @protected
      *  @type {Any}
      */
-    protected _grants:any;
+    protected _grants: any;
 
     /**
      *  Initializes a new instance of `Access`.
@@ -41,7 +41,7 @@ class Access {
      *
      *  @param {AccessControl} ac
      *         AccessControl instance.
-     *  @param {String|Array<String>|IAccessInfo} roleOrInfo
+     *  @param {String|Array<String>|IAccessInfo} [roleOrInfo]
      *         Either an `IAccessInfo` object, a single or an array of
      *         roles. If an object is passed, possession and attributes
      *         properties are optional. CAUTION: if attributes is omitted,
@@ -51,7 +51,7 @@ class Access {
      *  @param {Boolean} denied
      *         Specifies whether this `Access` is denied.
      */
-    constructor(ac:AccessControl, roleOrInfo?:string|string[]|IAccessInfo, denied:boolean = false) {
+    constructor(ac: AccessControl, roleOrInfo?: string | string[] | IAccessInfo, denied: boolean = false) {
         this._ac = ac;
         this._grants = (ac as any)._grants;
         this._.denied = denied;
@@ -77,7 +77,7 @@ class Access {
      *  @type {Boolean}
      *  @readonly
      */
-    get denied():boolean {
+    get denied(): boolean {
         return this._.denied;
     }
 
@@ -92,7 +92,7 @@ class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    role(value:string|string[]):Access {
+    role(value: string | string[]): Access {
         // in case chain is not terminated (e.g. `ac.grant('user')`) we'll
         // create/commit the roles to grants with an empty object.
         utils.preCreateRoles(this._grants, value);
@@ -108,7 +108,7 @@ class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    resource(value:string|string[]):Access {
+    resource(value: string | string[]): Access {
         // this will throw if any item fails
         utils.hasValidNames(value, true);
         this._.resource = value;
@@ -122,7 +122,7 @@ class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    attributes(value:string|string[]):Access {
+    attributes(value: string | string[]): Access {
         this._.attributes = value;
         return this;
     }
@@ -144,7 +144,7 @@ class Access {
      *  const permission = ac.can('admin').createAny('video');
      *  console.log(permission.granted); // true
      */
-    extend(roles:string|string[]):Access {
+    extend(roles: string | string[]): Access {
         utils.extendRole(this._grants, this._.role, roles);
         return this;
     }
@@ -153,7 +153,7 @@ class Access {
      *  Alias of `extend`.
      *  @private
      */
-    inherit(roles:string|string[]):Access {
+    inherit(roles: string | string[]): Access {
         this.extend(roles);
         return this;
     }
@@ -173,7 +173,7 @@ class Access {
      *  ac.grant('user').createOwn('video')
      *    .grant('admin').updateAny('video');
      */
-    grant(roleOrInfo?:string|string[]|IAccessInfo):Access {
+    grant(roleOrInfo?: string | string[] | IAccessInfo): Access {
         return (new Access(this._ac, roleOrInfo, false)).attributes(['*']);
     }
 
@@ -192,7 +192,7 @@ class Access {
      *  ac.grant('admin').createAny('video')
      *    .deny('user').deleteAny('video');
      */
-    deny(roleOrInfo?:string|string[]|IAccessInfo):Access {
+    deny(roleOrInfo?: string | string[] | IAccessInfo): Access {
         return (new Access(this._ac, roleOrInfo, true)).attributes([]);
     }
 
@@ -200,7 +200,7 @@ class Access {
      *  Chainable, convenience shortcut for {@link ?api=ac#AccessControl#lock|`AccessControl#lock()`}.
      *  @returns {Access}
      */
-    lock():Access {
+    lock(): Access {
         utils.lockAC(this._ac);
         return this;
     }
@@ -228,7 +228,7 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    createOwn(resource?:string|string[], attributes?:string|string[]):Access {
+    createOwn(resource?: string | string[], attributes?: string | string[]): Access {
         return this._prepareAndCommit(Action.CREATE, Possession.OWN, resource, attributes);
     }
 
@@ -257,14 +257,14 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    createAny(resource?:string|string[], attributes?:string|string[]):Access {
+    createAny(resource?: string | string[], attributes?: string | string[]): Access {
         return this._prepareAndCommit(Action.CREATE, Possession.ANY, resource, attributes);
     }
     /**
      *  Alias of `createAny`
      *  @private
      */
-    create(resource?:string|string[], attributes?:string|string[]):Access {
+    create(resource?: string | string[], attributes?: string | string[]): Access {
         return this.createAny(resource, attributes);
     }
 
@@ -290,7 +290,7 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    readOwn(resource?:string|string[], attributes?:string|string[]):Access {
+    readOwn(resource?: string | string[], attributes?: string | string[]): Access {
         return this._prepareAndCommit(Action.READ, Possession.OWN, resource, attributes);
     }
 
@@ -319,14 +319,14 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    readAny(resource?:string|string[], attributes?:string|string[]):Access {
+    readAny(resource?: string | string[], attributes?: string | string[]): Access {
         return this._prepareAndCommit(Action.READ, Possession.ANY, resource, attributes);
     }
     /**
      *  Alias of `readAny`
      *  @private
      */
-    read(resource?:string|string[], attributes?:string|string[]):Access {
+    read(resource?: string | string[], attributes?: string | string[]): Access {
         return this.readAny(resource, attributes);
     }
 
@@ -352,7 +352,7 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    updateOwn(resource?:string|string[], attributes?:string|string[]):Access {
+    updateOwn(resource?: string | string[], attributes?: string | string[]): Access {
         return this._prepareAndCommit(Action.UPDATE, Possession.OWN, resource, attributes);
     }
 
@@ -381,14 +381,14 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    updateAny(resource?:string|string[], attributes?:string|string[]):Access {
+    updateAny(resource?: string | string[], attributes?: string | string[]): Access {
         return this._prepareAndCommit(Action.UPDATE, Possession.ANY, resource, attributes);
     }
     /**
      *  Alias of `updateAny`
      *  @private
      */
-    update(resource?:string|string[], attributes?:string|string[]):Access {
+    update(resource?: string | string[], attributes?: string | string[]): Access {
         return this.updateAny(resource, attributes);
     }
 
@@ -414,7 +414,7 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    deleteOwn(resource?:string|string[], attributes?:string|string[]):Access {
+    deleteOwn(resource?: string | string[], attributes?: string | string[]): Access {
         return this._prepareAndCommit(Action.DELETE, Possession.OWN, resource, attributes);
     }
 
@@ -443,14 +443,14 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    deleteAny(resource?:string|string[], attributes?:string|string[]):Access {
+    deleteAny(resource?: string | string[], attributes?: string | string[]): Access {
         return this._prepareAndCommit(Action.DELETE, Possession.ANY, resource, attributes);
     }
     /**
      *  Alias of `deleteAny`
      *  @private
      */
-    delete(resource?:string|string[], attributes?:string|string[]):Access {
+    delete(resource?: string | string[], attributes?: string | string[]): Access {
         return this.deleteAny(resource, attributes);
     }
 
@@ -467,7 +467,7 @@ class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    private _prepareAndCommit(action:string, possession:string, resource?:string|string[], attributes?:string|string[]):Access {
+    private _prepareAndCommit(action: string, possession: string, resource?: string | string[], attributes?: string | string[]): Access {
         this._.action = action;
         this._.possession = possession;
         if (resource) this._.resource = resource;
