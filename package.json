@@ -18,30 +18,45 @@
     "deps": "yarn upgrade-interactive && snyk test",
     "clean": "rimraf ./lib",
     "build": "yarn run clean && mkdirp ./lib && tsc",
-    "test": "yarn run build && jest",
-    "coverage": "yarn run build && jest --coverage",
-    "coveralls": "cat ./test/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js -v",
+    "test": "yarn run build && jest --verbose",
+    "test!": "yarn jest --verbose",
+    "coverage": "yarn run build && jest --coverage --verbose",
+    "coverage!": "yarn jest --coverage --verbose",
+    "coveralls": "cat ./test/.coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js -v",
+    "report": "open ./test/.coverage/lcov-report/index.html",
     "docs": "docma -c ./docma.config.json"
   },
   "jest": {
     "testEnvironment": "node",
     "roots": [
+      "<rootDir>/src",
       "<rootDir>/lib",
       "<rootDir>/test"
     ],
+    "transform": {
+      "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
     "testMatch": [
-      "**/test/(*.)?(spec|test).js"
+      "**/test/(*.)?(spec|test).ts"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "json"
     ],
     "testPathIgnorePatterns": [
       "/backup/",
-      "/coverage/"
+      "/.coverage/"
     ],
     "collectCoverageFrom": [
-      "lib/**/*.js",
-      "!**/IAccessInfo.js",
-      "!**/IQueryInfo.js"
+      "src/**/*.ts",
+      "!src/index.ts",
+      "!**/IAccessInfo.ts",
+      "!**/IQueryInfo.ts"
     ],
-    "coverageDirectory": "./test/coverage"
+    "coverageDirectory": "./test/.coverage",
+    "mapCoverage": true
   },
   "repository": {
     "type": "git",
@@ -50,6 +65,7 @@
   "keywords": [
     "access",
     "access-control",
+    "acl",
     "role",
     "attribute",
     "grant",
@@ -69,7 +85,12 @@
     "resource",
     "express",
     "admin",
-    "user"
+    "user",
+    "glob",
+    "wildcard",
+    "policy",
+    "scope",
+    "context"
   ],
   "author": "Onur Yildirim <onur@cutepilot.com>",
   "license": "MIT",
@@ -78,6 +99,7 @@
   },
   "homepage": "https://github.com/onury/accesscontrol#readme",
   "devDependencies": {
+    "@types/jest": "^21.1.6",
     "@types/node": "^8.0.32",
     "coveralls": "^3.0.0",
     "docma": "^1.5.1",
@@ -86,6 +108,7 @@
     "ncp": "^2.0.0",
     "rimraf": "^2.6.2",
     "snyk": "^1.49.4",
+    "ts-jest": "^21.2.3",
     "typescript": "^2.5.3"
   },
   "dependencies": {
