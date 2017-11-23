@@ -108,10 +108,10 @@ declare class AccessControl {
      *  Initializes a new instance of `AccessControl` with the given grants.
      *  @ignore
      *
-     *  @param {Object|Array} grants - A list containing the access grant
+     *  @param {Object|Array} [grants] - A list containing the access grant
      *      definitions. See the structure of this object in the examples.
      */
-    constructor(grants: any);
+    constructor(grants?: any);
     /**
      *  Specifies whether the underlying grants object is frozen and all
      *  functionality for modifying it is disabled.
@@ -433,12 +433,12 @@ declare class AccessControl {
      *  // Note: when attributes is omitted, it will default to `['*']`
      *  // which means all attributes (of the resource) are allowed.
      */
-    grant(role: string | string[] | IAccessInfo): Access;
+    grant(role?: string | string[] | IAccessInfo): Access;
     /**
      *  Alias of `grant()`.
      *  @private
      */
-    allow(role: string | string[] | IAccessInfo): Access;
+    allow(role?: string | string[] | IAccessInfo): Access;
     /**
      *  Gets an instance of `Access` object. This is used to deny access to
      *  specified resource(s) for the given role(s). Denying will only remove a
@@ -490,12 +490,12 @@ declare class AccessControl {
      *  // To deny same resource for multiple roles:
      *  ac.deny(['admin', 'user']).createOwn('profile');
      */
-    deny(role: string | string[] | IAccessInfo): Access;
+    deny(role?: string | string[] | IAccessInfo): Access;
     /**
      *  Alias of `deny()`.
      *  @private
      */
-    reject(role: string | string[] | IAccessInfo): Access;
+    reject(role?: string | string[] | IAccessInfo): Access;
     /**
      *  @private
      */

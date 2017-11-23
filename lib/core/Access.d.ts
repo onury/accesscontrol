@@ -34,7 +34,7 @@ declare class Access {
      *
      *  @param {AccessControl} ac
      *         AccessControl instance.
-     *  @param {String|Array<String>|IAccessInfo} roleOrInfo
+     *  @param {String|Array<String>|IAccessInfo} [roleOrInfo]
      *         Either an `IAccessInfo` object, a single or an array of
      *         roles. If an object is passed, possession and attributes
      *         properties are optional. CAUTION: if attributes is omitted,

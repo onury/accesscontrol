@@ -28,7 +28,7 @@ declare const utils: {
     validResourceObject(o: any, throwOnInvalid?: boolean): boolean;
     validRoleObject(o: any, roleName: string, throwOnInvalid?: boolean): boolean;
     getInspectedGrants(o: any): any;
-    normalizeActionPossession(info: IAccessInfo | IQueryInfo): IAccessInfo | IQueryInfo;
+    normalizeActionPossession(info: IAccessInfo | IQueryInfo, asString?: boolean): string | IAccessInfo | IQueryInfo;
     normalizeQueryInfo(query: IQueryInfo, all?: boolean): IQueryInfo;
     normalizeAccessInfo(access: IAccessInfo, all?: boolean): IAccessInfo;
     resetAttributes(access: IAccessInfo): IAccessInfo;
