@@ -1,13 +1,23 @@
 ## AccessControl - Change Log
 
-- **(Dev)**: Migrated tests to Jest, removed Jasmine and dependencies. Enabled test coverage.
-- **(Dev)**: Added `coveralls` support.
-- **(Dev)**: Adapted `yarn`.
+### v2.1.0 (2017-11-23)
+
+- **Fixed** an issue where action and possession of a permission query is not pre-normalized. Only   `#permission()` method was affected.
+- **Fixed** an issue where it would throw even if `$extend` was used properly in the initial grants model, passed to the constructor or `#setGrants()`. Fixes [issue #22](https://github.com/onury/accesscontrol/issues/22).
+- **Fixed** "maximum call stack" error that occurs while processing inherited/cross roles.
+- **Fixed** an issue where role validation would incorrectly return `true` in a specific case.
+- **Revised** `#lock()` to throw a meaningful error if not successful.
+- **Revised** `#hasRole()` and `#hasResource()` methods to also accept a string array (to check for multiple at once), in addition to `string` (single).
+- Various revisions, clean-up.
+
+- **(Dev)** Migrated tests to Jest. Refactored tests to TypeScript. Removed Jasmine and dependencies. 
+- **(Dev)** Adapted `yarn`. Enabled test coverage via `jest`. Added `coveralls` support.
+- **(Dev)** Added moooore tests. Revised code style. Improved coverage.
 
 ### v2.0.0 (2017-10-05)
 
 - **Breaking-Change**: Cross role inheritance is no more allowed. Fixes [issue #18](https://github.com/onury/accesscontrol/issues/18).
-- **Breaking-Change**: Grants model cannot be emptied any more by omitting the parameter (e.g. `ac.setGrants()`) or passing `null`, `undefined`. This will throw. You need to either, explicitly call `#reset()` or set grants to an empty object (`{}`) in order to reset/empty grants safely. 
+- **Breaking-Change**: Grants model cannot be emptied any more by omitting the parameter (e.g. `#setGrants()`) or passing `null`, `undefined`. This will throw. You need to either, explicitly call `#reset()` or set grants to an empty object (`{}`) in order to reset/empty grants safely. 
 - **Breaking-Change**: Renamed `#access()` to `#query()`. This is an alias for `#can()` method.  
 - **Fixed** an issue where deeper inherited roles (more than 1 level) would not be taken into account while querying for permissions. Fixes [issue #17](https://github.com/onury/accesscontrol/issues/17).
 - **Added** `AccessControl#lock()` method that freezes the underlying grants model and disables all functionality for modifying it. This is useful when you want to restrict any changes. Any attempts to modify (such as `#setGrants()`, `#grant()`, `#deny()`, etc) will throw after grants are locked. There is no `unlock()` method. It's like you lock the door and swallow the key. :yum:
@@ -16,7 +26,7 @@
 - **Fixed** a mutation issue occurred when resource attributes are unioned. ([Notation issue #2][notation-issue-2]).
 - **Fixed** an issue with unioned attributes (when a role extends another and attributes (globs) are unioned for querying permissions). Fixes [issue #19](https://github.com/onury/accesscontrol/issues/19) ([Notation issue #3][notation-issue-3]).
 - **Added** the ability to detect invalid grants object passed to `AccessControl` instance. In order to prevent silent, future errors and mistakes; `AccessControl` now thoroughly inspects the grants object passed to constructor or `#setGrants()` method; and throws immediately if it has an invalid structure or configuration.
-- **Revision**: `AccessControl` will throw if any reserved keywords are used (i.e. for role, resource names) such as `"$"`, `"$extend"`.
+- **Revised** `AccessControl` to throw if any reserved keywords are used (i.e. for role, resource names) such as `"$"`, `"$extend"`.
 - **Added** the ability to parse comma-separated attributes. You can now use this, in addition to string arrays; for defining resource attributes.
 
 ### v1.5.4 (2017-09-22)
