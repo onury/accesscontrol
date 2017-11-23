@@ -103,21 +103,21 @@ class AccessControl {
     /**
      *  @private
      */
-    private _grants:any;
+    private _grants: any;
 
     /**
      *  @private
      */
-    private _locked:boolean = false;
+    private _locked: boolean = false;
 
     /**
      *  Initializes a new instance of `AccessControl` with the given grants.
      *  @ignore
      *
-     *  @param {Object|Array} grants - A list containing the access grant
+     *  @param {Object|Array} [grants] - A list containing the access grant
      *      definitions. See the structure of this object in the examples.
      */
-    constructor(grants:any) {
+    constructor(grants?: any) {
         // explicit undefined is not allowed
         if (arguments.length === 0) grants = {};
         this.setGrants(grants);
@@ -133,7 +133,7 @@ class AccessControl {
      *  @name AccessControl#isLocked
      *  @type {Boolean}
      */
-    get isLocked():boolean {
+    get isLocked(): boolean {
         return this._locked && Object.isFrozen(this._grants);
     }
 
@@ -185,7 +185,7 @@ class AccessControl {
      *    }
      *  }
      */
-    getGrants():any {
+    getGrants(): any {
         return this._grants;
     }
 
@@ -202,7 +202,7 @@ class AccessControl {
      *  @throws {AccessControlError} - If called after `.lock()` is called or if
      *  passed grants object fails inspection.
      */
-    setGrants(grantsObject:any):AccessControl {
+    setGrants(grantsObject: any): AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
         this._grants = utils.getInspectedGrants(grantsObject);
         return this;
@@ -216,7 +216,7 @@ class AccessControl {
      *
      *  @throws {AccessControlError} - If called after `.lock()` is called.
      */
-    reset():AccessControl {
+    reset(): AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
         this._grants = {};
         return this;
@@ -251,7 +251,7 @@ class AccessControl {
      *  ac.grant('user'); // throws..
      *  // underlying grants model is not changed
      */
-    lock():AccessControl {
+    lock(): AccessControl {
         utils.lockAC(this);
         return this;
     }
@@ -260,11 +260,11 @@ class AccessControl {
      *  Extends the given role(s) with privileges of one or more other roles.
      *  @chainable
      *
-     *  @param {String|Array<String>} roles Role(s) to be extended. Single role
+     *  @param {string|Array<String>} roles Role(s) to be extended. Single role
      *         as a `String` or multiple roles as an `Array`. Note that if a
      *         role does not exist, it will be automatically created.
      *
-     *  @param {String|Array<String>} extenderRoles Role(s) to inherit from.
+     *  @param {string|Array<String>} extenderRoles Role(s) to inherit from.
      *         Single role as a `String` or multiple roles as an `Array`. Note
      *         that if a extender role does not exist, it will throw.
      *
@@ -273,7 +273,7 @@ class AccessControl {
      *  @throws {AccessControlError} - If a role is extended by itself or a
      *  non-existent role. Or if called after `.lock()` is called.
      */
-    extendRole(roles:string|string[], extenderRoles:string|string[]):AccessControl {
+    extendRole(roles: string | string[], extenderRoles: string | string[]): AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
         utils.extendRole(this._grants, roles, extenderRoles);
         return this;
@@ -283,22 +283,22 @@ class AccessControl {
      *  Removes all the given role(s) and their granted permissions, at once.
      *  @chainable
      *
-     *  @param {String|Array<String>} roles - An array of roles to be removed.
+     *  @param {string|Array<String>} roles - An array of roles to be removed.
      *      Also accepts a string that can be used to remove a single role.
      *
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
      *
      *  @throws {AccessControlError} - If called after `.lock()` is called.
      */
-    removeRoles(roles:string|string[]):AccessControl {
+    removeRoles(roles: string | string[]): AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
 
-        let rolesToRemove:string[] = utils.toStringArray(roles);
-        rolesToRemove.forEach((role:string) => {
+        let rolesToRemove: string[] = utils.toStringArray(roles);
+        rolesToRemove.forEach((role: string) => {
             delete this._grants[role];
         });
         // also remove these roles from $extend list of each remaining role.
-        this._each((role:string, roleItem:any) => {
+        utils.eachRole(this._grants, (roleItem: any, roleName: string) => {
             if (Array.isArray(roleItem.$extend)) {
                 roleItem.$extend = utils.subtractArray(roleItem.$extend, rolesToRemove);
             }
@@ -312,9 +312,9 @@ class AccessControl {
      *  roles only.
      *  @chainable
      *
-     *  @param {String|Array<String>} resources - A single or array of resources to
+     *  @param {string|Array<String>} resources - A single or array of resources to
      *      be removed.
-     *  @param {String|Array<String>} [roles] - A single or array of roles to
+     *  @param {string|Array<String>} [roles] - A single or array of roles to
      *      be removed. If omitted, permissions for all roles to all given
      *      resources will be removed.
      *
@@ -322,7 +322,7 @@ class AccessControl {
      *
      *  @throws {AccessControlError} - If called after `.lock()` is called.
      */
-    removeResources(resources:string|string[], roles?:string|string[]):AccessControl {
+    removeResources(resources: string | string[], roles?: string | string[]): AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
 
         // _removePermission has a third argument `actionPossession`. if
@@ -340,7 +340,7 @@ class AccessControl {
      *  ac.grant('admin, user').createAny('video').grant('user').readOwn('profile');
      *  console.log(ac.getRoles()); // ["admin", "user"]
      */
-    getRoles():string[] {
+    getRoles(): string[] {
         return Object.keys(this._grants);
     }
 
@@ -350,12 +350,12 @@ class AccessControl {
      *  @alias AccessControl#getExtendedRolesOf
      *  @function
      *
-     *  @param {String} role - Target role name.
+     *  @param {string} role - Target role name.
      *
      *  @returns {Array<String>}
      */
-    getInheritedRolesOf(role:string):string[] {
-        let roles:string[] = utils.getInheritedRolesOf(this._grants, role);
+    getInheritedRolesOf(role: string): string[] {
+        let roles: string[] = utils.getInheritedRolesOf(this._grants, role);
         roles.shift();
         return roles;
     }
@@ -364,7 +364,7 @@ class AccessControl {
      *  Alias of `getInheritedRolesOf`
      *  @private
      */
-    getExtendedRolesOf(role:string):string[] {
+    getExtendedRolesOf(role: string): string[] {
         return this.getInheritedRolesOf(role);
     }
 
@@ -374,38 +374,39 @@ class AccessControl {
      *
      *  @returns {Array<String>}
      */
-    getResources():string[] {
-        // using an object for unique list
-        let resources:any = {};
-        this._eachRoleResource((role:string, resource:string, permissions:any) => {
-            resources[resource] = null;
-        });
-        return Object.keys(resources);
+    getResources(): string[] {
+        return utils.getResources(this._grants);
     }
 
     /**
-     *  Checks whether any permissions are granted to the given role.
+     *  Checks whether the grants include the given role or roles.
      *
-     *  @param {String} role - Role to be checked.
+     *  @param {string|string[]} role - Role to be checked. You can also pass an
+     *  array of strings to check multiple roles at once.
      *
      *  @returns {Boolean}
      */
-    hasRole(role:string):boolean {
+    hasRole(role: string | string[]): boolean {
+        if (Array.isArray(role)) {
+            return role.every((item: string) => this._grants.hasOwnProperty(item));
+        }
         return this._grants.hasOwnProperty(role);
     }
 
     /**
-     *  Checks whether any permissions are granted for the given resource.
+     *  Checks whether grants include the given resource or resources.
      *
-     *  @param {String} resource - Resource to be checked.
+     *  @param {string|string[]} resource - Resource to be checked. You can also pass an
+     *  array of strings to check multiple resources at once.
      *
      *  @returns {Boolean}
      */
-    hasResource(resource:string):boolean {
-        if (typeof resource !== 'string' || resource === '') {
-            return false;
-        }
+    hasResource(resource: string | string[]): boolean {
         let resources = this.getResources();
+        if (Array.isArray(resource)) {
+            return resource.every((item: string) => resources.indexOf(item) >= 0);
+        }
+        if (typeof resource !== 'string' || resource === '') return false;
         return resources.indexOf(resource) >= 0;
     }
 
@@ -419,7 +420,7 @@ class AccessControl {
      *  @function
      *  @chainable
      *
-     *  @param {String|Array|IQueryInfo} role - A single role (as a string), a
+     *  @param {string|Array|IQueryInfo} role - A single role (as a string), a
      *  list of roles (as an array) or an
      *  {@link ?api=ac#AccessControl~IQueryInfo|`IQueryInfo` object} that fully
      *  or partially defines the access to be checked.
@@ -441,7 +442,7 @@ class AccessControl {
      *  ac.can(['admin', 'user']).createOwn('profile');
      *  // Note: when multiple roles checked, acquired attributes are unioned (merged).
      */
-    can(role:string|string[]|IQueryInfo):Query {
+    can(role: string | string[] | IQueryInfo): Query {
         return new Query(this._grants, role);
     }
 
@@ -449,7 +450,7 @@ class AccessControl {
      *  Alias of `can()`.
      *  @private
      */
-    query(role:string|string[]|IQueryInfo):Query {
+    query(role: string | string[] | IQueryInfo): Query {
         return this.can(role);
     }
 
@@ -479,9 +480,9 @@ class AccessControl {
      *  permission.attributes; // Array e.g. [ 'username', 'password', 'company.*']
      *  permission.filter(object); // { username, password, company: { name, address, ... } }
      */
-     permission(queryInfo:IQueryInfo):Permission {
-         return new Permission(this._grants, queryInfo);
-     }
+    permission(queryInfo: IQueryInfo): Permission {
+        return new Permission(this._grants, queryInfo);
+    }
 
     /**
      *  Gets an instance of `Grant` (inner) object. This is used to grant access
@@ -491,7 +492,7 @@ class AccessControl {
      *  @function
      *  @chainable
      *
-     *  @param {String|Array<String>|IAccessInfo} role A single role (as a
+     *  @param {string|Array<String>|IAccessInfo} role A single role (as a
      *  string), a list of roles (as an array) or an
      *  {@link ?api=ac#AccessControl~IAccessInfo|`IAccessInfo` object} that
      *  fully or partially defines the access to be granted.
@@ -538,7 +539,7 @@ class AccessControl {
      *  // Note: when attributes is omitted, it will default to `['*']`
      *  // which means all attributes (of the resource) are allowed.
      */
-    grant(role:string|string[]|IAccessInfo):Access {
+    grant(role?: string | string[] | IAccessInfo): Access {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
         return new Access(this, role, false);
     }
@@ -547,7 +548,7 @@ class AccessControl {
      *  Alias of `grant()`.
      *  @private
      */
-    allow(role:string|string[]|IAccessInfo):Access {
+    allow(role?: string | string[] | IAccessInfo): Access {
         return this.grant(role);
     }
 
@@ -561,7 +562,7 @@ class AccessControl {
      *  @function
      *  @chainable
      *
-     *  @param {String|Array<String>|IAccessInfo} role A single role (as a
+     *  @param {string|Array<String>|IAccessInfo} role A single role (as a
      *  string), a list of roles (as an array) or an
      *  {@link ?api=ac#AccessControl~IAccessInfo|`IAccessInfo` object} that
      *  fully or partially defines the access to be denied.
@@ -602,7 +603,7 @@ class AccessControl {
      *  // To deny same resource for multiple roles:
      *  ac.deny(['admin', 'user']).createOwn('profile');
      */
-    deny(role:string|string[]|IAccessInfo):Access {
+    deny(role?: string | string[] | IAccessInfo): Access {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
         return new Access(this, role, true);
     }
@@ -611,7 +612,7 @@ class AccessControl {
      *  Alias of `deny()`.
      *  @private
      */
-    reject(role:string|string[]|IAccessInfo):Access {
+    reject(role?: string | string[] | IAccessInfo): Access {
         return this.deny(role);
     }
 
@@ -619,47 +620,51 @@ class AccessControl {
     //  PRIVATE METHODS
     // -------------------------------
 
-    /**
-     *  @private
-     */
-    private _each(callback:(role:string, roleDefinition:any) => void) {
-        utils.eachKey(this._grants, (role:string) => callback(role, this._grants[role]));
-    }
+    // /**
+    //  *  @private
+    //  */
+    // private _each(callback: (role: string, roleDefinition: any) => void) {
+    //     utils.eachKey(this._grants, (role: string) => callback(role, this._grants[role]));
+    // }
+
+    // /**
+    //  *  @private
+    //  */
+    // private _eachRole(callback: (role: string) => void) {
+    //     utils.eachKey(this._grants, (role: string) => callback(role));
+    // }
+
+    // /**
+    //  *  @private
+    //  */
+    // private _eachRoleResource(callback: (role: string, resource: string, resourceDefinition: any) => void) {
+    //     let resources, resourceDefinition;
+    //     utils.eachKey(this._grants, (role: string) => {
+    //         resources = this._grants[role];
+    //         utils.eachKey(resources, (resource: string) => {
+    //             resourceDefinition = role[resource];
+    //             callback(role, resource, resourceDefinition);
+    //         });
+    //     });
+    // }
 
     /**
      *  @private
      */
-    private _eachRole(callback:(role:string) => void) {
-        utils.eachKey(this._grants, (role:string) => callback(role));
-    }
-
-    /**
-     *  @private
-     */
-    private _eachRoleResource(callback:(role:string, resource:string, resourceDefinition:any) => void) {
-        let resources, resourceDefinition;
-        this._eachRole((role:string) => {
-            resources = this._grants[role];
-            utils.eachKey(resources, (resource:string) => {
-                resourceDefinition = role[resource];
-                callback(role, resource, resourceDefinition);
-            });
-        });
-    }
-
-    /**
-     *  @private
-     */
-    _removePermission(resources:string|string[], roles?:string|string[], actionPossession?:string) {
+    _removePermission(resources: string | string[], roles?: string | string[], actionPossession?: string) {
         resources = utils.toStringArray(resources);
         if (roles) roles = utils.toStringArray(roles);
-        this._eachRoleResource((role:string, resource:string, permissions:any) => {
+        utils.eachRoleResource(this._grants, (role: string, resource: string, permissions: any) => {
             if (resources.indexOf(resource) >= 0
-                    // roles is optional. so remove if role is not defined.
-                    // if defined, check if the current role is in the list.
-                    && (!roles || roles.indexOf(role) >= 0)) {
+                // roles is optional. so remove if role is not defined.
+                // if defined, check if the current role is in the list.
+                && (!roles || roles.indexOf(role) >= 0)) {
                 if (actionPossession) {
-                    delete this._grants[role][resource][actionPossession];
+                    // e.g. 'create' » 'create:any'
+                    // to parse and normalize actionPossession string:
+                    const ap: string = utils.normalizeActionPossession({ action: actionPossession }, true) as string;
+                    // above will also validate the given actionPossession
+                    delete this._grants[role][resource][ap];
                 } else {
                     // this is used for AccessControl#removeResources().
                     delete this._grants[role][resource];
@@ -676,7 +681,7 @@ class AccessControl {
      *  Documented separately in enums/Action
      *  @private
      */
-    static get Action():any {
+    static get Action(): any {
         return Action;
     }
 
@@ -684,7 +689,7 @@ class AccessControl {
      *  Documented separately in enums/Possession
      *  @private
      */
-    static get Possession():any {
+    static get Possession(): any {
         return Possession;
     }
 
@@ -692,7 +697,7 @@ class AccessControl {
      *  Documented separately in AccessControlError
      *  @private
      */
-    static get Error():any {
+    static get Error(): any {
         return AccessControlError;
     }
 
@@ -738,7 +743,7 @@ class AccessControl {
      *  filtered = AccessControl.filter(assets); // or AccessControl.filter(assets, "");
      *  console.log(assets); // {}
      */
-    static filter(data:any, attributes:string[]):any {
+    static filter(data: any, attributes: string[]): any {
         return utils.filterAll(data, attributes);
     }
 
@@ -753,7 +758,7 @@ class AccessControl {
      *
      *  @returns {Boolean}
      */
-    static isACError(object:any):boolean {
+    static isACError(object: any): boolean {
         return object instanceof AccessControlError;
     }
 
@@ -761,7 +766,7 @@ class AccessControl {
      *  Alias of `isACError`
      *  @private
      */
-    static isAccessControlError(object:any):boolean {
+    static isAccessControlError(object: any): boolean {
         return AccessControl.isACError(object);
     }
 }
