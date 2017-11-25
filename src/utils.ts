@@ -170,12 +170,13 @@ const utils = {
      *  possible by returning `false`.
      *  @param object
      *  @param callback
+     *  @param thisArg
      */
-    eachKey(object, callback) {
+    eachKey(object, callback, thisArg = null) {
         // return Object.keys(o).forEach(callback);
         // forEach has no way to interrupt execution, short-circuit unless an
         // error is thrown. so we use this:
-        utils.each(Object.keys(object), callback);
+        utils.each(Object.keys(object), callback, thisArg);
     },
 
     // ----------------------
