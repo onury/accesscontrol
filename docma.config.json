@@ -96,7 +96,7 @@
             ]
         },
         "./CHANGELOG.md",
-        "./FAQ.md",
+        "./docs/FAQ.md",
         {
             "guide": "./README.md"
         }
