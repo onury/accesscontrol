@@ -27,7 +27,7 @@ const utils = {
      *  @param {Any} o
      *  @returns {String}
      */
-    type(o:any):string {
+    type(o: any): string {
         return Object.prototype.toString.call(o).match(/\s(\w+)/i)[1].toLowerCase();
     },
 
@@ -52,7 +52,7 @@ const utils = {
      *  @param {string} propName
      *  @returns {Boolean}
      */
-    hasDefined(o:any, propName:string):boolean {
+    hasDefined(o: any, propName: string): boolean {
         return o.hasOwnProperty(propName) && o[propName] !== undefined;
     },
 
@@ -63,7 +63,7 @@ const utils = {
      *  @param {Any} value
      *  @returns {Boolean|null}
      */
-    toStringArray(value:any):string[] {
+    toStringArray(value: any): string[] {
         if (Array.isArray(value)) return value;
         if (typeof value === 'string') return value.trim().split(/\s*[;,]\s*/);
         // throw new Error('Cannot convert value to array!');
@@ -72,24 +72,16 @@ const utils = {
 
     /**
      *  Checks whether the given array consists of non-empty string items.
+     *  (Array can be empty but no item should be an empty string.)
      *  @param {Array} arr - Array to be checked.
      *  @returns {Boolean}
      */
-    isFilledStringArray(arr:any[]):boolean {
+    isFilledStringArray(arr: any[]): boolean {
         if (!arr || !Array.isArray(arr)) return false;
         for (let s of arr) {
-           if (typeof s !== 'string' || s.trim() === '') return false;
+            if (typeof s !== 'string' || s.trim() === '') return false;
         }
         return true;
-    },
-
-    /**
-     *  Checks whether the given value is a string or array.
-     *  @param {Any} value - Value to be checked.
-     *  @returns {Boolean}
-     */
-    isStringOrArray(value:any):boolean {
-        return typeof value === 'string' || utils.isFilledStringArray(value);
     },
 
     /**
@@ -97,7 +89,7 @@ const utils = {
      *  @param {Any} value - Value to be checked.
      *  @returns {Boolean}
      */
-    isEmptyArray(value:any):boolean {
+    isEmptyArray(value: any): boolean {
         return Array.isArray(value) && value.length === 0;
     },
 
@@ -107,7 +99,7 @@ const utils = {
      *  @param {Any} item - Item to be pushed to array.
      *  @returns {Array}
      */
-    pushUniq(arr:string[], item:string):string[] {
+    pushUniq(arr: string[], item: string): string[] {
         if (arr.indexOf(item) < 0) arr.push(item);
         return arr;
     },
@@ -118,9 +110,9 @@ const utils = {
      *  @param {Array} arrB
      *  @returns {Array} - Concat'ed array.
      */
-    uniqConcat(arrA:string[], arrB:string[]):string[] {
-        const arr:string[] = arrA.concat();
-        arrB.forEach((b:string) => {
+    uniqConcat(arrA: string[], arrB: string[]): string[] {
+        const arr: string[] = arrA.concat();
+        arrB.forEach((b: string) => {
             utils.pushUniq(arr, b);
         });
         return arr;
@@ -132,7 +124,7 @@ const utils = {
      *  @param {Array} arrB
      *  @return {Array} - Resulting array.
      */
-    subtractArray(arrA:string[], arrB:string[]):string[] {
+    subtractArray(arrA: string[], arrB: string[]): string[] {
         return arrA.concat().filter(a => arrB.indexOf(a) === -1);
     },
 
@@ -141,13 +133,13 @@ const utils = {
      *  @param {Object} o - Object to be frozen.
      *  @returns {Object} - Frozen object.
      */
-    deepFreeze(o:any):any {
+    deepFreeze(o: any): any {
         // Object.freeze accepts also an array. But here, we only use this for
         // objects.
         if (utils.type(o) !== 'object') return;
         const props = Object.getOwnPropertyNames(o);
         // freeze deeper before self
-        props.forEach((key:string) => {
+        props.forEach((key: string) => {
             let sub = o[key];
             if (Array.isArray(sub)) Object.freeze(sub);
             if (utils.type(sub) === 'object') {
@@ -187,6 +179,28 @@ const utils = {
     },
 
     // ----------------------
+    // AC ITERATION UTILS
+    // ----------------------
+
+    eachRole(grants, callback: (role: any, roleName: string) => void) {
+        utils.eachKey(grants, (name: string) => callback(grants[name], name));
+    },
+
+    /**
+     *
+     */
+    eachRoleResource(grants, callback: (role: string, resource: string, resourceDefinition: any) => void) {
+        let resources, resourceDefinition;
+        utils.eachKey(grants, (role: string) => {
+            resources = grants[role];
+            utils.eachKey(resources, (resource: string) => {
+                resourceDefinition = role[resource];
+                callback(role, resource, resourceDefinition);
+            });
+        });
+    },
+
+    // ----------------------
     // AC VALIDATION UTILS
     // ----------------------
 
@@ -195,7 +209,7 @@ const utils = {
      *  @param {IAccessInfo|IQueryInfo} info
      *  @returns {Boolean}
      */
-    isInfoFulfilled(info:IAccessInfo|IQueryInfo):boolean {
+    isInfoFulfilled(info: IAccessInfo | IQueryInfo): boolean {
         return utils.hasDefined(info, 'role')
             && utils.hasDefined(info, 'action')
             && utils.hasDefined(info, 'resource');
@@ -204,21 +218,23 @@ const utils = {
     /**
      *  Checks whether the given name can be used and is not a reserved keyword.
      *
-     *  @param {String} name - Name to be checked.
-     *  @param {Boolean} [throwOnInvalid=true] - Specifies whether to throw if
+     *  @param {string} name - Name to be checked.
+     *  @param {boolean} [throwOnInvalid=true] - Specifies whether to throw if
      *  name is not valid.
-     *  @param {String} [msg] - Message to be thrown if `throwOnInvalid` is
-     *  enabled and name is not valid.
      *
      *  @returns {Boolean}
      *
      *  @throws {AccessControlError} - If `throwOnInvalid` is enabled and name
      *  is invalid.
      */
-    validName(name:string, throwOnInvalid:boolean = true, msg?:string):boolean {
+    validName(name: string, throwOnInvalid: boolean = true): boolean {
+        if (typeof name !== 'string' || name.trim() === '') {
+            if (!throwOnInvalid) return false;
+            throw new AccessControlError('Invalid name, expected a valid string.');
+        }
         if (RESERVED_KEYWORDS.indexOf(name) >= 0) {
             if (!throwOnInvalid) return false;
-            throw new AccessControlError(msg || `Cannot use reserved name: "${name}"`);
+            throw new AccessControlError(`Cannot use reserved name: "${name}"`);
         }
         return true;
     },
@@ -226,21 +242,19 @@ const utils = {
     /**
      *  Checks whether the given array does not contain a reserved keyword.
      *
-     *  @param {String|Array<String>} list - Name(s) to be checked.
-     *  @param {Boolean} [throwOnInvalid=true] - Specifies whether to throw if
+     *  @param {string|string[]} list - Name(s) to be checked.
+     *  @param {boolean} [throwOnInvalid=true] - Specifies whether to throw if
      *  name is not valid.
-     *  @param {String} [msg] - Message to be thrown if `throwOnInvalid` is
-     *  enabled and name is not valid.
      *
      *  @returns {Boolean}
      *
      *  @throws {AccessControlError} - If `throwOnInvalid` is enabled and name
      *  is invalid.
      */
-    hasValidNames(list:any, throwOnInvalid:boolean = true, msg?:string):boolean {
+    hasValidNames(list: any, throwOnInvalid: boolean = true): boolean {
         let allValid = true;
         utils.each(utils.toStringArray(list), name => {
-            if (!utils.validName(name, throwOnInvalid, msg)) {
+            if (!utils.validName(name, throwOnInvalid)) {
                 allValid = false;
                 return false; // break out of loop
             }
@@ -254,75 +268,68 @@ const utils = {
      *  Checks whether the given object is a valid resource definition object.
      *
      *  @param {Object} o - Resource definition to be checked.
-     *  @param {Boolean} [throwOnInvalid=true] - Specifies whether to throw if
-     *  given object is not valid.
      *
      *  @returns {Boolean}
      *
      *  @throws {AccessControlError} - If `throwOnInvalid` is enabled and object
      *  is invalid.
      */
-    validResourceObject(o:any, throwOnInvalid:boolean = true):boolean {
-        if (utils.type(o) !== 'object') return false;
-        let valid = true;
+    validResourceObject(o: any): boolean {
+        if (utils.type(o) !== 'object') {
+            throw new AccessControlError(`Invalid resource definition.`);
+        }
+
         utils.eachKey(o, action => {
-            let s:string[] = action.split(':');
+            let s: string[] = action.split(':');
             if (actions.indexOf(s[0]) === -1) {
-                if (throwOnInvalid) throw new AccessControlError(`Invalid action: "${action}"`);
-                valid = false;
-                return false; // break out of loop
+                throw new AccessControlError(`Invalid action: "${action}"`);
             }
             if (s[1] && possessions.indexOf(s[1]) === -1) {
-                if (throwOnInvalid) throw new AccessControlError(`Invalid action possession: "${action}"`);
-                valid = false;
-                return false; // break out of loop
+                throw new AccessControlError(`Invalid action possession: "${action}"`);
             }
             let perms = o[action];
             if (!utils.isEmptyArray(perms) && !utils.isFilledStringArray(perms)) {
-                if (throwOnInvalid) throw new AccessControlError(`Invalid resource attributes for action "${action}".`);
-                valid = false;
-                return false; // break out of loop
+                throw new AccessControlError(`Invalid resource attributes for action "${action}".`);
             }
-            // suppress tslint warning
-            return true; // continue
         });
-        return valid;
+        return true;
     },
 
     /**
      *  Checks whether the given object is a valid role definition object.
      *
-     *  @param {Object} o - Role definition to be checked.
-     *  @param {String} roleName - Name of the role.
-     *  @param {Boolean} [throwOnInvalid=true] - Specifies whether to throw if
-     *  given object is not valid.
+     *  @param {Object} grants - Original grants object being inspected.
+     *  @param {string} roleName - Name of the role.
      *
      *  @returns {Boolean}
      *
      *  @throws {AccessControlError} - If `throwOnInvalid` is enabled and object
      *  is invalid.
      */
-    validRoleObject(o:any, roleName:string, throwOnInvalid:boolean = true):boolean {
-        if (utils.type(o) !== 'object') return false;
-        let valid = true;
-        utils.eachKey(o, resourceName => {
+    validRoleObject(grants: any, roleName: string): boolean {
+        let role = grants[roleName];
+        if (!role || utils.type(role) !== 'object') {
+            throw new AccessControlError(`Invalid role definition.`);
+        }
+
+        utils.eachKey(role, (resourceName: string) => {
+            let resource = role[resourceName];
             if (!utils.validName(resourceName, false)) {
-                if (throwOnInvalid) {
+                if (resourceName === '$extend') {
+                    let extRoles: string[] = resource; // semantics
+                    if (!utils.isFilledStringArray(extRoles)) {
+                        throw new AccessControlError(`Invalid extend value for role "${roleName}": ${JSON.stringify(extRoles)}`);
+                    } else {
+                        // attempt to actually extend the roles. this will throw
+                        // on failure.
+                        utils.extendRole(grants, roleName, extRoles);
+                    }
+                } else {
                     throw new AccessControlError(`Cannot use reserved name "${resourceName}" for a resource.`);
                 }
-                valid = false;
-                return false; // break out of loop
+            } else if (!utils.validResourceObject(resource)) { // this already throws on failure
+                // throw new AccessControlError(`Invalid resource definition ("${resourceName}") for role "${roleName}".`);
             }
-            let resource = o[resourceName];
-            if (!utils.validResourceObject(resource, throwOnInvalid)) {
-                if (throwOnInvalid) {
-                    throw new AccessControlError(`Invalid resource definition ("${resourceName}") for role "${roleName}".`);
-                }
-                valid = false;
-                return false; // break out of loop
-            }
-            // suppress tslint warning
-            return true; // continue
         });
         return true;
     },
@@ -339,31 +346,21 @@ const utils = {
      *  @throws {AccessControlError} - If given grants object has an invalid
      *  structure or configuration.
      */
-    getInspectedGrants(o:any):any {
+    getInspectedGrants(o: any): any {
         let grants = {};
-        const strErr:string = 'Invalid grants object.';
-        const type:string = utils.type(o);
+        const strErr: string = 'Invalid grants object.';
+        const type: string = utils.type(o);
 
         if (type === 'object') {
-            utils.eachKey(o, key => {
-                let role:any = o[key];
-                // if $extend is found, it must be an array indicating inherited
-                // roles, otherwise it's attempted to be used for a role name
-                // which is invalid.
-                if (key === '$extend') {
-                    if (!utils.isEmptyArray(role) && !utils.isFilledStringArray(role)) {
-                        throw new AccessControlError(`${strErr} "$extend" is reserved for list of inherited roles.`);
-                    }
-                } else if (key === '$') { // TODO: needs revision when $ is implemented
-                    // "$" is reserved for a future feature. it's value will be an object.
-                    throw new AccessControlError(`${strErr} Cannot use reserved name "${key}".`);
-                } else if (!utils.validRoleObject(role, key)) {
-                    throw new AccessControlError(`${strErr} Definition of role "${key}" is invalid.`);
+            utils.eachKey(o, (roleName: string) => {
+                if (utils.validName(roleName)) { // will throw on failure
+                    return utils.validRoleObject(o, roleName); // will throw on failure
                 }
+                return false;
             });
             grants = o;
         } else if (type === 'array') {
-            o.forEach((item:any) => utils.commitToGrants(grants, item, true));
+            o.forEach((item: any) => utils.commitToGrants(grants, item, true));
         } else {
             throw new AccessControlError(`${strErr} Expected an array or object.`);
         }
@@ -376,29 +373,45 @@ const utils = {
     // ----------------------
 
     /**
+     *  Gets all the unique resources that are granted access for at
+     *  least one role.
+     *
+     *  @returns {string[]}
+     */
+    getResources(grants: any): string[] {
+        // using an object for unique list
+        let resources: any = {};
+        utils.eachRoleResource(grants, (role: string, resource: string, permissions: any) => {
+            resources[resource] = null;
+        });
+        return Object.keys(resources);
+    },
+
+    /**
      *  Normalizes the actions and possessions in the given `IQueryInfo` or
      *  `IAccessInfo`.
      *
      *  @param {IQueryInfo|IAccessInfo} info
+     *  @param {boolean} [asString=false]
      *
-     *  @return {IQueryInfo|IAccessInfo}
+     *  @return {IQueryInfo|IAccessInfo|string}
      *
      *  @throws {AccessControlError} - If invalid action/possession found.
      */
-    normalizeActionPossession(info:IQueryInfo|IAccessInfo):IQueryInfo|IAccessInfo {
+    normalizeActionPossession(info: IQueryInfo | IAccessInfo, asString: boolean = false): IQueryInfo | IAccessInfo | string {
         // validate and normalize action
         if (typeof info.action !== 'string') {
             throw new AccessControlError(`Invalid action: ${info.action}`);
         }
 
-        const s:string[] = info.action.split(':');
+        const s: string[] = info.action.split(':');
         if (actions.indexOf(s[0].trim().toLowerCase()) < 0) {
             throw new AccessControlError(`Invalid action: ${s[0]}`);
         }
         info.action = s[0].trim().toLowerCase();
 
         // validate and normalize possession
-        const poss:string = info.possession || s[1];
+        const poss: string = info.possession || s[1];
         if (poss) {
             if (possessions.indexOf(poss.trim().toLowerCase()) < 0) {
                 throw new AccessControlError(`Invalid action possession: ${poss}`);
@@ -410,21 +423,21 @@ const utils = {
             info.possession = Possession.ANY;
         }
 
-        return info;
+        return asString
+            ? info.action + ':' + info.possession
+            : info;
     },
 
     /**
      *  Normalizes the roles and resources in the given `IQueryInfo`.
      *
      *  @param {IQueryInfo} info
-     *  @param {Boolean} [all=false] - Whether to validate all properties such
-     *  as `action` and `possession`.
      *
      *  @return {IQueryInfo}
      *
      *  @throws {AccessControlError} - If invalid role/resource found.
      */
-    normalizeQueryInfo(query:IQueryInfo, all:boolean = false):IQueryInfo {
+    normalizeQueryInfo(query: IQueryInfo): IQueryInfo {
         // clone the object
         query = Object.assign({}, query);
         // validate and normalize role(s)
@@ -438,11 +451,7 @@ const utils = {
             throw new AccessControlError(`Invalid resource: "${query.resource}"`);
         }
         query.resource = query.resource.trim();
-
-        // this part is not necessary if this is invoked from a comitter method
-        // such as `createAny()`. So we'll check if we need to validate all
-        // properties such as `action` and `possession`.
-        if (all) query = utils.normalizeActionPossession(query) as IQueryInfo;
+        query = utils.normalizeActionPossession(query) as IQueryInfo;
 
         return query;
     },
@@ -451,14 +460,14 @@ const utils = {
      *  Normalizes the roles and resources in the given `IAccessInfo`.
      *
      *  @param {IAccessInfo} info
-     *  @param {Boolean} [all=false] - Whether to validate all properties such
+     *  @param {boolean} [all=false] - Whether to validate all properties such
      *  as `action` and `possession`.
      *
      *  @return {IQueryInfo}
      *
      *  @throws {AccessControlError} - If invalid role/resource found.
      */
-    normalizeAccessInfo(access:IAccessInfo, all:boolean = false):IAccessInfo {
+    normalizeAccessInfo(access: IAccessInfo, all: boolean = false): IAccessInfo {
         // clone the object
         access = Object.assign({}, access);
         // validate and normalize role(s)
@@ -496,7 +505,7 @@ const utils = {
      *  @param {IAccessInfo} access
      *  @returns {IAccessInfo}
      */
-    resetAttributes(access:IAccessInfo):IAccessInfo {
+    resetAttributes(access: IAccessInfo): IAccessInfo {
         if (access.denied) {
             access.attributes = [];
             return access;
@@ -510,17 +519,33 @@ const utils = {
     /**
      *  Gets a flat, ordered list of inherited roles for the given role.
      *  @param {Object} grants - Main grants object to be processed.
-     *  @param {String} roleName - Role name to be inspected.
-     *  @returns {Array<String>}
+     *  @param {string} roleName - Role name to be inspected.
+     *  @returns {string[]}
      */
-    getInheritedRolesOf(grants:any, roleName:string):string[] {
-        let arr:string[] = [];
-        const role:any = grants[roleName];
+    getRoleHierarchyOf(grants: any, roleName: string, rootRole?: string): string[] {
+        // `rootRole` is for memory storage. Do NOT set it when using;
+        // and do NOT document this paramter.
+        rootRole = rootRole || roleName;
+
+        const role: any = grants[roleName];
         if (!role) throw new AccessControlError(`Role not found: "${roleName}"`);
-        arr = utils.pushUniq(arr, roleName);
+
+        let arr: string[] = [roleName];
         if (!Array.isArray(role.$extend) || role.$extend.length === 0) return arr;
-        role.$extend.forEach((rName:string) => {
-            let ext:string[] = utils.getFlatRoles(grants, rName);
+
+        role.$extend.forEach((exRoleName: string) => {
+            if (!grants[exRoleName]) {
+                throw new AccessControlError(`Role not found: "${grants[exRoleName]}"`);
+            }
+            if (exRoleName === roleName) {
+                throw new AccessControlError(`Cannot extend role "${roleName}" by itself.`);
+            }
+            // throw if cross-inheritance and also avoid memory leak with
+            // maximum call stack error
+            if (rootRole === exRoleName) {
+                throw new AccessControlError(`Cross inheritance is not allowed. Role "${exRoleName}" already extends "${rootRole}".`);
+            }
+            let ext: string[] = utils.getRoleHierarchyOf(grants, exRoleName, rootRole);
             arr = utils.uniqConcat(arr, ext);
         });
         return arr;
@@ -529,12 +554,12 @@ const utils = {
     /**
      *  Gets roles and extended roles in a flat array.
      */
-    getFlatRoles(grants:any, roles:string|string[]):string[] {
+    getFlatRoles(grants: any, roles: string | string[]): string[] {
         roles = utils.toStringArray(roles);
         if (!roles) throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
-        let arr:string[] = utils.uniqConcat([], roles); // roles.concat();
-        roles.forEach((roleName:string) => {
-            arr = utils.uniqConcat(arr, utils.getInheritedRolesOf(grants, roleName));
+        let arr: string[] = utils.uniqConcat([], roles); // roles.concat();
+        roles.forEach((roleName: string) => {
+            arr = utils.uniqConcat(arr, utils.getRoleHierarchyOf(grants, roleName));
         });
         // console.log(`flat roles for ${roles}`, arr);
         return arr;
@@ -544,12 +569,13 @@ const utils = {
      *  Checks the given grants model and gets an array of non-existent roles
      *  from the given roles.
      *  @param {Any} grants - Grants model to be checked.
-     *  @param {Array<string>} roles - Roles to be checked.
-     *  @returns {Array<String>} - Array of non-existent roles. Empty array if
+     *  @param {string[]} roles - Roles to be checked.
+     *  @returns {string[]} - Array of non-existent roles. Empty array if
      *  all exist.
      */
-    getNonExistentRoles(grants:any, roles:string[]) {
-        let non:string[] = [];
+    getNonExistentRoles(grants: any, roles: string[]) {
+        let non: string[] = [];
+        if (utils.isEmptyArray(roles)) return non;
         for (let role of roles) {
             if (!grants.hasOwnProperty(role)) non.push(role);
         }
@@ -557,28 +583,28 @@ const utils = {
     },
 
     /**
-     *  Checks whether the given extender role is already (cross) inherited by
-     *  the given role and returns the first cross-inherited role. Otherwise,
+     *  Checks whether the given extender role(s) is already (cross) inherited
+     *  by the given role and returns the first cross-inherited role. Otherwise,
      *  returns `false`.
      *
      *  Note that cross-inheritance is not allowed.
      *
      *  @param {Any} grants - Grants model to be checked.
-     *  @param {String} roles - Target role to be checked.
-     *  @param {String|Array<String>} extenderRoles - Extender role(s) to be
+     *  @param {string} roles - Target role to be checked.
+     *  @param {string|string[]} extenderRoles - Extender role(s) to be
      *  checked.
      *  @returns {Boolean}
      */
-    getCrossInheritedRole(grants:any, role:string, extenderRoles:string|string[]):string|boolean {
-        const extenders:string[] = utils.toStringArray(extenderRoles);
-        let crossInherited:any = false;
-        utils.each(extenders, (e:string) => {
-            if (crossInherited || role === e) {
+    getCrossInheritedRole(grants: any, roleName: string, extenderRoles: string | string[]): string | boolean {
+        const extenders: string[] = utils.toStringArray(extenderRoles); // [roleName].concat();
+        let crossInherited: any = false;
+        utils.each(extenders, (e: string) => {
+            if (crossInherited || roleName === e) {
                 return false; // break out of loop
             }
-            const inheritedByExtender = utils.getInheritedRolesOf(grants, e);
-            utils.each(inheritedByExtender, (r:string) => {
-                if (r === role) {
+            const inheritedByExtender = utils.getRoleHierarchyOf(grants, e);
+            utils.each(inheritedByExtender, (r: string) => {
+                if (r === roleName) {
                     // get/report the parent role
                     crossInherited = e;
                     return false; // break out of loop
@@ -596,45 +622,50 @@ const utils = {
      *  Extends the given role(s) with privileges of one or more other roles.
      *
      *  @param {Any} grants
-     *  @param {String|Array<String>} roles Role(s) to be extended. Single role
+     *  @param {string|string[]} roles Role(s) to be extended. Single role
      *         as a `String` or multiple roles as an `Array`. Note that if a
      *         role does not exist, it will be automatically created.
      *
-     *  @param {String|Array<String>} extenderRoles Role(s) to inherit from.
+     *  @param {string|string[]} extenderRoles Role(s) to inherit from.
      *         Single role as a `String` or multiple roles as an `Array`. Note
      *         that if a extender role does not exist, it will throw.
      *
      *  @throws {Error} If a role is extended by itself, a non-existent role or
      *          a cross-inherited role.
      */
-    extendRole(grants:any, roles:string|string[], extenderRoles:string|string[]) {
-        const arrExtRoles:string[] = utils.toStringArray(extenderRoles).concat();
+    extendRole(grants: any, roles: string | string[], extenderRoles: string | string[]) {
+        const arrExtRoles: string[] = utils.toStringArray(extenderRoles).concat();
         if (!arrExtRoles) throw new AccessControlError(`Cannot inherit invalid role(s): ${JSON.stringify(extenderRoles)}`);
-        const nonExistentExtRoles:string[] = utils.getNonExistentRoles(grants, arrExtRoles);
+
+        const nonExistentExtRoles: string[] = utils.getNonExistentRoles(grants, arrExtRoles);
         if (nonExistentExtRoles.length > 0) {
             throw new AccessControlError(`Cannot inherit non-existent role(s): "${nonExistentExtRoles.join(', ')}"`);
         }
+
         roles = utils.toStringArray(roles);
         if (!roles) throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
-        roles.forEach((role:string) => {
-            if (arrExtRoles.indexOf(role) >= 0) {
-                throw new AccessControlError(`Attempted to extend role "${role}" by itself.`);
+
+        roles.forEach((roleName: string) => {
+            if (!grants[roleName]) throw new AccessControlError(`Role not found: "${roleName}"`);
+
+            if (arrExtRoles.indexOf(roleName) >= 0) {
+                throw new AccessControlError(`Cannot extend role "${roleName}" by itself.`);
             }
 
             // getCrossInheritedRole() returns false or the first
             // cross-inherited role, if found.
-            let crossInherited:any = utils.getCrossInheritedRole(grants, role, arrExtRoles);
+            let crossInherited: any = utils.getCrossInheritedRole(grants, roleName, arrExtRoles);
             if (crossInherited) {
-                throw new AccessControlError(`Role "${crossInherited}" already extends "${role}". Cross inheritance is not allowed.`);
+                throw new AccessControlError(`Cross inheritance is not allowed. Role "${crossInherited}" already extends "${roleName}".`);
             }
 
-            if (utils.validName(role)) { // throws if false
-                if (!grants.hasOwnProperty(role)) {
-                    grants[role] = {
+            if (utils.validName(roleName)) { // throws if false
+                if (!grants.hasOwnProperty(roleName)) {
+                    grants[roleName] = {
                         $extend: arrExtRoles
                     };
                 } else {
-                    let r = grants[role];
+                    let r = grants[roleName];
                     if (Array.isArray(r.$extend)) {
                         r.$extend = utils.uniqConcat(r.$extend, arrExtRoles);
                     } else {
@@ -651,12 +682,17 @@ const utils = {
      *  action method (e.g. `.createOwn()`). In case the chain is not
      *  terminated, we'll still (pre)create the role(s) with an empty object.
      *  @param {Any} grants
-     *  @param {String|Array<String>} roles
+     *  @param {string|string[]} roles
      */
-    preCreateRoles(grants:any, roles:string|string[]) {
-        roles = utils.toStringArray(roles);
-        (roles as Array<string>).forEach((role:string) => {
-            if (utils.validName(role) && !grants.hasOwnProperty(role)) grants[role] = {};
+    preCreateRoles(grants: any, roles: string | string[]) {
+        if (typeof roles === 'string') roles = utils.toStringArray(roles);
+        if (!Array.isArray(roles) || roles.length === 0) {
+            throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
+        }
+        (roles as string[]).forEach((role: string) => {
+            if (utils.validName(role) && !grants.hasOwnProperty(role)) {
+                grants[role] = {};
+            }
         });
     },
 
@@ -666,23 +702,23 @@ const utils = {
      *  means "all attributes allowed".
      *  @param {Any} grants
      *  @param {IAccessInfo} access
-     *  @param {Boolean} normalizeAll
+     *  @param {boolean} normalizeAll
      *         Specifies whether to validate and normalize all properties of
      *         the inner `IAccessInfo` object, including `action` and `possession`.
      *  @throws {Error} If `IAccessInfo` object fails validation.
      */
-    commitToGrants(grants:any, access:IAccessInfo, normalizeAll:boolean = false) {
+    commitToGrants(grants: any, access: IAccessInfo, normalizeAll: boolean = false) {
         access = utils.normalizeAccessInfo(access, normalizeAll);
         // console.log(access);
         // grant.role also accepts an array, so treat it like it.
-        (access.role as Array<string>).forEach((role:string) => {
+        (access.role as string[]).forEach((role: string) => {
             if (utils.validName(role) && !grants.hasOwnProperty(role)) {
                 grants[role] = {};
             }
 
-            let grantItem:any = grants[role];
-            let ap:string = access.action + ':' + access.possession;
-            (access.resource as Array<string>).forEach((res:string) => {
+            let grantItem: any = grants[role];
+            let ap: string = access.action + ':' + access.possession;
+            (access.resource as string[]).forEach((res: string) => {
                 if (utils.validName(res) && !grantItem.hasOwnProperty(res)) {
                     grantItem[res] = {};
                 }
@@ -703,9 +739,9 @@ const utils = {
      *  @param {Any} grants
      *  @param {IQueryInfo} query
      *
-     *  @returns {Array<String>} - Array of union'ed attributes.
+     *  @returns {string[]} - Array of union'ed attributes.
      */
-    getUnionAttrsOfRoles(grants:any, query:IQueryInfo):string[] {
+    getUnionAttrsOfRoles(grants: any, query: IQueryInfo): string[] {
         if (!grants) {
             throw new AccessControlError('Grants are not set.');
         }
@@ -713,13 +749,13 @@ const utils = {
         query = utils.normalizeQueryInfo(query);
 
         let grantItem;
-        let resource:string;
-        let attrsList:Array<string[]> = [];
+        let resource: string;
+        let attrsList: Array<string[]> = [];
         // get roles and extended roles in a flat array
-        const roles:string[] = utils.getFlatRoles(grants, query.role);
+        const roles: string[] = utils.getFlatRoles(grants, query.role);
         // iterate through roles and add permission attributes (array) of
         // each role to attrsList (array).
-        roles.forEach((role:string, index:number) => {
+        roles.forEach((role: string, index: number) => {
             grantItem = grants[role];
             if (grantItem) {
                 resource = grantItem[query.resource];
@@ -740,7 +776,7 @@ const utils = {
         // union all arrays of (permitted resource) attributes (for each role)
         // into a single array.
         let attrs = [];
-        const len:number = attrsList.length;
+        const len: number = attrsList.length;
         if (len > 0) {
             attrs = attrsList[0];
             let i = 1;
@@ -757,12 +793,17 @@ const utils = {
      *  model and disabling all functionality to modify it.
      *  @param {AccessControl} ac
      */
-    lockAC(ac:AccessControl) {
+    lockAC(ac: AccessControl) {
         const _ac = ac as any; // ts
-        if (!ac.isLocked || !Object.isFrozen(_ac._grants)) {
-            utils.deepFreeze(_ac._grants);
-            _ac._locked = true;
+        if (!_ac._grants) {
+            throw new AccessControlError('Cannot lock due to invalid grants model.');
         }
+        let locked = ac.isLocked && Object.isFrozen(_ac._grants);
+        if (!locked) locked = Boolean(utils.deepFreeze(_ac._grants));
+        if (!locked) {
+            throw new AccessControlError(`Could not lock grants: ${typeof _ac._grants}`);
+        }
+        _ac._locked = locked;
     },
 
     // ----------------------
@@ -775,11 +816,11 @@ const utils = {
      *  removes the rest.
      *
      *  @param {Object} object - Object to be filtered.
-     *  @param {Array<String>} attributes - Array of glob notations.
+     *  @param {string[]} attributes - Array of glob notations.
      *
      *  @returns {Object} - Filtered object.
      */
-    filter(object:any, attributes:string[]):any {
+    filter(object: any, attributes: string[]): any {
         if (!Array.isArray(attributes) || attributes.length === 0) {
             return {};
         }
@@ -787,19 +828,19 @@ const utils = {
         return notation.filter(attributes).value;
     },
 
-   /**
-    *  Deep clones the source array of objects or a single object while
-    *  filtering their properties by the given attributes (glob notations).
-    *  Includes all matched properties and removes the rest of each object in
-    *  the array.
-    *
-    *  @param {Array|Object} arrOrObj - Array of objects or single object to be
-    *  filtered.
-    *  @param {Array<String>} attributes - Array of glob notations.
-    *
-    *  @returns {Array|Object}
-    */
-    filterAll(arrOrObj:any, attributes:string[]):any {
+    /**
+     *  Deep clones the source array of objects or a single object while
+     *  filtering their properties by the given attributes (glob notations).
+     *  Includes all matched properties and removes the rest of each object in
+     *  the array.
+     *
+     *  @param {Array|Object} arrOrObj - Array of objects or single object to be
+     *  filtered.
+     *  @param {string[]} attributes - Array of glob notations.
+     *
+     *  @returns {Array|Object}
+     */
+    filterAll(arrOrObj: any, attributes: string[]): any {
         if (!Array.isArray(arrOrObj)) {
             return utils.filter(arrOrObj, attributes);
         }
