@@ -571,7 +571,8 @@ describe('Test Suite: AccessControl', () => {
         ac.grant('ops').extend('viewer').updateAny('devices', ['*', '!id']);
         ac.grant('admin').extend('ops').deleteAny('devices');
         ac.grant('superadmin').extend(['admin', 'ops']).createAny('devices');
-        // ac.extendRole(['ops', 'admin'], 'viewer');
+        // just re-extending already extended roles. this should pass.
+        expect(() => ac.extendRole(['ops', 'admin'], 'viewer')).not.toThrow();
 
         expect(ac.can('ops').readAny('devices').granted).toEqual(true);
         expect(ac.can('admin').readAny('devices').granted).toEqual(true);
@@ -599,7 +600,7 @@ describe('Test Suite: AccessControl', () => {
         helper.expectACError(() => ac.grant('user').extend(['invalid1', 'invalid2']));
     });
 
-    test('throw on reserved names', () => {
+    test('throw on invalid or reserved names', () => {
         const ac = new AccessControl();
         RESERVED_KEYWORDS.forEach(name => {
             helper.expectACError(() => ac.grant(name));
@@ -607,6 +608,15 @@ describe('Test Suite: AccessControl', () => {
             helper.expectACError(() => ac.grant().role(name));
             helper.expectACError(() => ac.grant('role').resource(name));
         });
+        expect(() => ac.grant()).not.toThrow(); // omitted.
+        helper.expectACError(() => ac.grant(undefined)); // explicit undefined
+        helper.expectACError(() => ac.grant(null));
+        helper.expectACError(() => ac.grant(''));
+        helper.expectACError(() => (ac as any).grant(1));
+        helper.expectACError(() => (ac as any).grant(true));
+        helper.expectACError(() => (ac as any).grant(false));
+        helper.expectACError(() => (ac as any).grant([]));
+        helper.expectACError(() => (ac as any).grant({}));
         helper.expectACError(() => new AccessControl({ $: [] }));
         helper.expectACError(() => new AccessControl({ $extend: {} }));
     });
@@ -683,6 +693,7 @@ describe('Test Suite: AccessControl', () => {
         // test with initial grants object
 
         // direct cross-inheritance test
+        // user » admin » user
         let grants: any = {
             'user': {
                 '$extend': ['admin']
@@ -696,7 +707,11 @@ describe('Test Suite: AccessControl', () => {
         helper.expectACError(() => ac.setGrants(grants));
 
         // deeper cross-inheritance test
+        // user » sa » editor » viewer » user
         grants = {
+            'user': {
+                '$extend': ['sa']
+            },
             'sa': {
                 '$extend': ['editor']
             },
@@ -704,13 +719,31 @@ describe('Test Suite: AccessControl', () => {
                 '$extend': ['viewer']
             },
             'viewer': {
-                '$extend': ['sa']
+                '$extend': ['user']
             }
         };
-        new AccessControl(grants)
-        // helper.expectACError(() => new AccessControl(grants));
-        // ac = new AccessControl();
-        // helper.expectACError(() => ac.setGrants(grants));
+        helper.expectACError(() => new AccessControl(grants));
+        ac = new AccessControl();
+        helper.expectACError(() => ac.setGrants(grants));
+
+        // viewer » editor » user » sa » editor
+        grants = {
+            'user': {
+                '$extend': ['sa']
+            },
+            'sa': {
+                '$extend': ['editor']
+            },
+            'editor': {
+                '$extend': ['user']
+            },
+            'viewer': {
+                '$extend': ['editor']
+            }
+        };
+        helper.expectACError(() => new AccessControl(grants));
+        ac = new AccessControl();
+        helper.expectACError(() => ac.setGrants(grants));
     });
 
     test('throw if grant or deny objects are invalid', () => {

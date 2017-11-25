@@ -129,22 +129,21 @@ describe('Test Suite: utils (core)', () => {
         let valid: any = 'someName';
         expect(utils.validName(valid)).toBe(true);
         expect(utils.validName(valid, false)).toBe(true);
-        expect(utils.validName(valid, false, '')).toBe(true);
+        expect(utils.validName(valid, false)).toBe(true);
 
         let invalid: any = RESERVED_KEYWORDS[0];
-        const msg = 'test message';
         expect(() => utils.validName(invalid)).toThrow();
-        expect(() => utils.validName(invalid, true, msg)).toThrow(msg);
+        expect(() => utils.validName(invalid, true)).toThrow();
         expect(utils.validName(invalid, false)).toBe(false);
 
         valid = ['valid', 'name'];
         expect(utils.hasValidNames(valid)).toBe(true);
         expect(utils.hasValidNames(valid, false)).toBe(true);
-        expect(utils.hasValidNames(valid, false, '')).toBe(true);
+        expect(utils.hasValidNames(valid, false)).toBe(true);
 
         invalid = ['valid', RESERVED_KEYWORDS[RESERVED_KEYWORDS.length - 1]];
         expect(() => utils.hasValidNames(invalid)).toThrow();
-        expect(() => utils.hasValidNames(invalid, true, msg)).toThrow(msg);
+        expect(() => utils.hasValidNames(invalid, true)).toThrow();
         expect(utils.hasValidNames(invalid, false)).toBe(false);
     });
 
