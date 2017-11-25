@@ -4,6 +4,7 @@ npm-debug.log
 tmp
 TODO.md
 /files/
+/docs/errors.md
 /test/.coverage/
 .DS_Store
 yarn-error.log
