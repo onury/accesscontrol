@@ -285,6 +285,14 @@ describe('Test Suite: AccessControl', () => {
         expect(ac.query('user').deleteOwn('photo').attributes).toEqual(attrs);
     });
 
+    test('explicit undefined', () => {
+        const ac = new AccessControl();
+        helper.expectACError(() => (ac as any).grant(undefined));
+        helper.expectACError(() => (ac as any).deny(undefined));
+        helper.expectACError(() => (ac as any).can(undefined));
+        helper.expectACError(() => (ac as any).query(undefined));
+    });
+
     test('aliases: #allow(), #reject(), #query()', () => {
         const ac = new AccessControl();
 
