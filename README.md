@@ -124,8 +124,9 @@ console.log(permission.granted); // true
 
 Notes on inheritance:  
 - A role cannot extend itself.
-- Cross-inheritance is not allowed. e.g. `ac.grant('user').extend('admin').grant('admin').extend('user')` will throw.
-- A role cannot (pre)extend a non-existing role. In other words, you should first create the base role. e.g. `ac.grant('baseRole').grant('role').extend('baseRole')`
+- Cross-inheritance is not allowed.  
+e.g. `ac.grant('user').extend('admin').grant('admin').extend('user')` will throw.
+- A role cannot (pre)extend a non-existing role. In other words, you should first create the base role.  e.g. `ac.grant('baseRole').grant('role').extend('baseRole')`
 
 ### Actions and Action-Attributes
 
@@ -264,6 +265,29 @@ And more at the [F.A.Q. section][faq].
 ## Change-Log
 
 See [CHANGELOG][changelog].
+
+## Contributing
+
+Clone original project:
+
+```sh
+git clone https://github.com/onury/accesscontrol.git
+```
+
+Install dependencies:
+
+```sh
+yarn install
+```
+
+Add tests to relevant file under [/test](test/) directory and run:  
+
+```sh
+yarn build && yarn cover
+```
+
+Use included `tslint.json` and `editorconfig` for style and linting.  
+Travis build should pass, coverage should not degrade.
 
 ## License
 
