@@ -1,14 +1,15 @@
 ## AccessControl - Change Log
 
-### v2.1.0 (2017-11-23)
+### v2.1.0 (2017-11-25)
 
 - **Fixed** an issue where action and possession of a permission query is not pre-normalized. Only   `#permission()` method was affected.
 - **Fixed** an issue where it would throw even if `$extend` was used properly in the initial grants model, passed to the constructor or `#setGrants()`. Fixes [issue #22](https://github.com/onury/accesscontrol/issues/22).
-- **Fixed** "maximum call stack" error that occurs while processing inherited/cross roles.
+- **Fixed** a memory leak (leading to "maximum call stack" error) occurs while processing role hierarchy.
 - **Fixed** an issue where role validation would incorrectly return `true` in a specific case.
 - **Revised** `#lock()` to throw a meaningful error if not successful.
 - **Revised** `#hasRole()` and `#hasResource()` methods to also accept a string array (to check for multiple at once), in addition to `string` (single).
-- Various revisions, clean-up.
+- **Revised** various chain methods to throw when explicit invalid values are passed. e.g. `ac.grant()...` will not throw (omitted parameter allowed) but `ac.grant(undefined)...` will throw. This mitigates the chance of passing an unset variable by mistake.
+- Various revisions, optimizations and clean-up.
 
 - **(Dev)** Migrated tests to Jest. Refactored tests to TypeScript. Removed Jasmine and dependencies. 
 - **(Dev)** Adapted `yarn`. Enabled test coverage via `jest`. Added `coveralls` support.
