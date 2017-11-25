@@ -1,4 +1,4 @@
-import { IQueryInfo, Permission } from '../core';
+import { IQueryInfo, Permission, AccessControlError } from '../core';
 import { Action, Possession } from '../enums';
 import { utils } from '../utils';
 
@@ -34,20 +34,28 @@ class Query {
      *  @param {Any} grants
      *         Underlying grants model against which the permissions will be
      *         queried and checked.
-     *  @param {string|Array<String>|IQueryInfo} [role]
+     *  @param {string|Array<String>|IQueryInfo} [roleOrInfo]
      *         Either a single or array of roles or an
      *         {@link ?api=ac#AccessControl~IQueryInfo|`IQueryInfo` arbitrary object}.
      */
-    constructor(grants: any, role?: string | string[] | IQueryInfo) {
+    constructor(grants: any, roleOrInfo?: string | string[] | IQueryInfo) {
         this._grants = grants;
-        // if this is a (permission) object, we directly build attributes from
-        // grants.
-        if (utils.type(role) === 'object') {
-            this._ = role as IQueryInfo;
-        } else {
+
+        if (typeof roleOrInfo === 'string' || Array.isArray(roleOrInfo)) {
             // if this is just role(s); a string or array; we start building
             // the grant object for this.
-            this._.role = role as string | string[];
+            this.role(roleOrInfo);
+        } else if (utils.type(roleOrInfo) === 'object') {
+            // if this is a (permission) object, we directly build attributes
+            // from grants.
+            if (Object.keys(roleOrInfo).length === 0) {
+                throw new AccessControlError('Invalid IQueryInfo: {}');
+            }
+            this._ = roleOrInfo as IQueryInfo;
+        } else if (roleOrInfo !== undefined) {
+            // undefined is allowed (`role` can be omitted) but throw if some
+            // other type is passed.
+            throw new AccessControlError('Invalid role(s), expected a valid string, string[] or IQueryInfo.');
         }
     }
 

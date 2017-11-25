@@ -1,5 +1,5 @@
 import { AccessControl } from '../';
-import { IAccessInfo } from '../core';
+import { IAccessInfo, AccessControlError } from '../core';
 import { Action, Possession, actions, possessions } from '../enums';
 import { utils } from '../utils';
 
@@ -59,11 +59,18 @@ class Access {
         if (typeof roleOrInfo === 'string' || Array.isArray(roleOrInfo)) {
             this.role(roleOrInfo);
         } else if (utils.type(roleOrInfo) === 'object') {
+            if (Object.keys(roleOrInfo).length === 0) {
+                throw new AccessControlError('Invalid IAccessInfo: {}');
+            }
             // if an IAccessInfo instance is passed and it has 'action' defined, we
             // should directly commit it to grants.
             roleOrInfo.denied = denied;
             this._ = utils.resetAttributes(roleOrInfo);
             if (utils.isInfoFulfilled(this._)) utils.commitToGrants(this._grants, this._, true);
+        } else if (roleOrInfo !== undefined) {
+            // undefined is allowed (`roleOrInfo` can be omitted) but throw if
+            // some other type is passed.
+            throw new AccessControlError('Invalid role(s), expected a valid string, string[] or IAccessInfo.');
         }
     }
 
