@@ -355,7 +355,7 @@ class AccessControl {
      *  @returns {Array<String>}
      */
     getInheritedRolesOf(role: string): string[] {
-        let roles: string[] = utils.getInheritedRolesOf(this._grants, role);
+        let roles: string[] = utils.getRoleHierarchyOf(this._grants, role);
         roles.shift();
         return roles;
     }
@@ -443,6 +443,11 @@ class AccessControl {
      *  // Note: when multiple roles checked, acquired attributes are unioned (merged).
      */
     can(role: string | string[] | IQueryInfo): Query {
+        // throw on explicit undefined
+        if (arguments.length !== 0 && role === undefined) {
+            throw new AccessControlError('Invalid role(s): undefined');
+        }
+        // other explicit invalid values will be checked in constructor.
         return new Query(this._grants, role);
     }
 
@@ -492,15 +497,17 @@ class AccessControl {
      *  @function
      *  @chainable
      *
-     *  @param {string|Array<String>|IAccessInfo} role A single role (as a
+     *  @param {string|Array<String>|IAccessInfo} [role] A single role (as a
      *  string), a list of roles (as an array) or an
      *  {@link ?api=ac#AccessControl~IAccessInfo|`IAccessInfo` object} that
-     *  fully or partially defines the access to be granted.
+     *  fully or partially defines the access to be granted. This can be omitted
+     *  and chained with `.role()` to define the role.
      *
      *  @return {Access} - The returned object provides chainable properties to
      *  build and define the access to be granted. See the examples for details.
      *  See {@link ?api=ac#AccessControl~Access|`Access` inner class}.
      *
+     *  @throws {AccessControlError} - If `role` is explicitly set to an invalid value.
      *  @throws {AccessControlError} - If called after `.lock()` is called.
      *
      *  @example
@@ -541,6 +548,11 @@ class AccessControl {
      */
     grant(role?: string | string[] | IAccessInfo): Access {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
+        // throw on explicit undefined
+        if (arguments.length !== 0 && role === undefined) {
+            throw new AccessControlError('Invalid role(s): undefined');
+        }
+        // other explicit invalid values will be checked in constructor.
         return new Access(this, role, false);
     }
 
@@ -571,6 +583,7 @@ class AccessControl {
      *  build and define the access to be granted. See
      *  {@link ?api=ac#AccessControl~Access|`Access` inner class}.
      *
+     *  @throws {AccessControlError} - If `role` is explicitly set to an invalid value.
      *  @throws {AccessControlError} - If called after `.lock()` is called.
      *
      *  @example
@@ -605,6 +618,11 @@ class AccessControl {
      */
     deny(role?: string | string[] | IAccessInfo): Access {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
+        // throw on explicit undefined
+        if (arguments.length !== 0 && role === undefined) {
+            throw new AccessControlError('Invalid role(s): undefined');
+        }
+        // other explicit invalid values will be checked in constructor.
         return new Access(this, role, true);
     }
 
@@ -619,34 +637,6 @@ class AccessControl {
     // -------------------------------
     //  PRIVATE METHODS
     // -------------------------------
-
-    // /**
-    //  *  @private
-    //  */
-    // private _each(callback: (role: string, roleDefinition: any) => void) {
-    //     utils.eachKey(this._grants, (role: string) => callback(role, this._grants[role]));
-    // }
-
-    // /**
-    //  *  @private
-    //  */
-    // private _eachRole(callback: (role: string) => void) {
-    //     utils.eachKey(this._grants, (role: string) => callback(role));
-    // }
-
-    // /**
-    //  *  @private
-    //  */
-    // private _eachRoleResource(callback: (role: string, resource: string, resourceDefinition: any) => void) {
-    //     let resources, resourceDefinition;
-    //     utils.eachKey(this._grants, (role: string) => {
-    //         resources = this._grants[role];
-    //         utils.eachKey(resources, (resource: string) => {
-    //             resourceDefinition = role[resource];
-    //             callback(role, resource, resourceDefinition);
-    //         });
-    //     });
-    // }
 
     /**
      *  @private
