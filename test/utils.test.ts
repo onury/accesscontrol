@@ -106,7 +106,9 @@ describe('Test Suite: utils (generic)', () => {
         expect(items).toEqual(original);
 
         items = [];
+
         // break out early by returning false
+
         utils.each(original, (item: number) => {
             items.push(item);
             return item < 2;
@@ -119,6 +121,20 @@ describe('Test Suite: utils (generic)', () => {
             d[key] = index;
         });
         expect(d).toEqual(o);
+
+        // test thisArg
+
+        function Context() {
+            this.ok = true;
+        }
+
+        utils.each([1], function (item: number) {
+            expect(this.ok).toBe(true);
+        }, new Context());
+
+        utils.eachKey({ key: 1 }, function (key: string) {
+            expect(this.ok).toBe(true);
+        }, new Context());
     });
 
 });
