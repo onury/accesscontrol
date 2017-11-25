@@ -50,9 +50,10 @@ class Permission {
      *         An `IQueryInfo` arbitrary object.
      */
     constructor(grants: any, query: IQueryInfo) {
+        // set attributes first. this also validates the `query` object.
+        this._.attributes = utils.getUnionAttrsOfRoles(grants, query);
         this._.role = query.role;
         this._.resource = query.resource;
-        this._.attributes = utils.getUnionAttrsOfRoles(grants, query);
     }
 
     /**
