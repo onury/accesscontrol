@@ -438,6 +438,9 @@ const utils = {
      *  @throws {AccessControlError} - If invalid role/resource found.
      */
     normalizeQueryInfo(query: IQueryInfo): IQueryInfo {
+        if (utils.type(query) !== 'object') {
+            throw new AccessControlError(`Invalid IQueryInfo: ${typeof query}`);
+        }
         // clone the object
         query = Object.assign({}, query);
         // validate and normalize role(s)
@@ -468,6 +471,9 @@ const utils = {
      *  @throws {AccessControlError} - If invalid role/resource found.
      */
     normalizeAccessInfo(access: IAccessInfo, all: boolean = false): IAccessInfo {
+        if (utils.type(access) !== 'object') {
+            throw new AccessControlError(`Invalid IAccessInfo: ${typeof access}`);
+        }
         // clone the object
         access = Object.assign({}, access);
         // validate and normalize role(s)
