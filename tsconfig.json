@@ -40,7 +40,6 @@
         "./docs",
         "./test",
         "./tasks",
-        "./backup",
-        "./gruntfile.js"
+        "./backup"
     ]
 }
