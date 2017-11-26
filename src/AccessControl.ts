@@ -108,7 +108,7 @@ class AccessControl {
     /**
      *  @private
      */
-    private _locked: boolean = false;
+    private _isLocked: boolean = false;
 
     /**
      *  Initializes a new instance of `AccessControl` with the given grants.
@@ -134,7 +134,7 @@ class AccessControl {
      *  @type {Boolean}
      */
     get isLocked(): boolean {
-        return this._locked && Object.isFrozen(this._grants);
+        return this._isLocked && Object.isFrozen(this._grants);
     }
 
     // -------------------------------
@@ -294,11 +294,14 @@ class AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
 
         let rolesToRemove: string[] = utils.toStringArray(roles);
-        if (rolesToRemove.length === 0) {
+        if (rolesToRemove.length === 0 || !utils.isFilledStringArray(rolesToRemove)) {
             throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
         }
-        rolesToRemove.forEach((role: string) => {
-            delete this._grants[role];
+        rolesToRemove.forEach((roleName: string) => {
+            if (!this._grants[roleName]) {
+                throw new AccessControlError(`Cannot remove a non-existing role: "${roleName}"`);
+            }
+            delete this._grants[roleName];
         });
         // also remove these roles from $extend list of each remaining role.
         utils.eachRole(this._grants, (roleItem: any, roleName: string) => {
@@ -647,14 +650,14 @@ class AccessControl {
     _removePermission(resources: string | string[], roles?: string | string[], actionPossession?: string) {
         resources = utils.toStringArray(resources);
         // resources is set but returns empty array.
-        if (resources.length === 0) {
+        if (resources.length === 0 || !utils.isFilledStringArray(resources)) {
             throw new AccessControlError(`Invalid resource(s): ${JSON.stringify(resources)}`);
         }
 
-        if (roles) {
+        if (roles !== undefined) {
             roles = utils.toStringArray(roles);
             // roles is set but returns empty array.
-            if (roles.length === 0) {
+            if (roles.length === 0 || !utils.isFilledStringArray(roles)) {
                 throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
             }
         }
