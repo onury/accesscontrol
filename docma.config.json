@@ -68,7 +68,16 @@
                     "iconClass": "ico-md ico-download",
                     "label": "Download",
                     "items": [
-                        { "label": "<code>npm i accesscontrol --save</code>" },
+                        {
+                            "label": "<code>npm i accesscontrol --save</code>",
+                            "href": "https://www.npmjs.com/package/accesscontrol",
+                            "target": "_blank"
+                        },
+                        {
+                            "label": "<code>yarn add accesscontrol</code>",
+                            "href": "https://yarn.pm/accesscontrol",
+                            "target": "_blank"
+                        },
                         { "separator": true },
                         {
                             "label": "Download as Archive",
