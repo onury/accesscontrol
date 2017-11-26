@@ -37,7 +37,7 @@ declare const utils: {
     getRoleHierarchyOf(grants: any, roleName: string, rootRole?: string): string[];
     getFlatRoles(grants: any, roles: string | string[]): string[];
     getNonExistentRoles(grants: any, roles: string[]): string[];
-    getCrossInheritedRole(grants: any, roleName: string, extenderRoles: string | string[]): string | boolean;
+    getCrossExtendingRole(grants: any, roleName: string, extenderRoles: string | string[]): string;
     extendRole(grants: any, roles: string | string[], extenderRoles: string | string[]): void;
     preCreateRoles(grants: any, roles: string | string[]): void;
     commitToGrants(grants: any, access: IAccessInfo, normalizeAll?: boolean): void;

@@ -103,7 +103,7 @@ declare class AccessControl {
     /**
      *  @private
      */
-    private _locked;
+    private _isLocked;
     /**
      *  Initializes a new instance of `AccessControl` with the given grants.
      *  @ignore
