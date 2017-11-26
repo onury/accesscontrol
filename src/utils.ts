@@ -405,7 +405,8 @@ const utils = {
     normalizeActionPossession(info: IQueryInfo | IAccessInfo, asString: boolean = false): IQueryInfo | IAccessInfo | string {
         // validate and normalize action
         if (typeof info.action !== 'string') {
-            throw new AccessControlError(`Invalid action: ${info.action}`);
+            // throw new AccessControlError(`Invalid action: ${info.action}`);
+            throw new AccessControlError(`Invalid action: ${JSON.stringify(info)}`);
         }
 
         const s: string[] = info.action.split(':');
@@ -680,13 +681,12 @@ const utils = {
                 throw new AccessControlError(`Cross inheritance is not allowed. Role "${crossInherited}" already extends "${roleName}".`);
             }
 
-            if (utils.validName(roleName)) { // throws if false
-                let r = grants[roleName];
-                if (Array.isArray(r.$extend)) {
-                    r.$extend = utils.uniqConcat(r.$extend, arrExtRoles);
-                } else {
-                    r.$extend = arrExtRoles;
-                }
+            utils.validName(roleName); // throws if false
+            let r = grants[roleName];
+            if (Array.isArray(r.$extend)) {
+                r.$extend = utils.uniqConcat(r.$extend, arrExtRoles);
+            } else {
+                r.$extend = arrExtRoles;
             }
         });
     },
@@ -757,34 +757,31 @@ const utils = {
      *  @returns {string[]} - Array of union'ed attributes.
      */
     getUnionAttrsOfRoles(grants: any, query: IQueryInfo): string[] {
-        if (!grants) {
-            throw new AccessControlError('Grants are not set.');
-        }
         // throws if has any invalid property value
         query = utils.normalizeQueryInfo(query);
 
-        let grantItem;
+        let role;
         let resource: string;
         let attrsList: Array<string[]> = [];
         // get roles and extended roles in a flat array
         const roles: string[] = utils.getFlatRoles(grants, query.role);
         // iterate through roles and add permission attributes (array) of
         // each role to attrsList (array).
-        roles.forEach((role: string, index: number) => {
-            grantItem = grants[role];
-            if (grantItem) {
-                resource = grantItem[query.resource];
-                if (resource) {
-                    // e.g. resource['create:own']
-                    // If action has possession "any", it will also return
-                    // `granted=true` for "own", if "own" is not defined.
-                    attrsList.push(
-                        (resource[query.action + ':' + query.possession]
-                            || resource[query.action + ':any']
-                            || []).concat()
-                    );
-                    // console.log(resource, 'for:', action + '.' + possession);
-                }
+        roles.forEach((roleName: string, index: number) => {
+            role = grants[roleName];
+            // no need to check role existence #getFlatRoles() does that.
+
+            resource = role[query.resource];
+            if (resource) {
+                // e.g. resource['create:own']
+                // If action has possession "any", it will also return
+                // `granted=true` for "own", if "own" is not defined.
+                attrsList.push(
+                    (resource[query.action + ':' + query.possession]
+                        || resource[query.action + ':any']
+                        || []).concat()
+                );
+                // console.log(resource, 'for:', action + '.' + possession);
             }
         });
 
@@ -810,15 +807,19 @@ const utils = {
      */
     lockAC(ac: AccessControl) {
         const _ac = ac as any; // ts
-        if (!_ac._grants) {
-            throw new AccessControlError('Cannot lock due to invalid grants model.');
+        if (!_ac._grants || Object.keys(_ac._grants).length === 0) {
+            throw new AccessControlError('Cannot lock empty or invalid grants model.');
         }
+
         let locked = ac.isLocked && Object.isFrozen(_ac._grants);
         if (!locked) locked = Boolean(utils.deepFreeze(_ac._grants));
+
+        /* istanbul ignore next */
         if (!locked) {
             throw new AccessControlError(`Could not lock grants: ${typeof _ac._grants}`);
         }
-        _ac._locked = locked;
+
+        _ac._isLocked = locked;
     },
 
     // ----------------------
