@@ -28,11 +28,11 @@ declare class Query {
      *  @param {Any} grants
      *         Underlying grants model against which the permissions will be
      *         queried and checked.
-     *  @param {string|Array<String>|IQueryInfo} [role]
+     *  @param {string|Array<String>|IQueryInfo} [roleOrInfo]
      *         Either a single or array of roles or an
      *         {@link ?api=ac#AccessControl~IQueryInfo|`IQueryInfo` arbitrary object}.
      */
-    constructor(grants: any, role?: string | string[] | IQueryInfo);
+    constructor(grants: any, roleOrInfo?: string | string[] | IQueryInfo);
     /**
      *  A chainer method that sets the role(s) for this `Query` instance.
      *  @param {String|Array<String>} roles

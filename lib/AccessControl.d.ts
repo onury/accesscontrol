@@ -221,11 +221,11 @@ declare class AccessControl {
      *  Extends the given role(s) with privileges of one or more other roles.
      *  @chainable
      *
-     *  @param {String|Array<String>} roles Role(s) to be extended. Single role
+     *  @param {string|Array<String>} roles Role(s) to be extended. Single role
      *         as a `String` or multiple roles as an `Array`. Note that if a
      *         role does not exist, it will be automatically created.
      *
-     *  @param {String|Array<String>} extenderRoles Role(s) to inherit from.
+     *  @param {string|Array<String>} extenderRoles Role(s) to inherit from.
      *         Single role as a `String` or multiple roles as an `Array`. Note
      *         that if a extender role does not exist, it will throw.
      *
@@ -239,7 +239,7 @@ declare class AccessControl {
      *  Removes all the given role(s) and their granted permissions, at once.
      *  @chainable
      *
-     *  @param {String|Array<String>} roles - An array of roles to be removed.
+     *  @param {string|Array<String>} roles - An array of roles to be removed.
      *      Also accepts a string that can be used to remove a single role.
      *
      *  @returns {AccessControl} - `AccessControl` instance for chaining.
@@ -253,9 +253,9 @@ declare class AccessControl {
      *  roles only.
      *  @chainable
      *
-     *  @param {String|Array<String>} resources - A single or array of resources to
+     *  @param {string|Array<String>} resources - A single or array of resources to
      *      be removed.
-     *  @param {String|Array<String>} [roles] - A single or array of roles to
+     *  @param {string|Array<String>} [roles] - A single or array of roles to
      *      be removed. If omitted, permissions for all roles to all given
      *      resources will be removed.
      *
@@ -280,7 +280,7 @@ declare class AccessControl {
      *  @alias AccessControl#getExtendedRolesOf
      *  @function
      *
-     *  @param {String} role - Target role name.
+     *  @param {string} role - Target role name.
      *
      *  @returns {Array<String>}
      */
@@ -298,21 +298,23 @@ declare class AccessControl {
      */
     getResources(): string[];
     /**
-     *  Checks whether any permissions are granted to the given role.
+     *  Checks whether the grants include the given role or roles.
      *
-     *  @param {String} role - Role to be checked.
+     *  @param {string|string[]} role - Role to be checked. You can also pass an
+     *  array of strings to check multiple roles at once.
      *
      *  @returns {Boolean}
      */
-    hasRole(role: string): boolean;
+    hasRole(role: string | string[]): boolean;
     /**
-     *  Checks whether any permissions are granted for the given resource.
+     *  Checks whether grants include the given resource or resources.
      *
-     *  @param {String} resource - Resource to be checked.
+     *  @param {string|string[]} resource - Resource to be checked. You can also pass an
+     *  array of strings to check multiple resources at once.
      *
      *  @returns {Boolean}
      */
-    hasResource(resource: string): boolean;
+    hasResource(resource: string | string[]): boolean;
     /**
      *  Gets an instance of `Query` object. This is used to check whether the
      *  defined access is allowed for the given role(s) and resource. This
@@ -323,7 +325,7 @@ declare class AccessControl {
      *  @function
      *  @chainable
      *
-     *  @param {String|Array|IQueryInfo} role - A single role (as a string), a
+     *  @param {string|Array|IQueryInfo} role - A single role (as a string), a
      *  list of roles (as an array) or an
      *  {@link ?api=ac#AccessControl~IQueryInfo|`IQueryInfo` object} that fully
      *  or partially defines the access to be checked.
@@ -386,15 +388,17 @@ declare class AccessControl {
      *  @function
      *  @chainable
      *
-     *  @param {String|Array<String>|IAccessInfo} role A single role (as a
+     *  @param {string|Array<String>|IAccessInfo} [role] A single role (as a
      *  string), a list of roles (as an array) or an
      *  {@link ?api=ac#AccessControl~IAccessInfo|`IAccessInfo` object} that
-     *  fully or partially defines the access to be granted.
+     *  fully or partially defines the access to be granted. This can be omitted
+     *  and chained with `.role()` to define the role.
      *
      *  @return {Access} - The returned object provides chainable properties to
      *  build and define the access to be granted. See the examples for details.
      *  See {@link ?api=ac#AccessControl~Access|`Access` inner class}.
      *
+     *  @throws {AccessControlError} - If `role` is explicitly set to an invalid value.
      *  @throws {AccessControlError} - If called after `.lock()` is called.
      *
      *  @example
@@ -449,7 +453,7 @@ declare class AccessControl {
      *  @function
      *  @chainable
      *
-     *  @param {String|Array<String>|IAccessInfo} role A single role (as a
+     *  @param {string|Array<String>|IAccessInfo} role A single role (as a
      *  string), a list of roles (as an array) or an
      *  {@link ?api=ac#AccessControl~IAccessInfo|`IAccessInfo` object} that
      *  fully or partially defines the access to be denied.
@@ -458,6 +462,7 @@ declare class AccessControl {
      *  build and define the access to be granted. See
      *  {@link ?api=ac#AccessControl~Access|`Access` inner class}.
      *
+     *  @throws {AccessControlError} - If `role` is explicitly set to an invalid value.
      *  @throws {AccessControlError} - If called after `.lock()` is called.
      *
      *  @example
@@ -496,18 +501,6 @@ declare class AccessControl {
      *  @private
      */
     reject(role?: string | string[] | IAccessInfo): Access;
-    /**
-     *  @private
-     */
-    private _each(callback);
-    /**
-     *  @private
-     */
-    private _eachRole(callback);
-    /**
-     *  @private
-     */
-    private _eachRoleResource(callback);
     /**
      *  @private
      */
