@@ -15,8 +15,6 @@
 
 Role and Attribute based Access Control for Node.js  
 
-`npm i accesscontrol --save`  
-
 Many [RBAC][rbac] (Role-Based Access Control) implementations differ, but the basics is widely adopted since it simulates real life role (job) assignments. But while data is getting more and more complex; you need to define policies on resources, subjects or even environments. This is called [ABAC][abac] (Attribute-Based Access Control).
 
 With the idea of merging the best features of the two (see this [NIST paper][nist-paper]); this library implements RBAC basics and also focuses on *resource* and *action* attributes.
@@ -37,6 +35,18 @@ e.g. `ac.can(role).create(resource)`
 - TypeScript support.
 
 _In order to build on more solid foundations, this library (v1.5.0+) is completely re-written in TypeScript._
+
+## Installation
+
+with [**npm**](https://www.npmjs.com/package/accesscontrol):  
+```sh
+npm i accesscontrol --save
+```
+
+with [**yarn**](https://yarn.pm/accesscontrol):   
+```sh
+yarn add accesscontrol
+```
 
 ## Guide
 
