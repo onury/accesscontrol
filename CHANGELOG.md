@@ -12,7 +12,6 @@
 - **Revised** `#hasRole()` and `#hasResource()` methods to also accept a string array (to check for multiple at once), in addition to `string` (single).
 - **Revised** various chain methods to throw when explicit invalid values are passed. e.g. `ac.grant()...` will not throw (omitted parameter allowed) but `ac.grant(undefined)...` will throw. This mitigates the chance of passing an unset variable by mistake.
 - Various revisions, optimizations and clean-up.
-
 - **(Dev)** Migrated tests to Jest. Refactored tests to TypeScript. Removed Jasmine and dependencies. 
 - **(Dev)** Adapted `yarn`. Enabled test coverage via `jest`. Added `coveralls` support.
 - **(Dev)** Added moooore tests. Revised code style. Improved coverage.
