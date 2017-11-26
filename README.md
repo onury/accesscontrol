@@ -38,15 +38,9 @@ _In order to build on more solid foundations, this library (v1.5.0+) is complete
 
 ## Installation
 
-with [**npm**](https://www.npmjs.com/package/accesscontrol):  
-```sh
-npm i accesscontrol --save
-```
+with [**npm**](https://www.npmjs.com/package/accesscontrol): `npm i accesscontrol --save`  
 
-with [**yarn**](https://yarn.pm/accesscontrol):   
-```sh
-yarn add accesscontrol
-```
+with [**yarn**](https://yarn.pm/accesscontrol): `yarn add accesscontrol`
 
 ## Guide
 
