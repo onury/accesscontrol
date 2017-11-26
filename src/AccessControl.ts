@@ -294,6 +294,9 @@ class AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
 
         let rolesToRemove: string[] = utils.toStringArray(roles);
+        if (rolesToRemove.length === 0) {
+            throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
+        }
         rolesToRemove.forEach((role: string) => {
             delete this._grants[role];
         });
@@ -643,7 +646,18 @@ class AccessControl {
      */
     _removePermission(resources: string | string[], roles?: string | string[], actionPossession?: string) {
         resources = utils.toStringArray(resources);
-        if (roles) roles = utils.toStringArray(roles);
+        // resources is set but returns empty array.
+        if (resources.length === 0) {
+            throw new AccessControlError(`Invalid resource(s): ${JSON.stringify(resources)}`);
+        }
+
+        if (roles) {
+            roles = utils.toStringArray(roles);
+            // roles is set but returns empty array.
+            if (roles.length === 0) {
+                throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
+            }
+        }
         utils.eachRoleResource(this._grants, (role: string, resource: string, permissions: any) => {
             if (resources.indexOf(resource) >= 0
                 // roles is optional. so remove if role is not defined.
