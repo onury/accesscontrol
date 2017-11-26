@@ -1,6 +1,8 @@
 ## AccessControl - Change Log
 
-### v2.1.0 (2017-11-25)
+### v2.2.0 (2017-11-25)
+
+**This release greatly improves stability!**
 
 - **Fixed** an issue where action and possession of a permission query is not pre-normalized. Only   `#permission()` method was affected.
 - **Fixed** an issue where it would throw even if `$extend` was used properly in the initial grants model, passed to the constructor or `#setGrants()`. Fixes [issue #22](https://github.com/onury/accesscontrol/issues/22).
