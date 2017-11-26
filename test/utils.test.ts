@@ -295,12 +295,44 @@ describe('Test Suite: utils (core)', () => {
             'editor': {
                 '$extend': ['admin']
             },
+            'viewer': {}
         };
         helper.expectACError(() => utils.extendRole(grants, null, ['admin']));
         helper.expectACError(() => utils.extendRole(grants, 'admin', null));
         helper.expectACError(() => utils.extendRole(grants, 'nonexisting', 'user'));
+        helper.expectACError(() => utils.extendRole(grants, 'admin', 'nonexisting'));
+        helper.expectACError(() => utils.extendRole(grants, 'admin', 'editor')); // cross
+        helper.expectACError(() => utils.extendRole(grants, '$', 'user')); // reserved keyword
+        expect(() => utils.extendRole(grants, 'admin', 'viewer')).not.toThrow();
+    });
 
-        // expect(utils.extendRole(grants, 'nonexisting', 'user')).not.toThrow();
+    test('#getUnionAttrsOfRoles()', () => {
+        let grants: any = {
+            'user': {
+                'account': {
+                    'read:own': ['*']
+                }
+            },
+            'admin': {
+                '$extend': ['user']
+            }
+        };
+        let query: IQueryInfo = {
+            role: 'admin',
+            resource: 'account',
+            action: 'read'
+        };
+        expect(utils.getUnionAttrsOfRoles(grants, query)).toEqual([]);
+        query.role = 'nonexisting';
+        helper.expectACError(() => utils.getUnionAttrsOfRoles(grants, query));
+    });
+
+    test('#lockAC()', () => {
+        expect(() => utils.lockAC(null)).toThrow();
+        let ac = new AccessControl();
+        helper.expectACError(() => utils.lockAC(ac));
+        (ac as any)._grants = null;
+        helper.expectACError(() => utils.lockAC(ac));
     });
 
 });

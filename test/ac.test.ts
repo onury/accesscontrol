@@ -7,7 +7,7 @@
 
 
 import { AccessControl } from '../src';
-import { IQueryInfo } from '../src/core';
+import { IQueryInfo, AccessControlError } from '../src/core';
 import { utils, RESERVED_KEYWORDS } from '../src/utils';
 // test helper
 import { helper } from './helper';
@@ -137,14 +137,31 @@ describe('Test Suite: AccessControl', () => {
         let grants = ac.getGrants();
         expect(utils.type(grants)).toEqual('object');
         expect(utils.type(grants.admin)).toEqual('object');
-        expect(grants.admin.video['create:any']).toEqual(jasmine.any(Array));
+        expect(grants.admin.video['create:any']).toEqual(expect.any(Array));
         // console.log(grants);
 
         ac = new AccessControl(grantsObject);
         grants = ac.getGrants();
         expect(utils.type(grants)).toEqual('object');
         expect(utils.type(grants.admin)).toEqual('object');
-        expect(grants.admin.video['create:any']).toEqual(jasmine.any(Array));
+        expect(grants.admin.video['create:any']).toEqual(expect.any(Array));
+
+        grants = {
+            'user': {
+                'account': {
+                    'read:own': ['*']
+                }
+            },
+            'admin': {
+                '$extend': ['user']
+            }
+        };
+        ac = new AccessControl(grants);
+        expect(utils.type(grants)).toEqual('object');
+        expect(ac.can('user').readOwn('account').granted).toBe(true);
+        expect(ac.can('user').readOwn('account').attributes).toEqual(['*']);
+        expect(ac.can('admin').readOwn('account').granted).toBe(true);
+        expect(ac.can('admin').readOwn('account').attributes).toEqual(['*']);
     });
 
     test('reset grants with #reset() only', () => {
@@ -201,8 +218,12 @@ describe('Test Suite: AccessControl', () => {
         // removeRoles should also accept a string
         ac.removeRoles('admin');
         expect(ac.hasRole('admin')).toEqual(false);
-        // no role named moderator but this should work
-        ac.removeRoles(['user', 'moderator']);
+        // throw on nonexisting role
+        helper.expectACError(() => ac.removeRoles([]));
+        helper.expectACError(() => ac.removeRoles(['']));
+        helper.expectACError(() => ac.removeRoles(['none']));
+        // no role named moderator
+        helper.expectACError(() => ac.removeRoles(['user', 'moderator']));
         expect(ac.getRoles().length).toEqual(0);
         // removeRoles should accept a string or array
         ac.removeResources(['video']);
@@ -210,7 +231,7 @@ describe('Test Suite: AccessControl', () => {
         expect(ac.hasResource('video')).toEqual(false);
     });
 
-    test('#removeResources(), #_removePermissions()', () => {
+    test('#removeResources(), #_removePermission()', () => {
         const ac = new AccessControl();
         function grantAll() {
             ac.grant(['user', 'admin']).create('photo').createOwn('photo');
@@ -221,12 +242,23 @@ describe('Test Suite: AccessControl', () => {
         }
 
         grantAll();
-        // removeResources() is like an alias without the third argument of _removePermissions().
+        // removeResources() is like an alias without the third argument of _removePermission().
         (ac as any).removeResources('photo', 'user');
         expect(ac.can('admin').createAny('photo').granted).toEqual(true);
         expect(ac.can('user').createAny('photo').granted).toEqual(false);
         expect(ac.can('user').createOwn('photo').granted).toEqual(false);
         expect(ac.getGrants().user.photo).toBeUndefined();
+
+        helper.expectACError(() => (ac as any)._removePermission(null));
+        helper.expectACError(() => (ac as any)._removePermission(''));
+        helper.expectACError(() => (ac as any)._removePermission([]));
+        helper.expectACError(() => (ac as any)._removePermission(['']));
+
+        grantAll();
+        helper.expectACError(() => (ac as any)._removePermission('photo', ''));
+        helper.expectACError(() => (ac as any)._removePermission(['photo'], null));
+        helper.expectACError(() => (ac as any)._removePermission('photo', []));
+        helper.expectACError(() => (ac as any)._removePermission('photo', ['']));
 
         // passing the third argument (actionPossession)
         grantAll();
@@ -864,9 +896,9 @@ describe('Test Suite: AccessControl', () => {
     });
 
     test('Permission#filter()', () => {
-        const ac = new AccessControl();
-        const attrs = ['*', '!account.balance.credit', '!account.id', '!secret'];
-        const data = {
+        let ac = new AccessControl();
+        let attrs = ['*', '!account.balance.credit', '!account.id', '!secret'];
+        let data: any = {
             name: 'Company, LTD.',
             address: {
                 city: 'istanbul',
@@ -888,14 +920,36 @@ describe('Test Suite: AccessControl', () => {
         let permission = ac.can('user').createOwn('company');
         expect(permission.granted).toEqual(true);
         let filtered = permission.filter(data);
-        expect(filtered.name).toEqual(jasmine.any(String));
-        expect(filtered.address).toEqual(jasmine.any(Object));
+        expect(filtered.name).toEqual(expect.any(String));
+        expect(filtered.address).toEqual(expect.any(Object));
         expect(filtered.address.city).toEqual('istanbul');
         expect(filtered.account).toBeDefined();
         expect(filtered.account.id).toBeUndefined();
         expect(filtered.account.balance).toBeDefined();
         expect(filtered.account.credit).toBeUndefined();
         expect(filtered.secret).toBeUndefined();
+
+        ac.deny('user').createOwn('company');
+        permission = ac.can('user').createOwn('company');
+        expect(permission.granted).toEqual(false);
+        filtered = permission.filter(data);
+        expect(filtered).toEqual({});
+
+        // filtering array of objects
+        ac = new AccessControl();
+        attrs = ['*', '!id'];
+        data = [
+            { id: 1, name: 'x', age: 30 },
+            { id: 2, name: 'y', age: 31 },
+            { id: 3, name: 'z', age: 32 }
+        ];
+        ac.grant('user')
+            .createOwn('account', ['*'])
+            .updateOwn('account', attrs);
+        permission = ac.can('user').updateOwn('account');
+        filtered = permission.filter(data);
+        expect(filtered).toEqual(expect.any(Array));
+        expect(filtered.length).toEqual(data.length);
     });
 
     test('union granted attributes for extended roles, on query', () => {
@@ -956,6 +1010,9 @@ describe('Test Suite: AccessControl', () => {
             helper.expectACError(() => ac.extendRole('admin', 'user'));
             helper.expectACError(() => ac.removeRoles(['admin']));
             helper.expectACError(() => ac.removeResources(['video']));
+
+            expect(() => (ac as any)._grants.hacker = { 'account': { 'read:any': ['*'] } }).toThrow();
+            expect(ac.hasRole('hacker')).toBe(false);
         }
 
         function _operative() {
@@ -987,7 +1044,30 @@ describe('Test Suite: AccessControl', () => {
 
         // locking when grants not specified
         ac = new AccessControl();
+        helper.expectACError(() => ac.lock()); // cannot lock empty grants
+        ac.setGrants({ 'admin': { 'account': { } } }).lock();
+        _inoperative();
+
+        // locking when grants are _isLocked is altered
+        ac = new AccessControl();
+        ac.setGrants({ 'admin': { 'account': {} } });
+        ac._isLocked = true;
         ac.lock();
+        _inoperative();
+
+        // locking when grants are shallow frozen
+        ac = new AccessControl({ 'admin': { 'account': {} } });
+        Object.freeze((ac as any)._grants);
+        ac.lock();
+        helper.expectACError(() => ac.removeResources(['account']));
+        _inoperative();
+
+        // locking when grants are shallow frozen and _isLocked is altered
+        ac = new AccessControl({ 'admin': { 'account': {} } });
+        ac._isLocked = true;
+        Object.freeze((ac as any)._grants);
+        ac.lock();
+        helper.expectACError(() => ac.removeResources(['account']));
         _inoperative();
     });
 
@@ -996,6 +1076,12 @@ describe('Test Suite: AccessControl', () => {
         expect(AccessControl.Possession).toEqual(expect.any(Object));
         expect(AccessControl.Possession.ANY).toBe('any');
         expect(AccessControl.Possession.OWN).toBe('own');
+    });
+
+    test('AccessControlError', () => {
+        helper.expectACError(() => { throw new AccessControl.Error(); });
+        helper.expectACError(() => { throw new AccessControlError(); });
+        expect(new AccessControlError().message).toEqual('');
     });
 
 });
