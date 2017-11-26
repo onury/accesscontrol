@@ -43,11 +43,11 @@ describe('Test Suite: utils (generic)', () => {
         expect(utils.toStringArray('a, b,  c  \n')).toEqual(['a', 'b', 'c']);
         expect(utils.toStringArray('a ; b,c')).toEqual(['a', 'b', 'c']);
         expect(utils.toStringArray('a;b; c')).toEqual(['a', 'b', 'c']);
-        expect(utils.toStringArray(1)).toEqual(null);
-        expect(utils.toStringArray(true)).toEqual(null);
-        expect(utils.toStringArray(false)).toEqual(null);
-        expect(utils.toStringArray(null)).toEqual(null);
-        expect(utils.toStringArray(undefined)).toEqual(null);
+        expect(utils.toStringArray(1)).toEqual([]);
+        expect(utils.toStringArray(true)).toEqual([]);
+        expect(utils.toStringArray(false)).toEqual([]);
+        expect(utils.toStringArray(null)).toEqual([]);
+        expect(utils.toStringArray(undefined)).toEqual([]);
     });
 
     test('#isFilledStringArray(), #isEmptyArray()', () => {
@@ -141,6 +141,11 @@ describe('Test Suite: utils (generic)', () => {
 
 describe('Test Suite: utils (core)', () => {
 
+    // ------------------------------------------
+    // NOTE: other parts of these methods should be covered in other tests.
+    // check coverage report.
+    // ------------------------------------------
+
     test('#validName(), #hasValidNames()', () => {
         let valid: any = 'someName';
         expect(utils.validName(valid)).toBe(true);
@@ -148,9 +153,13 @@ describe('Test Suite: utils (core)', () => {
         expect(utils.validName(valid, false)).toBe(true);
 
         let invalid: any = RESERVED_KEYWORDS[0];
-        expect(() => utils.validName(invalid)).toThrow();
-        expect(() => utils.validName(invalid, true)).toThrow();
+        helper.expectACError(() => utils.validName(invalid));
+        helper.expectACError(() => utils.validName(invalid, true));
         expect(utils.validName(invalid, false)).toBe(false);
+        expect(utils.validName('', false)).toBe(false);
+        expect((utils as any).validName(1, false)).toBe(false);
+        expect((utils as any).validName(null, false)).toBe(false);
+        expect((utils as any).validName(true, false)).toBe(false);
 
         valid = ['valid', 'name'];
         expect(utils.hasValidNames(valid)).toBe(true);
@@ -158,38 +167,140 @@ describe('Test Suite: utils (core)', () => {
         expect(utils.hasValidNames(valid, false)).toBe(true);
 
         invalid = ['valid', RESERVED_KEYWORDS[RESERVED_KEYWORDS.length - 1]];
-        expect(() => utils.hasValidNames(invalid)).toThrow();
-        expect(() => utils.hasValidNames(invalid, true)).toThrow();
+        helper.expectACError(() => utils.hasValidNames(invalid));
+        helper.expectACError(() => utils.hasValidNames(invalid, true));
         expect(utils.hasValidNames(invalid, false)).toBe(false);
     });
 
     test('#validResourceObject()', () => {
-        expect(() => utils.validResourceObject(null)).toThrow();
-        expect(() => utils.validResourceObject(null)).toThrow();
+        helper.expectACError(() => utils.validResourceObject(null));
+        helper.expectACError(() => utils.validResourceObject(null));
         expect(utils.validResourceObject({ 'create': [] })).toBe(true);
         expect(utils.validResourceObject({ 'create:any': ['*', '!id'] })).toBe(true);
         expect(utils.validResourceObject({ 'update:own': ['*'] })).toBe(true);
 
-        expect(() => utils.validResourceObject({ 'invalid': [], 'create': [] })).toThrow();
-        expect(() => utils.validResourceObject({ 'invalid:any': [] })).toThrow();
-        expect(() => utils.validResourceObject({ 'read:own': ['*'], 'invalid:own': [] })).toThrow();
+        helper.expectACError(() => utils.validResourceObject({ 'invalid': [], 'create': [] }));
+        helper.expectACError(() => utils.validResourceObject({ 'invalid:any': [] }));
+        helper.expectACError(() => utils.validResourceObject({ 'invalid:any': [''] }));
+        helper.expectACError(() => utils.validResourceObject({ 'read:own': ['*'], 'invalid:own': [] }));
 
-        expect(() => utils.validResourceObject({ 'create:all': [] })).toThrow();
-        expect(() => utils.validResourceObject({ 'create:all': [] })).toThrow();
+        helper.expectACError(() => utils.validResourceObject({ 'create:all': [] }));
+        helper.expectACError(() => utils.validResourceObject({ 'create:all': [] }));
 
-        expect(() => utils.validResourceObject({ 'create': null })).toThrow();
-        expect(() => utils.validResourceObject({ 'create:own': undefined })).toThrow();
-        expect(() => utils.validResourceObject({ 'read:own': [], 'create:any': [''] })).toThrow();
-        expect(() => utils.validResourceObject({ 'create:any': ['*', ''] })).toThrow();
+        helper.expectACError(() => utils.validResourceObject({ 'create': null }));
+        helper.expectACError(() => utils.validResourceObject({ 'create:own': undefined }));
+        helper.expectACError(() => utils.validResourceObject({ 'read:own': [], 'create:any': [''] }));
+        helper.expectACError(() => utils.validResourceObject({ 'create:any': ['*', ''] }));
     });
 
     test('#validRoleObject()', () => {
         let grants: any = { 'admin': { 'account': { 'read:any': ['*'] } } };
         expect(utils.validRoleObject(grants, 'admin')).toBe(true);
         grants.admin = { 'account': ['*'] };
-        expect(() => utils.validRoleObject(grants, 'admin')).toThrow();
+        helper.expectACError(() => utils.validRoleObject(grants, 'admin'));
+        grants.admin = { 'account': { 'read:own': ['*'] } };
+        expect(() => utils.validRoleObject(grants, 'admin')).not.toThrow();
+        grants.admin = { 'account': { 'read': ['*'] } };
+        expect(() => utils.validRoleObject(grants, 'admin')).not.toThrow();
         grants.admin = { 'account': { 'read:all': ['*'] } };
-        expect(() => utils.validRoleObject(grants, 'admin')).toThrow();
+        helper.expectACError(() => utils.validRoleObject(grants, 'admin'));
+        grants.admin = { '$extend': ['*'] }; // cannot inherit non-existent role(s)
+        helper.expectACError(() => utils.validRoleObject(grants, 'admin'));
+
+        grants.user = { 'account': { 'read:own': ['*'] } };
+        grants.admin = { '$extend': ['user'] };
+        expect(() => utils.validRoleObject(grants, 'admin')).not.toThrow();
+        grants.admin = { '$': { 'account': { 'read:own': ['*'] } } }; // $: reserved
+        helper.expectACError(() => utils.validRoleObject(grants, 'admin'));
+        grants.admin = { 'account': [] }; // invalid resource structure
+        helper.expectACError(() => utils.validRoleObject(grants, 'admin'));
+        grants.admin = { 'account': { 'read:own': [''] } }; // invalid resource structure
+        helper.expectACError(() => utils.validRoleObject(grants, 'admin'));
+        grants.admin = { 'account': null }; // invalid resource structure
+        helper.expectACError(() => utils.validRoleObject(grants, 'admin'));
+    });
+
+    test('#normalizeQueryInfo(), #normalizeAccessInfo()', () => {
+        helper.expectACError(() => utils.normalizeQueryInfo(null));
+        helper.expectACError(() => utils.normalizeQueryInfo({ role: null }));
+        helper.expectACError(() => (utils as any).normalizeQueryInfo({ role: 1 }));
+        helper.expectACError(() => utils.normalizeQueryInfo({ role: [] }));
+        helper.expectACError(() => utils.normalizeQueryInfo({ role: '' }));
+        helper.expectACError(() => utils.normalizeQueryInfo({ role: 'sa', resource: '' }));
+        helper.expectACError(() => (utils as any).normalizeQueryInfo({ role: 'sa', resource: null }));
+        helper.expectACError(() => (utils as any).normalizeQueryInfo({ role: 'sa', resource: [] }));
+
+        helper.expectACError(() => utils.normalizeAccessInfo(null));
+        helper.expectACError(() => utils.normalizeAccessInfo({ role: null }));
+        helper.expectACError(() => utils.normalizeAccessInfo({ role: [] }));
+        helper.expectACError(() => utils.normalizeAccessInfo({ role: '' }));
+        helper.expectACError(() => (utils as any).normalizeAccessInfo({ role: 1 }));
+        helper.expectACError(() => utils.normalizeAccessInfo({ role: 'sa', resource: '' }));
+        helper.expectACError(() => (utils as any).normalizeAccessInfo({ role: 'sa', resource: null }));
+        helper.expectACError(() => (utils as any).normalizeAccessInfo({ role: 'sa', resource: [] }));
+    });
+
+    test('#getRoleHierarchyOf()', () => {
+        let grants: any = {
+            'admin': {
+                '$extend': ['user']
+                // 'account': { 'read:any': ['*'] }
+            }
+        };
+        helper.expectACError(() => utils.getRoleHierarchyOf(grants, 'admin'));
+        grants.admin = { '$extend': ['admin'] };
+        helper.expectACError(() => utils.getRoleHierarchyOf(grants, 'admin'));
+
+        grants.admin = { 'account': { 'read:any': ['*'] } };
+        helper.expectACError(() => utils.getRoleHierarchyOf(grants, null));
+        helper.expectACError(() => utils.getRoleHierarchyOf(grants, ''));
+    });
+
+    test('#getFlatRoles()', () => {
+        helper.expectACError(() => utils.getFlatRoles({}, null));
+        helper.expectACError(() => utils.getFlatRoles({}, ''));
+    });
+
+    test('#getNonExistentRoles()', () => {
+        let grants: any = {
+            'admin': {
+                'account': { 'read:any': ['*'] }
+            }
+        };
+        expect(utils.getNonExistentRoles(grants, [])).toEqual([]);
+        expect(utils.getNonExistentRoles(grants, [''])).toEqual(['']);
+    });
+
+    test('#getCrossExtendingRole()', () => {
+        let grants: any = {
+            'user': {},
+            'admin': {
+                '$extend': ['user', 'editor']
+            },
+            'editor': {
+                '$extend': ['admin']
+            },
+        };
+        expect(utils.getCrossExtendingRole(grants, 'admin', ['admin'])).toEqual(null);
+        expect(utils.getCrossExtendingRole(grants, 'admin', ['user'])).toEqual(null);
+        helper.expectACError(() => utils.getCrossExtendingRole(grants, 'user', ['admin']));
+    });
+
+    test('#extendRole()', () => {
+        let grants: any = {
+            'user': {},
+            'admin': {
+                '$extend': ['user', 'editor']
+            },
+            'editor': {
+                '$extend': ['admin']
+            },
+        };
+        helper.expectACError(() => utils.extendRole(grants, null, ['admin']));
+        helper.expectACError(() => utils.extendRole(grants, 'admin', null));
+        helper.expectACError(() => utils.extendRole(grants, 'nonexisting', 'user'));
+
+        // expect(utils.extendRole(grants, 'nonexisting', 'user')).not.toThrow();
     });
 
 });
