@@ -478,16 +478,19 @@ class Access {
         this._.action = action;
         this._.possession = possession;
         if (resource) this._.resource = resource;
-        if (attributes) this._.attributes = attributes;
+
         if (this._.denied) {
             this._.attributes = [];
         } else {
             // if omitted and not denied, all attributes are allowed
-            this._.attributes = this._.attributes ? utils.toStringArray(this._.attributes) : ['*'];
+            this._.attributes = attributes ? utils.toStringArray(attributes) : ['*'];
         }
+
         utils.commitToGrants(this._grants, this._, false);
+
         // important: reset attributes for chained methods
         this._.attributes = undefined;
+
         return this;
     }
 
