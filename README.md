@@ -4,7 +4,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/onury/accesscontrol/badge.svg?branch=master)](https://coveralls.io/github/onury/accesscontrol?branch=master)
 [![dependencies](https://david-dm.org/onury/accesscontrol.svg)](https://david-dm.org/onury/accesscontrol)
 [![Known Vulnerabilities](https://snyk.io/test/github/onury/accesscontrol/badge.svg)](https://snyk.io/test/github/onury/accesscontrol)
-[![maintained](https://img.shields.io/maintenance/yes/2017.svg)](https://github.com/onury/accesscontrol/graphs/commit-activity)  
+[![maintained](https://img.shields.io/maintenance/yes/2018.svg)](https://github.com/onury/accesscontrol/graphs/commit-activity)  
 [![npm](http://img.shields.io/npm/v/accesscontrol.svg)](https://www.npmjs.com/package/accesscontrol)
 [![release](https://img.shields.io/github/release/onury/accesscontrol.svg)](https://github.com/onury/accesscontrol)
 [![license](http://img.shields.io/npm/l/accesscontrol.svg)](https://github.com/onury/accesscontrol/blob/master/LICENSE)
