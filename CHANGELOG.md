@@ -1,5 +1,10 @@
 ## AccessControl - Change Log
 
+### v2.2.1 (2018-02-24)
+
+- **Fixed** an issue with attribute filtering caused by the core dependency Notation. Now [fixed](https://github.com/onury/notation/issues/7) and updated.
+- **(Dev)** Updated dev-dependencies to latest versions.
+
 ### v2.2.0 (2017-11-25)
 
 **This release greatly improves stability!**
