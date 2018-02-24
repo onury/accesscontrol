@@ -281,13 +281,13 @@ git clone https://github.com/onury/accesscontrol.git
 Install dependencies:
 
 ```sh
-yarn install
+npm install
 ```
 
 Add tests to relevant file under [/test](test/) directory and run:  
 
 ```sh
-yarn build && yarn cover
+npm run build && npm run cover
 ```
 
 Use included `tslint.json` and `editorconfig` for style and linting.  
