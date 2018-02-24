@@ -3,7 +3,7 @@
 ### v2.2.1 (2018-02-24)
 
 - **Fixed** an issue with attribute filtering caused by the core dependency Notation. Now [fixed](https://github.com/onury/notation/issues/7) and updated.
-- **(Dev)** Updated dev-dependencies to latest versions.
+- **(Dev)** Updated dev-dependencies to latest versions. Removed yarn.
 
 ### v2.2.0 (2017-11-25)
 
