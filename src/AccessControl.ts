@@ -9,7 +9,7 @@ import { utils, ERR_LOCK } from './utils';
  *  attributes.
  *
  *  Construct an `AccessControl` instance by either passing a grants object (or
- *  array fetched from database) or simple omit `grants` parameter if you are
+ *  array fetched from database) or simply omit `grants` parameter if you are
  *  willing to build it programmatically.
  *
  *  <p><pre><code> const grants = {
@@ -40,7 +40,7 @@ import { utils, ERR_LOCK } from './utils';
  *  We turn this list into a hashtable for better performance. We aggregate
  *  the list by roles first, resources second. If possession (in action
  *  value or as a separate property) is omitted, it will default to `"any"`.
- *  e.g. `"create"` —» `"create:any"`
+ *  e.g. `"create"` ➞ `"create:any"`
  *
  *  Below are equivalent:
  *  <p><pre><code> const grants = { role: 'role1', resource: 'resource1', action: 'create:any', attributes: [ attrs ] }
