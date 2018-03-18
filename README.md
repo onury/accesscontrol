@@ -8,6 +8,7 @@
 [![maintained](https://img.shields.io/maintenance/yes/2018.svg)](https://github.com/onury/accesscontrol/graphs/commit-activity)  
 [![npm](http://img.shields.io/npm/v/accesscontrol.svg)](https://www.npmjs.com/package/accesscontrol)
 [![release](https://img.shields.io/github/release/onury/accesscontrol.svg)](https://github.com/onury/accesscontrol)
+[![downloads](http://img.shields.io/npm/dm/accesscontrol.svg)](https://www.npmjs.com/package/accesscontrol)
 [![license](http://img.shields.io/npm/l/accesscontrol.svg)](https://github.com/onury/accesscontrol/blob/master/LICENSE)
 [![TypeScript](https://img.shields.io/badge/written%20in-%20TypeScript%20-6575ff.svg)](https://www.typescriptlang.org)
 [![documentation](https://img.shields.io/badge/documentation-click_to_read-c27cf4.svg?documentation=click_to_read)](http://onury.io/accesscontrol/?api=ac)    
