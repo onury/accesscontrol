@@ -1,21 +1,26 @@
-<p align="center"><img width="465" height="170" src="https://raw.github.com/onury/accesscontrol/master/ac-logo.png" /></p>
+<h1 align="center">
+    <img width="465" height="170" src="https://raw.github.com/onury/accesscontrol/master/ac-logo.png" alt="AccessControl.js" />
+</h1>
+<p align="center">
+    <a href="https://travis-ci.org/onury/accesscontrol"><img src="https://img.shields.io/travis/onury/accesscontrol.svg?branch=master&style=flat-square" alt="Build Status" /></a>
+    <a href="https://coveralls.io/github/onury/accesscontrol?branch=master"><img src="https://img.shields.io/coveralls/github/onury/accesscontrol/master.svg?style=flat-square" alt="Coverage Status" /></a>
+    <a href="https://david-dm.org/onury/accesscontrol"><img src="https://david-dm.org/onury/accesscontrol.svg?style=flat-square" alt="Dependencies" /></a>
+    <a href="https://snyk.io/test/github/onury/accesscontrol"><img src="https://snyk.io/test/github/onury/accesscontrol/badge.svg?style=flat-square" alt="Known Vulnerabilities" /></a>
+    <a href="https://nodesecurity.io/orgs/onury/projects/1db2347a-c83a-4c13-b485-ed552f43046f"><img src="https://nodesecurity.io/orgs/onury/projects/1db2347a-c83a-4c13-b485-ed552f43046f/badge?style=flat-square" alt="NSP Status" /></a>
+    <a href="https://github.com/onury/accesscontrol/graphs/commit-activity"><img src="https://img.shields.io/maintenance/yes/2018.svg?style=flat-square" alt="Maintained" /></a>
+    <br />
+    <a href="https://www.npmjs.com/package/accesscontrol"><img src="http://img.shields.io/npm/v/accesscontrol.svg?style=flat-square" alt="npm" /></a>
+    <a href="https://github.com/onury/accesscontrol"><img src="https://img.shields.io/github/release/onury/accesscontrol.svg?style=flat-square" alt="Release" /></a>
+    <a href="https://www.npmjs.com/package/accesscontrol"><img src="http://img.shields.io/npm/dm/accesscontrol.svg?style=flat-square" alt="Downloads/mo." /></a>
+    <a href="https://github.com/onury/accesscontrol/blob/master/LICENSE"><img src="http://img.shields.io/npm/l/accesscontrol.svg?style=flat-square" alt="License" /></a>
+    <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/written%20in-%20TypeScript%20-6575ff.svg?style=flat-square" alt="TypeScript" /></a>
+    <a href="http://onury.io/accesscontrol/?api=ac"><img src="https://img.shields.io/badge/documentation-click_to_read-c27cf4.svg?documentation=click_to_read&style=flat-square" alt="Documentation" /></a>
+    <br />
+    <sub>© 2018, Onur Yıldırım (<b><a href="https://github.com/onury">@onury</a></b>).</sub>
+</p>
+<br />
 
-[![build-status](https://img.shields.io/travis/onury/accesscontrol.svg?branch=master)](https://travis-ci.org/onury/accesscontrol)
-[![Coverage Status](https://coveralls.io/repos/github/onury/accesscontrol/badge.svg?branch=master)](https://coveralls.io/github/onury/accesscontrol?branch=master)
-[![dependencies](https://david-dm.org/onury/accesscontrol.svg)](https://david-dm.org/onury/accesscontrol)
-[![Known Vulnerabilities](https://snyk.io/test/github/onury/accesscontrol/badge.svg)](https://snyk.io/test/github/onury/accesscontrol)
-[![NSP Status](https://nodesecurity.io/orgs/onury/projects/1db2347a-c83a-4c13-b485-ed552f43046f/badge)](https://nodesecurity.io/orgs/onury/projects/1db2347a-c83a-4c13-b485-ed552f43046f)
-[![maintained](https://img.shields.io/maintenance/yes/2018.svg)](https://github.com/onury/accesscontrol/graphs/commit-activity)  
-[![npm](http://img.shields.io/npm/v/accesscontrol.svg)](https://www.npmjs.com/package/accesscontrol)
-[![release](https://img.shields.io/github/release/onury/accesscontrol.svg)](https://github.com/onury/accesscontrol)
-[![downloads](http://img.shields.io/npm/dm/accesscontrol.svg)](https://www.npmjs.com/package/accesscontrol)
-[![license](http://img.shields.io/npm/l/accesscontrol.svg)](https://github.com/onury/accesscontrol/blob/master/LICENSE)
-[![TypeScript](https://img.shields.io/badge/written%20in-%20TypeScript%20-6575ff.svg)](https://www.typescriptlang.org)
-[![documentation](https://img.shields.io/badge/documentation-click_to_read-c27cf4.svg?documentation=click_to_read)](http://onury.io/accesscontrol/?api=ac)    
-
-> © 2018, Onur Yıldırım ([@onury](https://github.com/onury)). MIT License.
-
-Role and Attribute based Access Control for Node.js  
+### Role and Attribute based Access Control for Node.js  
 
 Many [RBAC][rbac] (Role-Based Access Control) implementations differ, but the basics is widely adopted since it simulates real life role (job) assignments. But while data is getting more and more complex; you need to define policies on resources, subjects or even environments. This is called [ABAC][abac] (Attribute-Based Access Control).
 
