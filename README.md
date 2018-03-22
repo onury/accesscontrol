@@ -1,3 +1,19 @@
+<table>
+  <thead>
+    <tr>
+      <th><a href="#core-features">Features</a></th>
+      <th><a href="#installation">Install</a></th>
+      <th><a href="#guide">Examples</a></th>
+      <th><a href="#roles">Roles</a></th>
+      <th><a href="#actions-and-action-attributes">Actions</a></th>
+      <th><a href="#resources-and-resource-attributes">Resources</a></th>
+      <th><a href="#checking-permissions-and-filtering-attributes">Permissions</a></th>
+      <th><a href="https://github.com/onury/accesscontrol/blob/master/docs/FAQ.md">F.A.Q</a></th>
+      <th><a href="https://onury.io/accesscontrol?api=ac">API Reference</a></th>
+    </tr>
+  </thead>
+</table>
+
 <h1 align="center">
     <img width="465" height="170" src="https://raw.github.com/onury/accesscontrol/master/ac-logo.png" alt="AccessControl.js" />
 </h1>
@@ -20,13 +36,14 @@
 </p>
 <br />
 
+
 ### Role and Attribute based Access Control for Node.js  
 
 Many [RBAC][rbac] (Role-Based Access Control) implementations differ, but the basics is widely adopted since it simulates real life role (job) assignments. But while data is getting more and more complex; you need to define policies on resources, subjects or even environments. This is called [ABAC][abac] (Attribute-Based Access Control).
 
 With the idea of merging the best features of the two (see this [NIST paper][nist-paper]); this library implements RBAC basics and also focuses on *resource* and *action* attributes.
 
-### Core Features
+## Core Features
 
 - Chainable, friendly API.  
 e.g. `ac.can(role).create(resource)`
@@ -46,7 +63,6 @@ _In order to build on more solid foundations, this library (v1.5.0+) is complete
 ## Installation
 
 with [**npm**](https://www.npmjs.com/package/accesscontrol): `npm i accesscontrol --save`  
-
 with [**yarn**](https://yarn.pm/accesscontrol): `yarn add accesscontrol`
 
 ## Guide
@@ -102,7 +118,7 @@ router.get('/videos/:title', function (req, res, next) {
 });
 ```
 
-### Roles
+## Roles
 
 You can create/define roles simply by calling `.grant(<role>)` or `.deny(<role>)` methods on an `AccessControl` instance.  
 
@@ -139,7 +155,7 @@ Notes on inheritance:
 e.g. `ac.grant('user').extend('admin').grant('admin').extend('user')` will throw.
 - A role cannot (pre)extend a non-existing role. In other words, you should first create the base role.  e.g. `ac.grant('baseRole').grant('role').extend('baseRole')`
 
-### Actions and Action-Attributes
+## Actions and Action-Attributes
 
 [CRUD][crud] operations are the actions you can perform on a resource. There are two action-attributes which define the **possession** of the resource: *own* and *any*.
 
@@ -177,7 +193,7 @@ ac.deny('role').deleteAny('resource');
 
 _Note that **own** requires you to also check for the actual possession. See [this](https://github.com/onury/accesscontrol/issues/14#issuecomment-328316670) for more._
 
-### Resources and Resource-Attributes
+## Resources and Resource-Attributes
 
 Multiple roles can have access to a specific resource. But depending on the context, you may need to limit the contents of the resource for specific roles.  
 
@@ -202,7 +218,7 @@ You can also use nested objects (attributes).
 ac.grant('user').readOwn('account', ['*', '!record.id']);
 ```
 
-### Checking Permissions and Filtering Attributes
+## Checking Permissions and Filtering Attributes
 
 You can call `.can(<role>).<action>(<resource>)` on an `AccessControl` instance to check for granted permissions for a specific resource and action.
 
@@ -214,7 +230,7 @@ permission.filter(data);  // filtered data (without record.id)
 ```
 See [express.js example](#expressjs-example).
 
-### Defining All Grants at Once
+## Defining All Grants at Once
 
 You can pass the grants directly to the `AccessControl` constructor.
 It accepts either an `Object`:
