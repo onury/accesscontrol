@@ -1,5 +1,4 @@
 ## Frequently Asked Questions
----
 
 > _This FAQ provides general information about the term "Access Control" but most definitions are specific to AccessControl.js - how the library is implemented._
 
