@@ -15,7 +15,7 @@
 </table>
 
 <h1 align="center">
-    <img width="465" height="170" src="https://raw.github.com/onury/accesscontrol/master/ac-logo.png" alt="AccessControl.js" />
+    <a href="https://github.com/onury/accesscontrol"><img width="465" height="170" src="https://raw.github.com/onury/accesscontrol/master/ac-logo.png" alt="AccessControl.js" /></a>
 </h1>
 <p align="center">
     <a href="https://travis-ci.org/onury/accesscontrol"><img src="https://img.shields.io/travis/onury/accesscontrol.svg?branch=master&style=flat-square" alt="Build Status" /></a>
