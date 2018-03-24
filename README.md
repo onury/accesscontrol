@@ -1,19 +1,3 @@
-<table>
-  <thead>
-    <tr>
-      <th><a href="#core-features">Features</a></th>
-      <th><a href="#installation">Install</a></th>
-      <th><a href="#guide">Examples</a></th>
-      <th><a href="#roles">Roles</a></th>
-      <th><a href="#actions-and-action-attributes">Actions</a></th>
-      <th><a href="#resources-and-resource-attributes">Resources</a></th>
-      <th><a href="#checking-permissions-and-filtering-attributes">Permissions</a></th>
-      <th><a href="https://github.com/onury/accesscontrol/blob/master/docs/FAQ.md">F.A.Q</a></th>
-      <th><a href="https://onury.io/accesscontrol?api=ac">API Reference</a></th>
-    </tr>
-  </thead>
-</table>
-
 <h1 align="center">
     <a href="https://github.com/onury/accesscontrol"><img width="465" height="170" src="https://raw.github.com/onury/accesscontrol/master/ac-logo.png" alt="AccessControl.js" /></a>
 </h1>
@@ -42,6 +26,22 @@
 Many [RBAC][rbac] (Role-Based Access Control) implementations differ, but the basics is widely adopted since it simulates real life role (job) assignments. But while data is getting more and more complex; you need to define policies on resources, subjects or even environments. This is called [ABAC][abac] (Attribute-Based Access Control).
 
 With the idea of merging the best features of the two (see this [NIST paper][nist-paper]); this library implements RBAC basics and also focuses on *resource* and *action* attributes.
+
+<table>
+  <thead>
+    <tr>
+      <th><a href="#installation">Install</a></th>
+      <th><a href="#guide">Examples</a></th>
+      <th><a href="#roles">Roles</a></th>
+      <th><a href="#actions-and-action-attributes">Actions</a></th>
+      <th><a href="#resources-and-resource-attributes">Resources</a></th>
+      <th><a href="#checking-permissions-and-filtering-attributes">Permissions</a></th>
+      <th><a href="#defining-all-grants-at-once">More</a></th>
+      <th><a href="https://github.com/onury/accesscontrol/blob/master/docs/FAQ.md">F.A.Q.</a></th>
+      <th><a href="https://onury.io/accesscontrol?api=ac">API Reference</a></th>
+    </tr>
+  </thead>
+</table>
 
 ## Core Features
 
