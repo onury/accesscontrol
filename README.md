@@ -14,7 +14,7 @@
     <a href="https://www.npmjs.com/package/accesscontrol"><img src="http://img.shields.io/npm/dm/accesscontrol.svg?style=flat-square" alt="Downloads/mo." /></a>
     <a href="https://github.com/onury/accesscontrol/blob/master/LICENSE"><img src="http://img.shields.io/npm/l/accesscontrol.svg?style=flat-square" alt="License" /></a>
     <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/written%20in-%20TypeScript%20-6575ff.svg?style=flat-square" alt="TypeScript" /></a>
-    <a href="http://onury.io/accesscontrol/?api=ac"><img src="https://img.shields.io/badge/documentation-click_to_read-c27cf4.svg?documentation=click_to_read&style=flat-square" alt="Documentation" /></a>
+    <a href="https://onury.io/accesscontrol/?api=ac"><img src="https://img.shields.io/badge/documentation-click_to_read-c27cf4.svg?documentation=click_to_read&style=flat-square" alt="Documentation" /></a>
     <br />
     <sub>© 2018, Onur Yıldırım (<b><a href="https://github.com/onury">@onury</a></b>).</sub>
 </p>
