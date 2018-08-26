@@ -246,13 +246,16 @@ let grantsObject = {
             'delete:any': ['*']
         }
     },
+    user_readonly: {
+        'read:own': ['*']
+    },
     user: {
         video: {
             'create:own': ['*', '!rating', '!views'],
-            'read:own': ['*'],
             'update:own': ['*', '!rating', '!views'],
             'delete:own': ['*']
-        }
+        },
+        "$extend": ['user_readonly']
     }
 };
 const ac = new AccessControl(grantsObject);
