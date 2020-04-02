@@ -1,4 +1,11 @@
-import { Access, IAccessInfo, Query, IQueryInfo, Permission, AccessControlError } from './core';
+import {
+    Access,
+    IAccessInfo,
+    Query,
+    IQueryInfo,
+    Permission,
+    AccessControlError,
+} from './core';
 import { Action, Possession, actions, possessions } from './enums';
 import { utils, ERR_LOCK } from './utils';
 
@@ -99,7 +106,6 @@ import { utils, ERR_LOCK } from './utils';
  *  ac.lock();
  */
 class AccessControl {
-
     /**
      *  @private
      */
@@ -273,7 +279,10 @@ class AccessControl {
      *  @throws {AccessControlError} - If a role is extended by itself or a
      *  non-existent role. Or if called after `.lock()` is called.
      */
-    extendRole(roles: string | string[], extenderRoles: string | string[]): AccessControl {
+    extendRole(
+        roles: string | string[],
+        extenderRoles: string | string[],
+    ): AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
         utils.extendRole(this._grants, roles, extenderRoles);
         return this;
@@ -294,19 +303,29 @@ class AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
 
         let rolesToRemove: string[] = utils.toStringArray(roles);
-        if (rolesToRemove.length === 0 || !utils.isFilledStringArray(rolesToRemove)) {
-            throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
+        if (
+            rolesToRemove.length === 0 ||
+            !utils.isFilledStringArray(rolesToRemove)
+        ) {
+            throw new AccessControlError(
+                `Invalid role(s): ${JSON.stringify(roles)}`,
+            );
         }
         rolesToRemove.forEach((roleName: string) => {
             if (!this._grants[roleName]) {
-                throw new AccessControlError(`Cannot remove a non-existing role: "${roleName}"`);
+                throw new AccessControlError(
+                    `Cannot remove a non-existing role: "${roleName}"`,
+                );
             }
             delete this._grants[roleName];
         });
         // also remove these roles from $extend list of each remaining role.
         utils.eachRole(this._grants, (roleItem: any, roleName: string) => {
             if (Array.isArray(roleItem.$extend)) {
-                roleItem.$extend = utils.subtractArray(roleItem.$extend, rolesToRemove);
+                roleItem.$extend = utils.subtractArray(
+                    roleItem.$extend,
+                    rolesToRemove,
+                );
             }
         });
         return this;
@@ -328,7 +347,10 @@ class AccessControl {
      *
      *  @throws {AccessControlError} - If called after `.lock()` is called.
      */
-    removeResources(resources: string | string[], roles?: string | string[]): AccessControl {
+    removeResources(
+        resources: string | string[],
+        roles?: string | string[],
+    ): AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
 
         // _removePermission has a third argument `actionPossession`. if
@@ -394,7 +416,9 @@ class AccessControl {
      */
     hasRole(role: string | string[]): boolean {
         if (Array.isArray(role)) {
-            return role.every((item: string) => this._grants.hasOwnProperty(item));
+            return role.every((item: string) =>
+                this._grants.hasOwnProperty(item),
+            );
         }
         return this._grants.hasOwnProperty(role);
     }
@@ -410,7 +434,9 @@ class AccessControl {
     hasResource(resource: string | string[]): boolean {
         let resources = this.getResources();
         if (Array.isArray(resource)) {
-            return resource.every((item: string) => resources.indexOf(item) >= 0);
+            return resource.every(
+                (item: string) => resources.indexOf(item) >= 0,
+            );
         }
         if (typeof resource !== 'string' || resource === '') return false;
         return resources.indexOf(resource) >= 0;
@@ -647,37 +673,53 @@ class AccessControl {
     /**
      *  @private
      */
-    _removePermission(resources: string | string[], roles?: string | string[], actionPossession?: string) {
+    _removePermission(
+        resources: string | string[],
+        roles?: string | string[],
+        actionPossession?: string,
+    ) {
         resources = utils.toStringArray(resources);
         // resources is set but returns empty array.
         if (resources.length === 0 || !utils.isFilledStringArray(resources)) {
-            throw new AccessControlError(`Invalid resource(s): ${JSON.stringify(resources)}`);
+            throw new AccessControlError(
+                `Invalid resource(s): ${JSON.stringify(resources)}`,
+            );
         }
 
         if (roles !== undefined) {
             roles = utils.toStringArray(roles);
             // roles is set but returns empty array.
             if (roles.length === 0 || !utils.isFilledStringArray(roles)) {
-                throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
+                throw new AccessControlError(
+                    `Invalid role(s): ${JSON.stringify(roles)}`,
+                );
             }
         }
-        utils.eachRoleResource(this._grants, (role: string, resource: string, permissions: any) => {
-            if (resources.indexOf(resource) >= 0
-                // roles is optional. so remove if role is not defined.
-                // if defined, check if the current role is in the list.
-                && (!roles || roles.indexOf(role) >= 0)) {
-                if (actionPossession) {
-                    // e.g. 'create' » 'create:any'
-                    // to parse and normalize actionPossession string:
-                    const ap: string = utils.normalizeActionPossession({ action: actionPossession }, true) as string;
-                    // above will also validate the given actionPossession
-                    delete this._grants[role][resource][ap];
-                } else {
-                    // this is used for AccessControl#removeResources().
-                    delete this._grants[role][resource];
+        utils.eachRoleResource(
+            this._grants,
+            (role: string, resource: string, permissions: any) => {
+                if (
+                    resources.indexOf(resource) >= 0 &&
+                    // roles is optional. so remove if role is not defined.
+                    // if defined, check if the current role is in the list.
+                    (!roles || roles.indexOf(role) >= 0)
+                ) {
+                    if (actionPossession) {
+                        // e.g. 'create' » 'create:any'
+                        // to parse and normalize actionPossession string:
+                        const ap: string = utils.normalizeActionPossession(
+                            { action: actionPossession },
+                            true,
+                        ) as string;
+                        // above will also validate the given actionPossession
+                        delete this._grants[role][resource][ap];
+                    } else {
+                        // this is used for AccessControl#removeResources().
+                        delete this._grants[role][resource];
+                    }
                 }
-            }
-        });
+            },
+        );
     }
 
     // -------------------------------

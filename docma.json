@@ -44,23 +44,23 @@
                 "label": "AccessControl",
                 "href": "/accesscontrol/?"
             },
-            "logo": null,                   // URL String or { dark: String, light: String }
+            "logo": null, // URL String or { dark: String, light: String }
             "sidebar": {
                 "enabled": true,
-                "outline": "tree",          // "flat" | "tree"
+                "outline": "tree", // "flat" | "tree"
                 "collapsed": false,
                 "toolbar": true,
                 "itemsFolded": false,
-                "itemsOverflow": "crop",    // "crop" | "shrink"
-                "badges": true,             // true | false | <string-value>
+                "itemsOverflow": "crop", // "crop" | "shrink"
+                "badges": true, // true | false | <string-value>
                 "search": true,
                 "animations": true
-                },
+            },
             "symbols": {
-                "autoLink": true,           // "internal" | "external" | true (both)
-                "params": "list",           // "list" | "table"
-                "enums": "list",            // "list" | "table"
-                "props": "list",            // "list" | "table"
+                "autoLink": true, // "internal" | "external" | true (both)
+                "params": "list", // "list" | "table"
+                "enums": "list", // "list" | "table"
+                "props": "list", // "list" | "table"
                 "meta": false
             },
             "contentView": {
@@ -130,10 +130,7 @@
     },
     "src": [
         {
-            "ac": [
-                "./lib/**/*.js",
-                "!./lib/utils.js"
-            ]
+            "ac": ["./lib/**/*.js", "!./lib/utils.js"]
         },
         "./CHANGELOG.md",
         "./docs/FAQ.md",

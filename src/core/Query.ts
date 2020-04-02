@@ -12,7 +12,6 @@ import { utils } from '../utils';
  *  @memberof AccessControl
  */
 class Query {
-
     /**
      *  Inner `IQueryInfo` object.
      *  @protected
@@ -55,7 +54,9 @@ class Query {
         } else if (roleOrInfo !== undefined) {
             // undefined is allowed (`role` can be omitted) but throw if some
             // other type is passed.
-            throw new AccessControlError('Invalid role(s), expected a valid string, string[] or IQueryInfo.');
+            throw new AccessControlError(
+                'Invalid role(s), expected a valid string, string[] or IQueryInfo.',
+            );
         }
     }
 
@@ -286,7 +287,11 @@ class Query {
      *  @param {String} [resource]
      *  @returns {Permission}
      */
-    private _getPermission(action: string, possession: string, resource?: string): Permission {
+    private _getPermission(
+        action: string,
+        possession: string,
+        resource?: string,
+    ): Permission {
         this._.action = action;
         this._.possession = possession;
         if (resource) this._.resource = resource;

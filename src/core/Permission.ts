@@ -36,7 +36,6 @@ import { utils } from '../utils';
  *  @memberof AccessControl
  */
 class Permission {
-
     /**
      *  @private
      */
@@ -132,7 +131,6 @@ class Permission {
     filter(data: any): any {
         return utils.filterAll(data, this.attributes);
     }
-
 }
 
 export { Permission };

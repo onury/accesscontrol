@@ -44,7 +44,11 @@ declare class Access {
      *  @param {Boolean} denied
      *         Specifies whether this `Access` is denied.
      */
-    constructor(ac: AccessControl, roleOrInfo?: string | string[] | IAccessInfo, denied?: boolean);
+    constructor(
+        ac: AccessControl,
+        roleOrInfo?: string | string[] | IAccessInfo,
+        denied?: boolean,
+    );
     /**
      *  Specifies whether this access is initally denied.
      *  @name AccessControl~Access#denied
@@ -159,7 +163,10 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    createOwn(resource?: string | string[], attributes?: string | string[]): Access;
+    createOwn(
+        resource?: string | string[],
+        attributes?: string | string[],
+    ): Access;
     /**
      *  Sets the action to `"create"` and possession to `"any"` and commits the
      *  current access instance to the underlying grant model.
@@ -185,12 +192,18 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    createAny(resource?: string | string[], attributes?: string | string[]): Access;
+    createAny(
+        resource?: string | string[],
+        attributes?: string | string[],
+    ): Access;
     /**
      *  Alias of `createAny`
      *  @private
      */
-    create(resource?: string | string[], attributes?: string | string[]): Access;
+    create(
+        resource?: string | string[],
+        attributes?: string | string[],
+    ): Access;
     /**
      *  Sets the action to `"read"` and possession to `"own"` and commits the
      *  current access instance to the underlying grant model.
@@ -213,7 +226,10 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    readOwn(resource?: string | string[], attributes?: string | string[]): Access;
+    readOwn(
+        resource?: string | string[],
+        attributes?: string | string[],
+    ): Access;
     /**
      *  Sets the action to `"read"` and possession to `"any"` and commits the
      *  current access instance to the underlying grant model.
@@ -239,7 +255,10 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    readAny(resource?: string | string[], attributes?: string | string[]): Access;
+    readAny(
+        resource?: string | string[],
+        attributes?: string | string[],
+    ): Access;
     /**
      *  Alias of `readAny`
      *  @private
@@ -267,7 +286,10 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    updateOwn(resource?: string | string[], attributes?: string | string[]): Access;
+    updateOwn(
+        resource?: string | string[],
+        attributes?: string | string[],
+    ): Access;
     /**
      *  Sets the action to `"update"` and possession to `"any"` and commits the
      *  current access instance to the underlying grant model.
@@ -293,12 +315,18 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    updateAny(resource?: string | string[], attributes?: string | string[]): Access;
+    updateAny(
+        resource?: string | string[],
+        attributes?: string | string[],
+    ): Access;
     /**
      *  Alias of `updateAny`
      *  @private
      */
-    update(resource?: string | string[], attributes?: string | string[]): Access;
+    update(
+        resource?: string | string[],
+        attributes?: string | string[],
+    ): Access;
     /**
      *  Sets the action to `"delete"` and possession to `"own"` and commits the
      *  current access instance to the underlying grant model.
@@ -321,7 +349,10 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    deleteOwn(resource?: string | string[], attributes?: string | string[]): Access;
+    deleteOwn(
+        resource?: string | string[],
+        attributes?: string | string[],
+    ): Access;
     /**
      *  Sets the action to `"delete"` and possession to `"any"` and commits the
      *  current access instance to the underlying grant model.
@@ -347,12 +378,18 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    deleteAny(resource?: string | string[], attributes?: string | string[]): Access;
+    deleteAny(
+        resource?: string | string[],
+        attributes?: string | string[],
+    ): Access;
     /**
      *  Alias of `deleteAny`
      *  @private
      */
-    delete(resource?: string | string[], attributes?: string | string[]): Access;
+    delete(
+        resource?: string | string[],
+        attributes?: string | string[],
+    ): Access;
     /**
      *  @private
      *  @param {String} action     [description]

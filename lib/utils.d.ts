@@ -8,7 +8,8 @@ declare const RESERVED_KEYWORDS: string[];
 /**
  *  Error message to be thrown after AccessControl instance is locked.
  */
-declare const ERR_LOCK = "Cannot alter the underlying grants model. AccessControl instance is locked.";
+declare const ERR_LOCK =
+    'Cannot alter the underlying grants model. AccessControl instance is locked.';
 declare const utils: {
     type(o: any): string;
     hasDefined(o: any, propName: string): boolean;
@@ -21,8 +22,18 @@ declare const utils: {
     deepFreeze(o: any): any;
     each(array: any, callback: any, thisArg?: any): void;
     eachKey(object: any, callback: any, thisArg?: any): void;
-    eachRole(grants: any, callback: (role: any, roleName: string) => void): void;
-    eachRoleResource(grants: any, callback: (role: string, resource: string, resourceDefinition: any) => void): void;
+    eachRole(
+        grants: any,
+        callback: (role: any, roleName: string) => void,
+    ): void;
+    eachRoleResource(
+        grants: any,
+        callback: (
+            role: string,
+            resource: string,
+            resourceDefinition: any,
+        ) => void,
+    ): void;
     isInfoFulfilled(info: IAccessInfo | IQueryInfo): boolean;
     validName(name: string, throwOnInvalid?: boolean): boolean;
     hasValidNames(list: any, throwOnInvalid?: boolean): boolean;
@@ -30,17 +41,36 @@ declare const utils: {
     validRoleObject(grants: any, roleName: string): boolean;
     getInspectedGrants(o: any): any;
     getResources(grants: any): string[];
-    normalizeActionPossession(info: IAccessInfo | IQueryInfo, asString?: boolean): string | IAccessInfo | IQueryInfo;
+    normalizeActionPossession(
+        info: IAccessInfo | IQueryInfo,
+        asString?: boolean,
+    ): string | IAccessInfo | IQueryInfo;
     normalizeQueryInfo(query: IQueryInfo): IQueryInfo;
     normalizeAccessInfo(access: IAccessInfo, all?: boolean): IAccessInfo;
     resetAttributes(access: IAccessInfo): IAccessInfo;
-    getRoleHierarchyOf(grants: any, roleName: string, rootRole?: string): string[];
+    getRoleHierarchyOf(
+        grants: any,
+        roleName: string,
+        rootRole?: string,
+    ): string[];
     getFlatRoles(grants: any, roles: string | string[]): string[];
     getNonExistentRoles(grants: any, roles: string[]): string[];
-    getCrossExtendingRole(grants: any, roleName: string, extenderRoles: string | string[]): string;
-    extendRole(grants: any, roles: string | string[], extenderRoles: string | string[]): void;
+    getCrossExtendingRole(
+        grants: any,
+        roleName: string,
+        extenderRoles: string | string[],
+    ): string;
+    extendRole(
+        grants: any,
+        roles: string | string[],
+        extenderRoles: string | string[],
+    ): void;
     preCreateRoles(grants: any, roles: string | string[]): void;
-    commitToGrants(grants: any, access: IAccessInfo, normalizeAll?: boolean): void;
+    commitToGrants(
+        grants: any,
+        access: IAccessInfo,
+        normalizeAll?: boolean,
+    ): void;
     getUnionAttrsOfRoles(grants: any, query: IQueryInfo): string[];
     lockAC(ac: AccessControl): void;
     filter(object: any, attributes: string[]): any;
