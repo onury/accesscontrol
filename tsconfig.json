@@ -21,18 +21,11 @@
         "noImplicitReturns": true,
         "noImplicitUseStrict": false,
         "noFallthroughCasesInSwitch": true,
-        "typeRoots": [
-            "./node_modules/@types",
-            "./node_modules"
-        ],
-        "types": [
-            "node"
-        ],
+        "typeRoots": ["./node_modules/@types", "./node_modules"],
+        "types": ["node"],
         "outDir": "./lib"
     },
-    "include": [
-        "./src/**/*.ts"
-    ],
+    "include": ["./src/**/*.ts"],
     "exclude": [
         "./node_modules",
         "./lib",

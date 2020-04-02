@@ -234,7 +234,10 @@ declare class AccessControl {
      *  @throws {AccessControlError} - If a role is extended by itself or a
      *  non-existent role. Or if called after `.lock()` is called.
      */
-    extendRole(roles: string | string[], extenderRoles: string | string[]): AccessControl;
+    extendRole(
+        roles: string | string[],
+        extenderRoles: string | string[],
+    ): AccessControl;
     /**
      *  Removes all the given role(s) and their granted permissions, at once.
      *  @chainable
@@ -263,7 +266,10 @@ declare class AccessControl {
      *
      *  @throws {AccessControlError} - If called after `.lock()` is called.
      */
-    removeResources(resources: string | string[], roles?: string | string[]): AccessControl;
+    removeResources(
+        resources: string | string[],
+        roles?: string | string[],
+    ): AccessControl;
     /**
      *  Gets all the unique roles that have at least one access information.
      *
@@ -504,7 +510,11 @@ declare class AccessControl {
     /**
      *  @private
      */
-    _removePermission(resources: string | string[], roles?: string | string[], actionPossession?: string): void;
+    _removePermission(
+        resources: string | string[],
+        roles?: string | string[],
+        actionPossession?: string,
+    ): void;
     /**
      *  Documented separately in enums/Action
      *  @private

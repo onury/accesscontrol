@@ -31,7 +31,7 @@ const Action = {
      *  For example, an HTTP DELETE request or a database DELETE operation.
      *  @type {String}
      */
-    DELETE: 'delete'
+    DELETE: 'delete',
 };
 
 export { Action };

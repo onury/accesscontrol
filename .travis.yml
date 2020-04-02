@@ -1,15 +1,15 @@
 language: node_js
 node_js:
-  - '8'
-  - '6'
+    - '8'
+    - '6'
 before_script: cd $TRAVIS_BUILD_DIR
 script:
-  - npm run cover
-  - npm run coveralls
+    - npm run cover
+    - npm run coveralls
 notifications:
-  email:
-    # recipients:
-    #   - one@example.com
-    on_success: never # default: change
-    on_failure: always # default: always
+    email:
+        # recipients:
+        #   - one@example.com
+        on_success: never # default: change
+        on_failure: always # default: always
 

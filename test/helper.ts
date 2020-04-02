@@ -20,8 +20,7 @@ const helper = {
             expect(AccessControl.isACError(err)).toEqual(true); // alias test
             if (errMsg) expect(err.message).toContain(errMsg);
         }
-    }
-
+    },
 };
 
 export { helper };

@@ -18,7 +18,7 @@ const Possession = {
      *  resource(s); including <i>own</i> resource(s) of the current subject.
      *  @type {String}
      */
-    ANY: 'any'
+    ANY: 'any',
 };
 
 export { Possession };
