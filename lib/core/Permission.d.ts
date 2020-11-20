@@ -60,7 +60,7 @@ declare class Permission {
      *  @type {Array<String>}
      *  @readonly
      */
-    readonly roles: string[];
+    get roles(): string[];
     /**
      *  Specifies the target resource for which the permission is queried for.
      *
@@ -68,7 +68,7 @@ declare class Permission {
      *  @type {String}
      *  @readonly
      */
-    readonly resource: string;
+    get resource(): string;
     /**
      *  Gets an array of allowed attributes which are defined via
      *  Glob notation. If access is not granted, this will be an empty array.
@@ -81,7 +81,7 @@ declare class Permission {
      *  @type {Array<String>}
      *  @readonly
      */
-    readonly attributes: string[];
+    get attributes(): string[];
     /**
      *  Specifies whether the permission is granted. If `true`, this means at
      *  least one attribute of the target resource is allowed.
@@ -90,7 +90,7 @@ declare class Permission {
      *  @type {Boolean}
      *  @readonly
      */
-    readonly granted: boolean;
+    get granted(): boolean;
     /**
      *  Filters the given data object (or array of objects) by the permission
      *  attributes and returns this data with allowed attributes.

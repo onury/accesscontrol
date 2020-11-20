@@ -1,4 +1,5 @@
 import { IQueryInfo, Permission } from '../core';
+import type { ValidRoleOrArray } from '.';
 /**
  *  Represents the inner `Query` class that helps build an access information
  *  for querying and checking permissions, from the underlying grants model.
@@ -32,7 +33,7 @@ declare class Query {
      *         Either a single or array of roles or an
      *         {@link ?api=ac#AccessControl~IQueryInfo|`IQueryInfo` arbitrary object}.
      */
-    constructor(grants: any, roleOrInfo?: string | string[] | IQueryInfo);
+    constructor(grants: any, roleOrInfo?: ValidRoleOrArray | IQueryInfo);
     /**
      *  A chainer method that sets the role(s) for this `Query` instance.
      *  @param {String|Array<String>} roles
@@ -40,7 +41,7 @@ declare class Query {
      *  @returns {Query}
      *           Self instance of `Query`.
      */
-    role(role: string | string[]): Query;
+    role(role: ValidRoleOrArray): Query;
     /**
      *  A chainer method that sets the resource for this `Query` instance.
      *  @param {String} resource
@@ -212,6 +213,6 @@ declare class Query {
      *  @param {String} [resource]
      *  @returns {Permission}
      */
-    private _getPermission(action, possession, resource?);
+    private _getPermission;
 }
 export { Query };

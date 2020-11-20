@@ -1,5 +1,7 @@
 import { AccessControl } from '../';
 import { IAccessInfo } from '../core';
+export declare type ValidRole = string | number;
+export declare type ValidRoleOrArray = ValidRole | ValidRole[];
 /**
  *  Represents the inner `Access` class that helps build an access information
  *  to be granted or denied; and finally commits it to the underlying grants
@@ -44,14 +46,14 @@ declare class Access {
      *  @param {Boolean} denied
      *         Specifies whether this `Access` is denied.
      */
-    constructor(ac: AccessControl, roleOrInfo?: string | string[] | IAccessInfo, denied?: boolean);
+    constructor(ac: AccessControl, roleOrInfo?: ValidRoleOrArray | IAccessInfo, denied?: boolean);
     /**
      *  Specifies whether this access is initally denied.
      *  @name AccessControl~Access#denied
      *  @type {Boolean}
      *  @readonly
      */
-    readonly denied: boolean;
+    get denied(): boolean;
     /**
      *  A chainer method that sets the role(s) for this `Access` instance.
      *  @param {String|Array<String>} value
@@ -59,7 +61,7 @@ declare class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    role(value: string | string[]): Access;
+    role(value: ValidRoleOrArray): Access;
     /**
      *  A chainer method that sets the resource for this `Access` instance.
      *  @param {String|Array<String>} value
@@ -67,7 +69,7 @@ declare class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    resource(value: string | string[]): Access;
+    resource(value: ValidRoleOrArray): Access;
     /**
      *  Sets the array of allowed attributes for this `Access` instance.
      *  @param {String|Array<String>} value
@@ -75,7 +77,7 @@ declare class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    attributes(value: string | string[]): Access;
+    attributes(value: ValidRoleOrArray): Access;
     /**
      *  Sets the roles to be extended for this `Access` instance.
      *  @alias Access#inherit
@@ -93,12 +95,12 @@ declare class Access {
      *  const permission = ac.can('admin').createAny('video');
      *  console.log(permission.granted); // true
      */
-    extend(roles: string | string[]): Access;
+    extend(roles: ValidRoleOrArray): Access;
     /**
      *  Alias of `extend`.
      *  @private
      */
-    inherit(roles: string | string[]): Access;
+    inherit(roles: ValidRoleOrArray): Access;
     /**
      *  Shorthand to switch to a new `Access` instance with a different role
      *  within the method chain.
@@ -114,7 +116,7 @@ declare class Access {
      *  ac.grant('user').createOwn('video')
      *    .grant('admin').updateAny('video');
      */
-    grant(roleOrInfo?: string | string[] | IAccessInfo): Access;
+    grant(roleOrInfo?: ValidRoleOrArray | IAccessInfo): Access;
     /**
      *  Shorthand to switch to a new `Access` instance with a different
      *  (or same) role within the method chain.
@@ -130,7 +132,7 @@ declare class Access {
      *  ac.grant('admin').createAny('video')
      *    .deny('user').deleteAny('video');
      */
-    deny(roleOrInfo?: string | string[] | IAccessInfo): Access;
+    deny(roleOrInfo?: ValidRoleOrArray | IAccessInfo): Access;
     /**
      *  Chainable, convenience shortcut for {@link ?api=ac#AccessControl#lock|`AccessControl#lock()`}.
      *  @returns {Access}
@@ -159,7 +161,7 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    createOwn(resource?: string | string[], attributes?: string | string[]): Access;
+    createOwn(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access;
     /**
      *  Sets the action to `"create"` and possession to `"any"` and commits the
      *  current access instance to the underlying grant model.
@@ -185,12 +187,12 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    createAny(resource?: string | string[], attributes?: string | string[]): Access;
+    createAny(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access;
     /**
      *  Alias of `createAny`
      *  @private
      */
-    create(resource?: string | string[], attributes?: string | string[]): Access;
+    create(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access;
     /**
      *  Sets the action to `"read"` and possession to `"own"` and commits the
      *  current access instance to the underlying grant model.
@@ -213,7 +215,7 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    readOwn(resource?: string | string[], attributes?: string | string[]): Access;
+    readOwn(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access;
     /**
      *  Sets the action to `"read"` and possession to `"any"` and commits the
      *  current access instance to the underlying grant model.
@@ -239,12 +241,12 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    readAny(resource?: string | string[], attributes?: string | string[]): Access;
+    readAny(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access;
     /**
      *  Alias of `readAny`
      *  @private
      */
-    read(resource?: string | string[], attributes?: string | string[]): Access;
+    read(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access;
     /**
      *  Sets the action to `"update"` and possession to `"own"` and commits the
      *  current access instance to the underlying grant model.
@@ -267,7 +269,7 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    updateOwn(resource?: string | string[], attributes?: string | string[]): Access;
+    updateOwn(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access;
     /**
      *  Sets the action to `"update"` and possession to `"any"` and commits the
      *  current access instance to the underlying grant model.
@@ -293,12 +295,12 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    updateAny(resource?: string | string[], attributes?: string | string[]): Access;
+    updateAny(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access;
     /**
      *  Alias of `updateAny`
      *  @private
      */
-    update(resource?: string | string[], attributes?: string | string[]): Access;
+    update(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access;
     /**
      *  Sets the action to `"delete"` and possession to `"own"` and commits the
      *  current access instance to the underlying grant model.
@@ -321,7 +323,7 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    deleteOwn(resource?: string | string[], attributes?: string | string[]): Access;
+    deleteOwn(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access;
     /**
      *  Sets the action to `"delete"` and possession to `"any"` and commits the
      *  current access instance to the underlying grant model.
@@ -347,12 +349,12 @@ declare class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    deleteAny(resource?: string | string[], attributes?: string | string[]): Access;
+    deleteAny(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access;
     /**
      *  Alias of `deleteAny`
      *  @private
      */
-    delete(resource?: string | string[], attributes?: string | string[]): Access;
+    delete(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access;
     /**
      *  @private
      *  @param {String} action     [description]
@@ -362,6 +364,6 @@ declare class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    private _prepareAndCommit(action, possession, resource?, attributes?);
+    private _prepareAndCommit;
 }
 export { Access };

@@ -36,29 +36,30 @@ describe('Test Suite: utils (generic)', () => {
         expect(() => utils.hasDefined(null, 'prop')).toThrow();
     });
 
-    test('#toStringArray()', () => {
-        expect(utils.toStringArray([])).toEqual([]);
-        expect(utils.toStringArray('a')).toEqual(['a']);
-        expect(utils.toStringArray('a,b,c')).toEqual(['a', 'b', 'c']);
-        expect(utils.toStringArray('a, b,  c  \n')).toEqual(['a', 'b', 'c']);
-        expect(utils.toStringArray('a ; b,c')).toEqual(['a', 'b', 'c']);
-        expect(utils.toStringArray('a;b; c')).toEqual(['a', 'b', 'c']);
-        expect(utils.toStringArray(1)).toEqual([]);
-        expect(utils.toStringArray(true)).toEqual([]);
-        expect(utils.toStringArray(false)).toEqual([]);
-        expect(utils.toStringArray(null)).toEqual([]);
-        expect(utils.toStringArray(undefined)).toEqual([]);
+    test('#toValidRoleArray()', () => {
+        expect(utils.toValidRoleArray([])).toEqual([]);
+        expect(utils.toValidRoleArray('a')).toEqual(['a']);
+        expect(utils.toValidRoleArray('a,b,c')).toEqual(['a', 'b', 'c']);
+        expect(utils.toValidRoleArray('a, b,  c  \n')).toEqual(['a', 'b', 'c']);
+        expect(utils.toValidRoleArray('a ; b,c')).toEqual(['a', 'b', 'c']);
+        expect(utils.toValidRoleArray('a;b; c')).toEqual(['a', 'b', 'c']);
+        expect(utils.toValidRoleArray(1)).toEqual([1]);
+        expect(utils.toValidRoleArray([1, 2, 3])).toEqual([1, 2, 3]);
+        expect(utils.toValidRoleArray(true)).toEqual([]);
+        expect(utils.toValidRoleArray(false)).toEqual([]);
+        expect(utils.toValidRoleArray(null)).toEqual([]);
+        expect(utils.toValidRoleArray(undefined)).toEqual([]);
     });
 
-    test('#isFilledStringArray(), #isEmptyArray()', () => {
-        expect(utils.isFilledStringArray([])).toBe(true); // allowed
-        expect(utils.isFilledStringArray([''])).toBe(false);
-        expect(utils.isFilledStringArray(['a'])).toBe(true);
-        expect(utils.isFilledStringArray(['a', ''])).toBe(false);
-        expect(utils.isFilledStringArray([1])).toBe(false);
-        expect(utils.isFilledStringArray([null])).toBe(false);
-        expect(utils.isFilledStringArray([undefined])).toBe(false);
-        expect(utils.isFilledStringArray([false])).toBe(false);
+    test('#isFilledValidRoleArray(), #isEmptyArray()', () => {
+        expect(utils.isFilledValidRoleArray([])).toBe(true); // allowed
+        expect(utils.isFilledValidRoleArray([''])).toBe(false);
+        expect(utils.isFilledValidRoleArray(['a'])).toBe(true);
+        expect(utils.isFilledValidRoleArray(['a', ''])).toBe(false);
+        expect(utils.isFilledValidRoleArray([1])).toBe(true);
+        expect(utils.isFilledValidRoleArray([null])).toBe(false);
+        expect(utils.isFilledValidRoleArray([undefined])).toBe(false);
+        expect(utils.isFilledValidRoleArray([false])).toBe(false);
 
         expect(utils.isEmptyArray([])).toBe(true);
         expect(utils.isEmptyArray([1])).toBe(false);
@@ -157,7 +158,7 @@ describe('Test Suite: utils (core)', () => {
         helper.expectACError(() => utils.validName(invalid, true));
         expect(utils.validName(invalid, false)).toBe(false);
         expect(utils.validName('', false)).toBe(false);
-        expect((utils as any).validName(1, false)).toBe(false);
+        expect(utils.validName(1, false)).toBe(true);
         expect((utils as any).validName(null, false)).toBe(false);
         expect((utils as any).validName(true, false)).toBe(false);
 
