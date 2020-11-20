@@ -7,7 +7,17 @@
  *  @memberof! AccessControl
  */
 declare const Possession: {
+    /**
+     *  Indicates that the action is (or not) to be performed on <b>own</b>
+     *  resource(s) of the current subject.
+     *  @type {String}
+     */
     OWN: string;
+    /**
+     *  Indicates that the action is (or not) to be performed on <b>any</b>
+     *  resource(s); including <i>own</i> resource(s) of the current subject.
+     *  @type {String}
+     */
     ANY: string;
 };
 export { Possession };

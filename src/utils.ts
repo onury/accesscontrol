@@ -5,6 +5,8 @@ import { AccessControl } from './';
 import { Action, actions, Possession, possessions } from './enums';
 import { IAccessInfo, IQueryInfo, AccessControlError } from './core';
 
+import type { ValidRole, ValidRoleOrArray } from '.';
+
 /**
  *  List of reserved keywords.
  *  i.e. Roles, resources with these names are not allowed.
@@ -64,9 +66,10 @@ const utils = {
      *  @param {Any} value
      *  @returns {string[]}
      */
-    toStringArray(value: any): string[] {
+    toValidRoleArray(value: unknown): ValidRole[] {
         if (Array.isArray(value)) return value;
         if (typeof value === 'string') return value.trim().split(/\s*[;,]\s*/);
+        if (typeof value === 'number') return [value]
         // throw new Error('Expected a string or array of strings, got ' + utils.type(value));
         return [];
     },
@@ -77,12 +80,17 @@ const utils = {
      *  @param {Array} arr - Array to be checked.
      *  @returns {Boolean}
      */
-    isFilledStringArray(arr: any[]): boolean {
+    isFilledValidRoleArray(arr: unknown[]): arr is ValidRole[] {
         if (!arr || !Array.isArray(arr)) return false;
-        for (let s of arr) {
-            if (typeof s !== 'string' || s.trim() === '') return false;
+        for (let e of arr) {
+            if (typeof e !== 'number' && (typeof e !== 'string' || e.trim() === '')) return false;
         }
-        return true;
+        return arr.every(this.isValidRole)
+    },
+
+    isValidRole(e: unknown): e is ValidRole {
+      if (typeof e !== 'number' && (typeof e !== 'string' || e.trim() === '')) return false;
+      return true;
     },
 
     /**
@@ -100,7 +108,7 @@ const utils = {
      *  @param {Any} item - Item to be pushed to array.
      *  @returns {Array}
      */
-    pushUniq(arr: string[], item: string): string[] {
+    pushUniq(arr: ValidRole[], item: ValidRole): ValidRole[] {
         if (arr.indexOf(item) < 0) arr.push(item);
         return arr;
     },
@@ -111,9 +119,9 @@ const utils = {
      *  @param {Array} arrB
      *  @returns {Array} - Concat'ed array.
      */
-    uniqConcat(arrA: string[], arrB: string[]): string[] {
-        const arr: string[] = arrA.concat();
-        arrB.forEach((b: string) => {
+    uniqConcat(arrA: ValidRole[], arrB: ValidRole[]): ValidRole[] {
+        const arr = arrA.concat();
+        arrB.forEach((b) => {
             utils.pushUniq(arr, b);
         });
         return arr;
@@ -125,7 +133,7 @@ const utils = {
      *  @param {Array} arrB
      *  @return {Array} - Resulting array.
      */
-    subtractArray(arrA: string[], arrB: string[]): string[] {
+    subtractArray(arrA: ValidRole[], arrB: ValidRole[]): ValidRole[] {
         return arrA.concat().filter(a => arrB.indexOf(a) === -1);
     },
 
@@ -229,12 +237,12 @@ const utils = {
      *  @throws {AccessControlError} - If `throwOnInvalid` is enabled and name
      *  is invalid.
      */
-    validName(name: string, throwOnInvalid: boolean = true): boolean {
-        if (typeof name !== 'string' || name.trim() === '') {
+    validName(name: ValidRole, throwOnInvalid: boolean = true): boolean {
+        if (!this.isValidRole(name)) {
             if (!throwOnInvalid) return false;
             throw new AccessControlError('Invalid name, expected a valid string.');
         }
-        if (RESERVED_KEYWORDS.indexOf(name) >= 0) {
+        if (RESERVED_KEYWORDS.indexOf(name as string) >= 0) {
             if (!throwOnInvalid) return false;
             throw new AccessControlError(`Cannot use reserved name: "${name}"`);
         }
@@ -255,7 +263,7 @@ const utils = {
      */
     hasValidNames(list: any, throwOnInvalid: boolean = true): boolean {
         let allValid = true;
-        utils.each(utils.toStringArray(list), name => {
+        utils.each(utils.toValidRoleArray(list), name => {
             if (!utils.validName(name, throwOnInvalid)) {
                 allValid = false;
                 return false; // break out of loop
@@ -290,7 +298,7 @@ const utils = {
                 throw new AccessControlError(`Invalid action possession: "${action}"`);
             }
             let perms = o[action];
-            if (!utils.isEmptyArray(perms) && !utils.isFilledStringArray(perms)) {
+            if (!utils.isEmptyArray(perms) && !utils.isFilledValidRoleArray(perms)) {
                 throw new AccessControlError(`Invalid resource attributes for action "${action}".`);
             }
         });
@@ -318,7 +326,7 @@ const utils = {
             if (!utils.validName(resourceName, false)) {
                 if (resourceName === '$extend') {
                     let extRoles: string[] = role[resourceName]; // semantics
-                    if (!utils.isFilledStringArray(extRoles)) {
+                    if (!utils.isFilledValidRoleArray(extRoles)) {
                         throw new AccessControlError(`Invalid extend value for role "${roleName}": ${JSON.stringify(extRoles)}`);
                     } else {
                         // attempt to actually extend the roles. this will throw
@@ -449,8 +457,8 @@ const utils = {
         // clone the object
         query = Object.assign({}, query);
         // validate and normalize role(s)
-        query.role = utils.toStringArray(query.role);
-        if (!utils.isFilledStringArray(query.role)) {
+        query.role = utils.toValidRoleArray(query.role);
+        if (!utils.isFilledValidRoleArray(query.role)) {
             throw new AccessControlError(`Invalid role(s): ${JSON.stringify(query.role)}`);
         }
 
@@ -482,14 +490,14 @@ const utils = {
         // clone the object
         access = Object.assign({}, access);
         // validate and normalize role(s)
-        access.role = utils.toStringArray(access.role);
-        if (access.role.length === 0 || !utils.isFilledStringArray(access.role)) {
+        access.role = utils.toValidRoleArray(access.role);
+        if (access.role.length === 0 || !utils.isFilledValidRoleArray(access.role)) {
             throw new AccessControlError(`Invalid role(s): ${JSON.stringify(access.role)}`);
         }
 
         // validate and normalize resource
-        access.resource = utils.toStringArray(access.resource);
-        if (access.resource.length === 0 || !utils.isFilledStringArray(access.resource)) {
+        access.resource = utils.toValidRoleArray(access.resource);
+        if (access.resource.length === 0 || !utils.isFilledValidRoleArray(access.resource)) {
             throw new AccessControlError(`Invalid resource(s): ${JSON.stringify(access.resource)}`);
         }
 
@@ -498,7 +506,7 @@ const utils = {
             access.attributes = [];
         } else {
             // if omitted and not denied, all attributes are allowed
-            access.attributes = !access.attributes ? ['*'] : utils.toStringArray(access.attributes);
+            access.attributes = !access.attributes ? ['*'] : utils.toValidRoleArray(access.attributes);
         }
 
         // this part is not necessary if this is invoked from a comitter method
@@ -533,7 +541,7 @@ const utils = {
      *  @param {string} roleName - Role name to be inspected.
      *  @returns {string[]}
      */
-    getRoleHierarchyOf(grants: any, roleName: string, rootRole?: string): string[] {
+    getRoleHierarchyOf(grants: any, roleName: ValidRole, rootRole?: ValidRole): ValidRole[] {
         // `rootRole` is for memory storage. Do NOT set it when using;
         // and do NOT document this paramter.
         // rootRole = rootRole || roleName;
@@ -541,7 +549,7 @@ const utils = {
         const role: any = grants[roleName];
         if (!role) throw new AccessControlError(`Role not found: "${roleName}"`);
 
-        let arr: string[] = [roleName];
+        let arr = [roleName];
         if (!Array.isArray(role.$extend) || role.$extend.length === 0) return arr;
 
         role.$extend.forEach((exRoleName: string) => {
@@ -556,7 +564,7 @@ const utils = {
             if (rootRole && (rootRole === exRoleName)) {
                 throw new AccessControlError(`Cross inheritance is not allowed. Role "${exRoleName}" already extends "${rootRole}".`);
             }
-            let ext: string[] = utils.getRoleHierarchyOf(grants, exRoleName, rootRole || roleName);
+            let ext = utils.getRoleHierarchyOf(grants, exRoleName, rootRole || roleName);
             arr = utils.uniqConcat(arr, ext);
         });
         return arr;
@@ -565,12 +573,12 @@ const utils = {
     /**
      *  Gets roles and extended roles in a flat array.
      */
-    getFlatRoles(grants: any, roles: string | string[]): string[] {
-        const arrRoles: string[] = utils.toStringArray(roles);
+    getFlatRoles(grants: any, roles: ValidRoleOrArray): ValidRole[] {
+        const arrRoles = utils.toValidRoleArray(roles);
         if (arrRoles.length === 0) {
             throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
         }
-        let arr: string[] = utils.uniqConcat([], arrRoles); // roles.concat();
+        let arr = utils.uniqConcat([], arrRoles); // roles.concat();
         arrRoles.forEach((roleName: string) => {
             arr = utils.uniqConcat(arr, utils.getRoleHierarchyOf(grants, roleName));
         });
@@ -583,11 +591,11 @@ const utils = {
      *  from the given roles.
      *  @param {Any} grants - Grants model to be checked.
      *  @param {string[]} roles - Roles to be checked.
-     *  @returns {string[]} - Array of non-existent roles. Empty array if
+     *  @returns {ValidRole[]} - Array of non-existent roles. Empty array if
      *  all exist.
      */
-    getNonExistentRoles(grants: any, roles: string[]) {
-        let non: string[] = [];
+    getNonExistentRoles(grants: any, roles: ValidRole[]) {
+        let non: ValidRole[] = [];
         if (utils.isEmptyArray(roles)) return non;
         for (let role of roles) {
             if (!grants.hasOwnProperty(role)) non.push(role);
@@ -609,8 +617,8 @@ const utils = {
      *  @returns {string|null} - Returns the first cross extending role. `null`
      *  if none.
      */
-    getCrossExtendingRole(grants: any, roleName: string, extenderRoles: string | string[]): string {
-        const extenders: string[] = utils.toStringArray(extenderRoles);
+    getCrossExtendingRole(grants: any, roleName: string, extenderRoles: ValidRoleOrArray): string {
+        const extenders: ValidRole[] = utils.toValidRoleArray(extenderRoles);
         let crossInherited: any = null;
         utils.each(extenders, (e: string) => {
             if (crossInherited || roleName === e) {
@@ -647,9 +655,9 @@ const utils = {
      *  @throws {Error} If a role is extended by itself, a non-existent role or
      *          a cross-inherited role.
      */
-    extendRole(grants: any, roles: string | string[], extenderRoles: string | string[]) {
+    extendRole(grants: any, roles: ValidRoleOrArray, extenderRoles: ValidRoleOrArray) {
         // roles cannot be omitted or an empty array
-        roles = utils.toStringArray(roles);
+        roles = utils.toValidRoleArray(roles);
         if (roles.length === 0) {
             throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
         }
@@ -657,12 +665,12 @@ const utils = {
         // extenderRoles cannot be omitted or but can be an empty array
         if (utils.isEmptyArray(extenderRoles)) return;
 
-        const arrExtRoles: string[] = utils.toStringArray(extenderRoles).concat();
+        const arrExtRoles: ValidRole[] = utils.toValidRoleArray(extenderRoles).concat();
         if (arrExtRoles.length === 0) {
             throw new AccessControlError(`Cannot inherit invalid role(s): ${JSON.stringify(extenderRoles)}`);
         }
 
-        const nonExistentExtRoles: string[] = utils.getNonExistentRoles(grants, arrExtRoles);
+        const nonExistentExtRoles: ValidRole[] = utils.getNonExistentRoles(grants, arrExtRoles);
         if (nonExistentExtRoles.length > 0) {
             throw new AccessControlError(`Cannot inherit non-existent role(s): "${nonExistentExtRoles.join(', ')}"`);
         }
@@ -699,12 +707,12 @@ const utils = {
      *  @param {Any} grants
      *  @param {string|string[]} roles
      */
-    preCreateRoles(grants: any, roles: string | string[]) {
-        if (typeof roles === 'string') roles = utils.toStringArray(roles);
+    preCreateRoles(grants: any, roles: ValidRoleOrArray) {
+        if (typeof roles === 'string') roles = utils.toValidRoleArray(roles);
         if (!Array.isArray(roles) || roles.length === 0) {
             throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
         }
-        (roles as string[]).forEach((role: string) => {
+        roles.forEach((role: string) => {
             if (utils.validName(role) && !grants.hasOwnProperty(role)) {
                 grants[role] = {};
             }
@@ -740,7 +748,7 @@ const utils = {
                 // If possession (in action value or as a separate property) is
                 // omitted, it will default to "any". e.g. "create" —>
                 // "create:any"
-                grantItem[res][ap] = utils.toStringArray(access.attributes);
+                grantItem[res][ap] = utils.toValidRoleArray(access.attributes);
             });
         });
     },
@@ -764,7 +772,7 @@ const utils = {
         let resource: string;
         let attrsList: Array<string[]> = [];
         // get roles and extended roles in a flat array
-        const roles: string[] = utils.getFlatRoles(grants, query.role);
+        const roles: ValidRole[] = utils.getFlatRoles(grants, query.role);
         // iterate through roles and add permission attributes (array) of
         // each role to attrsList (array).
         roles.forEach((roleName: string, index: number) => {

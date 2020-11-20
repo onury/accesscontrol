@@ -2,6 +2,8 @@ import { Access, IAccessInfo, Query, IQueryInfo, Permission, AccessControlError 
 import { Action, Possession, actions, possessions } from './enums';
 import { utils, ERR_LOCK } from './utils';
 
+import type { ValidRoleOrArray, ValidRole } from '.';
+
 /**
  *  @classdesc
  *  AccessControl class that implements RBAC (Role-Based Access Control) basics
@@ -273,7 +275,7 @@ class AccessControl {
      *  @throws {AccessControlError} - If a role is extended by itself or a
      *  non-existent role. Or if called after `.lock()` is called.
      */
-    extendRole(roles: string | string[], extenderRoles: string | string[]): AccessControl {
+    extendRole(roles: ValidRoleOrArray, extenderRoles: ValidRoleOrArray): AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
         utils.extendRole(this._grants, roles, extenderRoles);
         return this;
@@ -290,11 +292,11 @@ class AccessControl {
      *
      *  @throws {AccessControlError} - If called after `.lock()` is called.
      */
-    removeRoles(roles: string | string[]): AccessControl {
+    removeRoles(roles: ValidRoleOrArray): AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
 
-        let rolesToRemove: string[] = utils.toStringArray(roles);
-        if (rolesToRemove.length === 0 || !utils.isFilledStringArray(rolesToRemove)) {
+        let rolesToRemove: ValidRole[] = utils.toValidRoleArray(roles);
+        if (rolesToRemove.length === 0 || !utils.isFilledValidRoleArray(rolesToRemove)) {
             throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
         }
         rolesToRemove.forEach((roleName: string) => {
@@ -328,7 +330,7 @@ class AccessControl {
      *
      *  @throws {AccessControlError} - If called after `.lock()` is called.
      */
-    removeResources(resources: string | string[], roles?: string | string[]): AccessControl {
+    removeResources(resources: ValidRoleOrArray, roles?: ValidRoleOrArray): AccessControl {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
 
         // _removePermission has a third argument `actionPossession`. if
@@ -360,8 +362,8 @@ class AccessControl {
      *
      *  @returns {Array<String>}
      */
-    getInheritedRolesOf(role: string): string[] {
-        let roles: string[] = utils.getRoleHierarchyOf(this._grants, role);
+    getInheritedRolesOf(role: ValidRole): ValidRole[] {
+        let roles: ValidRole[] = utils.getRoleHierarchyOf(this._grants, role);
         roles.shift();
         return roles;
     }
@@ -370,7 +372,7 @@ class AccessControl {
      *  Alias of `getInheritedRolesOf`
      *  @private
      */
-    getExtendedRolesOf(role: string): string[] {
+    getExtendedRolesOf(role: ValidRole): ValidRole[] {
         return this.getInheritedRolesOf(role);
     }
 
@@ -392,7 +394,7 @@ class AccessControl {
      *
      *  @returns {Boolean}
      */
-    hasRole(role: string | string[]): boolean {
+    hasRole(role: ValidRoleOrArray): boolean {
         if (Array.isArray(role)) {
             return role.every((item: string) => this._grants.hasOwnProperty(item));
         }
@@ -407,7 +409,7 @@ class AccessControl {
      *
      *  @returns {Boolean}
      */
-    hasResource(resource: string | string[]): boolean {
+    hasResource(resource: ValidRoleOrArray): boolean {
         let resources = this.getResources();
         if (Array.isArray(resource)) {
             return resource.every((item: string) => resources.indexOf(item) >= 0);
@@ -448,7 +450,7 @@ class AccessControl {
      *  ac.can(['admin', 'user']).createOwn('profile');
      *  // Note: when multiple roles checked, acquired attributes are unioned (merged).
      */
-    can(role: string | string[] | IQueryInfo): Query {
+    can(role: ValidRoleOrArray | IQueryInfo): Query {
         // throw on explicit undefined
         if (arguments.length !== 0 && role === undefined) {
             throw new AccessControlError('Invalid role(s): undefined');
@@ -461,7 +463,7 @@ class AccessControl {
      *  Alias of `can()`.
      *  @private
      */
-    query(role: string | string[] | IQueryInfo): Query {
+    query(role: ValidRoleOrArray | IQueryInfo): Query {
         return this.can(role);
     }
 
@@ -552,7 +554,7 @@ class AccessControl {
      *  // Note: when attributes is omitted, it will default to `['*']`
      *  // which means all attributes (of the resource) are allowed.
      */
-    grant(role?: string | string[] | IAccessInfo): Access {
+    grant(role?: ValidRoleOrArray | IAccessInfo): Access {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
         // throw on explicit undefined
         if (arguments.length !== 0 && role === undefined) {
@@ -566,7 +568,7 @@ class AccessControl {
      *  Alias of `grant()`.
      *  @private
      */
-    allow(role?: string | string[] | IAccessInfo): Access {
+    allow(role?: ValidRoleOrArray | IAccessInfo): Access {
         return this.grant(role);
     }
 
@@ -622,7 +624,7 @@ class AccessControl {
      *  // To deny same resource for multiple roles:
      *  ac.deny(['admin', 'user']).createOwn('profile');
      */
-    deny(role?: string | string[] | IAccessInfo): Access {
+    deny(role?: ValidRoleOrArray | IAccessInfo): Access {
         if (this.isLocked) throw new AccessControlError(ERR_LOCK);
         // throw on explicit undefined
         if (arguments.length !== 0 && role === undefined) {
@@ -636,7 +638,7 @@ class AccessControl {
      *  Alias of `deny()`.
      *  @private
      */
-    reject(role?: string | string[] | IAccessInfo): Access {
+    reject(role?: ValidRoleOrArray | IAccessInfo): Access {
         return this.deny(role);
     }
 
@@ -647,25 +649,25 @@ class AccessControl {
     /**
      *  @private
      */
-    _removePermission(resources: string | string[], roles?: string | string[], actionPossession?: string) {
-        resources = utils.toStringArray(resources);
+    _removePermission(resources: ValidRoleOrArray, roles?: ValidRoleOrArray, actionPossession?: string) {
+        resources = utils.toValidRoleArray(resources);
         // resources is set but returns empty array.
-        if (resources.length === 0 || !utils.isFilledStringArray(resources)) {
+        if (resources.length === 0 || !utils.isFilledValidRoleArray(resources)) {
             throw new AccessControlError(`Invalid resource(s): ${JSON.stringify(resources)}`);
         }
 
         if (roles !== undefined) {
-            roles = utils.toStringArray(roles);
+            roles = utils.toValidRoleArray(roles);
             // roles is set but returns empty array.
-            if (roles.length === 0 || !utils.isFilledStringArray(roles)) {
+            if (roles.length === 0 || !utils.isFilledValidRoleArray(roles)) {
                 throw new AccessControlError(`Invalid role(s): ${JSON.stringify(roles)}`);
             }
         }
-        utils.eachRoleResource(this._grants, (role: string, resource: string, permissions: any) => {
-            if (resources.indexOf(resource) >= 0
+        utils.eachRoleResource(this._grants, (role: string, resource: string | number, permissions: any) => {
+            if ((resources as ValidRole[]).indexOf(resource) >= 0
                 // roles is optional. so remove if role is not defined.
                 // if defined, check if the current role is in the list.
-                && (!roles || roles.indexOf(role) >= 0)) {
+                && (!roles || (roles as ValidRole[]).indexOf(role) >= 0)) {
                 if (actionPossession) {
                     // e.g. 'create' » 'create:any'
                     // to parse and normalize actionPossession string:

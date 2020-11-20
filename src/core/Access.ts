@@ -3,6 +3,10 @@ import { IAccessInfo, AccessControlError } from '../core';
 import { Action, Possession, actions, possessions } from '../enums';
 import { utils } from '../utils';
 
+export type ValidRole = string | number
+export type ValidRoleOrArray = ValidRole | ValidRole[]
+
+
 /**
  *  Represents the inner `Access` class that helps build an access information
  *  to be granted or denied; and finally commits it to the underlying grants
@@ -51,12 +55,12 @@ class Access {
      *  @param {Boolean} denied
      *         Specifies whether this `Access` is denied.
      */
-    constructor(ac: AccessControl, roleOrInfo?: string | string[] | IAccessInfo, denied: boolean = false) {
+    constructor(ac: AccessControl, roleOrInfo?: ValidRoleOrArray | IAccessInfo, denied: boolean = false) {
         this._ac = ac;
         this._grants = (ac as any)._grants;
         this._.denied = denied;
 
-        if (typeof roleOrInfo === 'string' || Array.isArray(roleOrInfo)) {
+        if (typeof roleOrInfo === 'string' || typeof roleOrInfo === 'number' || Array.isArray(roleOrInfo)) {
             this.role(roleOrInfo);
         } else if (utils.type(roleOrInfo) === 'object') {
             if (Object.keys(roleOrInfo).length === 0) {
@@ -99,7 +103,7 @@ class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    role(value: string | string[]): Access {
+    role(value: ValidRoleOrArray): Access {
         // in case chain is not terminated (e.g. `ac.grant('user')`) we'll
         // create/commit the roles to grants with an empty object.
         utils.preCreateRoles(this._grants, value);
@@ -115,7 +119,7 @@ class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    resource(value: string | string[]): Access {
+    resource(value: ValidRoleOrArray): Access {
         // this will throw if any item fails
         utils.hasValidNames(value, true);
         this._.resource = value;
@@ -129,7 +133,7 @@ class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    attributes(value: string | string[]): Access {
+    attributes(value: ValidRoleOrArray): Access {
         this._.attributes = value;
         return this;
     }
@@ -151,7 +155,7 @@ class Access {
      *  const permission = ac.can('admin').createAny('video');
      *  console.log(permission.granted); // true
      */
-    extend(roles: string | string[]): Access {
+    extend(roles: ValidRoleOrArray): Access {
         utils.extendRole(this._grants, this._.role, roles);
         return this;
     }
@@ -160,7 +164,7 @@ class Access {
      *  Alias of `extend`.
      *  @private
      */
-    inherit(roles: string | string[]): Access {
+    inherit(roles: ValidRoleOrArray): Access {
         this.extend(roles);
         return this;
     }
@@ -180,7 +184,7 @@ class Access {
      *  ac.grant('user').createOwn('video')
      *    .grant('admin').updateAny('video');
      */
-    grant(roleOrInfo?: string | string[] | IAccessInfo): Access {
+    grant(roleOrInfo?: ValidRoleOrArray | IAccessInfo): Access {
         return (new Access(this._ac, roleOrInfo, false)).attributes(['*']);
     }
 
@@ -199,7 +203,7 @@ class Access {
      *  ac.grant('admin').createAny('video')
      *    .deny('user').deleteAny('video');
      */
-    deny(roleOrInfo?: string | string[] | IAccessInfo): Access {
+    deny(roleOrInfo?: ValidRoleOrArray | IAccessInfo): Access {
         return (new Access(this._ac, roleOrInfo, true)).attributes([]);
     }
 
@@ -235,7 +239,7 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    createOwn(resource?: string | string[], attributes?: string | string[]): Access {
+    createOwn(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access {
         return this._prepareAndCommit(Action.CREATE, Possession.OWN, resource, attributes);
     }
 
@@ -264,14 +268,14 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    createAny(resource?: string | string[], attributes?: string | string[]): Access {
+    createAny(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access {
         return this._prepareAndCommit(Action.CREATE, Possession.ANY, resource, attributes);
     }
     /**
      *  Alias of `createAny`
      *  @private
      */
-    create(resource?: string | string[], attributes?: string | string[]): Access {
+    create(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access {
         return this.createAny(resource, attributes);
     }
 
@@ -297,7 +301,7 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    readOwn(resource?: string | string[], attributes?: string | string[]): Access {
+    readOwn(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access {
         return this._prepareAndCommit(Action.READ, Possession.OWN, resource, attributes);
     }
 
@@ -326,14 +330,14 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    readAny(resource?: string | string[], attributes?: string | string[]): Access {
+    readAny(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access {
         return this._prepareAndCommit(Action.READ, Possession.ANY, resource, attributes);
     }
     /**
      *  Alias of `readAny`
      *  @private
      */
-    read(resource?: string | string[], attributes?: string | string[]): Access {
+    read(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access {
         return this.readAny(resource, attributes);
     }
 
@@ -359,7 +363,7 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    updateOwn(resource?: string | string[], attributes?: string | string[]): Access {
+    updateOwn(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access {
         return this._prepareAndCommit(Action.UPDATE, Possession.OWN, resource, attributes);
     }
 
@@ -388,14 +392,14 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    updateAny(resource?: string | string[], attributes?: string | string[]): Access {
+    updateAny(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access {
         return this._prepareAndCommit(Action.UPDATE, Possession.ANY, resource, attributes);
     }
     /**
      *  Alias of `updateAny`
      *  @private
      */
-    update(resource?: string | string[], attributes?: string | string[]): Access {
+    update(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access {
         return this.updateAny(resource, attributes);
     }
 
@@ -421,7 +425,7 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    deleteOwn(resource?: string | string[], attributes?: string | string[]): Access {
+    deleteOwn(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access {
         return this._prepareAndCommit(Action.DELETE, Possession.OWN, resource, attributes);
     }
 
@@ -450,14 +454,14 @@ class Access {
      *           Self instance of `Access` so that you can chain and define
      *           another access instance to be committed.
      */
-    deleteAny(resource?: string | string[], attributes?: string | string[]): Access {
+    deleteAny(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access {
         return this._prepareAndCommit(Action.DELETE, Possession.ANY, resource, attributes);
     }
     /**
      *  Alias of `deleteAny`
      *  @private
      */
-    delete(resource?: string | string[], attributes?: string | string[]): Access {
+    delete(resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access {
         return this.deleteAny(resource, attributes);
     }
 
@@ -474,7 +478,7 @@ class Access {
      *  @returns {Access}
      *           Self instance of `Access`.
      */
-    private _prepareAndCommit(action: string, possession: string, resource?: string | string[], attributes?: string | string[]): Access {
+    private _prepareAndCommit(action: string, possession: string, resource?: ValidRoleOrArray, attributes?: ValidRoleOrArray): Access {
         this._.action = action;
         this._.possession = possession;
         if (resource) this._.resource = resource;
@@ -483,7 +487,7 @@ class Access {
             this._.attributes = [];
         } else {
             // if omitted and not denied, all attributes are allowed
-            this._.attributes = attributes ? utils.toStringArray(attributes) : ['*'];
+            this._.attributes = attributes ? utils.toValidRoleArray(attributes) : ['*'];
         }
 
         utils.commitToGrants(this._grants, this._, false);

@@ -1,6 +1,7 @@
 import { IQueryInfo, Permission, AccessControlError } from '../core';
 import { Action, Possession } from '../enums';
 import { utils } from '../utils';
+import type { ValidRoleOrArray } from '.';
 
 /**
  *  Represents the inner `Query` class that helps build an access information
@@ -38,7 +39,7 @@ class Query {
      *         Either a single or array of roles or an
      *         {@link ?api=ac#AccessControl~IQueryInfo|`IQueryInfo` arbitrary object}.
      */
-    constructor(grants: any, roleOrInfo?: string | string[] | IQueryInfo) {
+    constructor(grants: any, roleOrInfo?: ValidRoleOrArray | IQueryInfo) {
         this._grants = grants;
 
         if (typeof roleOrInfo === 'string' || Array.isArray(roleOrInfo)) {
@@ -70,7 +71,7 @@ class Query {
      *  @returns {Query}
      *           Self instance of `Query`.
      */
-    role(role: string | string[]): Query {
+    role(role: ValidRoleOrArray): Query {
         this._.role = role;
         return this;
     }

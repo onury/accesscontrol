@@ -15,7 +15,7 @@ import { helper } from './helper';
 describe('Test Suite: AccessControl', () => {
 
     // grant list fetched from DB (to be converted to a valid grants object)
-    let grantList: any[] = [
+    let grantList = [
         { role: 'admin', resource: 'video', action: 'create:any', attributes: ['*'] },
         { role: 'admin', resource: 'video', action: 'read:any', attributes: ['*'] },
         { role: 'admin', resource: 'video', action: 'update:any', attributes: ['*'] },
@@ -24,11 +24,16 @@ describe('Test Suite: AccessControl', () => {
         { role: 'user', resource: 'video', action: 'create:own', attributes: '*, !id' }, // comma-separated attrs
         { role: 'user', resource: 'video', action: 'read:any', attributes: '*; !id' }, // semi-colon separated attrs
         { role: 'user', resource: 'video', action: 'update:own', attributes: ['*', '!id'] }, // Array attrs
-        { role: 'user', resource: 'video', action: 'delete:own', attributes: ['*'] }
-    ];
+        { role: 'user', resource: 'video', action: 'delete:own', attributes: ['*'] },
+
+        { role: 2, resource:7, action: 'create:any', attributes: ['*']}, // comma-separated attrs
+        { role: 2, resource:7, action: 'read:any', attributes: ['*']}, // semi-colon separated attrs
+        { role: 2, resource:7, action: 'update:any', attributes: ['*'] }, // Array attrs
+        { role: 2, resource:7, action: 'delete:any', attributes: ['*'] }
+    ] as const;
 
     // valid grants object
-    let grantsObject: any = {
+    let grantsObject = {
         admin: {
             video: {
                 'create:any': ['*'],
@@ -44,7 +49,15 @@ describe('Test Suite: AccessControl', () => {
                 'update:own': ['*'],
                 'delete:own': ['*']
             }
-        }
+      },
+        2: {
+            7: {
+                'create:any': ['*'],
+                'read:any': ['*'],
+                'update:any': ['*'],
+                'delete:any': ['*']
+            }
+      },
     };
 
     // let ac;
@@ -203,8 +216,8 @@ describe('Test Suite: AccessControl', () => {
         expect(attrs3.length).toEqual(2);
 
         // check roles & resources
-        expect(ac.getRoles().length).toEqual(2);
-        expect(ac.getResources().length).toEqual(1);
+        expect(ac.getRoles().length).toEqual(3);
+        expect(ac.getResources().length).toEqual(2);
         expect(ac.hasRole('admin')).toEqual(true);
         expect(ac.hasRole('user')).toEqual(true);
         expect(ac.hasRole(['user', 'admin'])).toEqual(true);
@@ -222,8 +235,10 @@ describe('Test Suite: AccessControl', () => {
         helper.expectACError(() => ac.removeRoles([]));
         helper.expectACError(() => ac.removeRoles(['']));
         helper.expectACError(() => ac.removeRoles(['none']));
+        // no role named 69
+        helper.expectACError(() => ac.removeRoles(['user', 69]));
         // no role named moderator
-        helper.expectACError(() => ac.removeRoles(['user', 'moderator']));
+        helper.expectACError(() => ac.removeRoles([2, 'moderator']));
         expect(ac.getRoles().length).toEqual(0);
         // removeRoles should accept a string or array
         ac.removeResources(['video']);

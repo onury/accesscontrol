@@ -1,4 +1,5 @@
 import { Access, IAccessInfo, Query, IQueryInfo, Permission } from './core';
+import type { ValidRoleOrArray, ValidRole } from '.';
 /**
  *  @classdesc
  *  AccessControl class that implements RBAC (Role-Based Access Control) basics
@@ -118,7 +119,7 @@ declare class AccessControl {
      *  @name AccessControl#isLocked
      *  @type {Boolean}
      */
-    readonly isLocked: boolean;
+    get isLocked(): boolean;
     /**
      *  Gets the internal grants object that stores all current grants.
      *
@@ -234,7 +235,7 @@ declare class AccessControl {
      *  @throws {AccessControlError} - If a role is extended by itself or a
      *  non-existent role. Or if called after `.lock()` is called.
      */
-    extendRole(roles: string | string[], extenderRoles: string | string[]): AccessControl;
+    extendRole(roles: ValidRoleOrArray, extenderRoles: ValidRoleOrArray): AccessControl;
     /**
      *  Removes all the given role(s) and their granted permissions, at once.
      *  @chainable
@@ -246,7 +247,7 @@ declare class AccessControl {
      *
      *  @throws {AccessControlError} - If called after `.lock()` is called.
      */
-    removeRoles(roles: string | string[]): AccessControl;
+    removeRoles(roles: ValidRoleOrArray): AccessControl;
     /**
      *  Removes all the given resources for all roles, at once.
      *  Pass the `roles` argument to remove access to resources for those
@@ -263,7 +264,7 @@ declare class AccessControl {
      *
      *  @throws {AccessControlError} - If called after `.lock()` is called.
      */
-    removeResources(resources: string | string[], roles?: string | string[]): AccessControl;
+    removeResources(resources: ValidRoleOrArray, roles?: ValidRoleOrArray): AccessControl;
     /**
      *  Gets all the unique roles that have at least one access information.
      *
@@ -284,12 +285,12 @@ declare class AccessControl {
      *
      *  @returns {Array<String>}
      */
-    getInheritedRolesOf(role: string): string[];
+    getInheritedRolesOf(role: ValidRole): ValidRole[];
     /**
      *  Alias of `getInheritedRolesOf`
      *  @private
      */
-    getExtendedRolesOf(role: string): string[];
+    getExtendedRolesOf(role: ValidRole): ValidRole[];
     /**
      *  Gets all the unique resources that are granted access for at
      *  least one role.
@@ -305,7 +306,7 @@ declare class AccessControl {
      *
      *  @returns {Boolean}
      */
-    hasRole(role: string | string[]): boolean;
+    hasRole(role: ValidRoleOrArray): boolean;
     /**
      *  Checks whether grants include the given resource or resources.
      *
@@ -314,7 +315,7 @@ declare class AccessControl {
      *
      *  @returns {Boolean}
      */
-    hasResource(resource: string | string[]): boolean;
+    hasResource(resource: ValidRoleOrArray): boolean;
     /**
      *  Gets an instance of `Query` object. This is used to check whether the
      *  defined access is allowed for the given role(s) and resource. This
@@ -347,12 +348,12 @@ declare class AccessControl {
      *  ac.can(['admin', 'user']).createOwn('profile');
      *  // Note: when multiple roles checked, acquired attributes are unioned (merged).
      */
-    can(role: string | string[] | IQueryInfo): Query;
+    can(role: ValidRoleOrArray | IQueryInfo): Query;
     /**
      *  Alias of `can()`.
      *  @private
      */
-    query(role: string | string[] | IQueryInfo): Query;
+    query(role: ValidRoleOrArray | IQueryInfo): Query;
     /**
      *  Gets an instance of `Permission` object that checks and defines the
      *  granted access permissions for the target resource and role. Normally
@@ -437,12 +438,12 @@ declare class AccessControl {
      *  // Note: when attributes is omitted, it will default to `['*']`
      *  // which means all attributes (of the resource) are allowed.
      */
-    grant(role?: string | string[] | IAccessInfo): Access;
+    grant(role?: ValidRoleOrArray | IAccessInfo): Access;
     /**
      *  Alias of `grant()`.
      *  @private
      */
-    allow(role?: string | string[] | IAccessInfo): Access;
+    allow(role?: ValidRoleOrArray | IAccessInfo): Access;
     /**
      *  Gets an instance of `Access` object. This is used to deny access to
      *  specified resource(s) for the given role(s). Denying will only remove a
@@ -495,31 +496,31 @@ declare class AccessControl {
      *  // To deny same resource for multiple roles:
      *  ac.deny(['admin', 'user']).createOwn('profile');
      */
-    deny(role?: string | string[] | IAccessInfo): Access;
+    deny(role?: ValidRoleOrArray | IAccessInfo): Access;
     /**
      *  Alias of `deny()`.
      *  @private
      */
-    reject(role?: string | string[] | IAccessInfo): Access;
+    reject(role?: ValidRoleOrArray | IAccessInfo): Access;
     /**
      *  @private
      */
-    _removePermission(resources: string | string[], roles?: string | string[], actionPossession?: string): void;
+    _removePermission(resources: ValidRoleOrArray, roles?: ValidRoleOrArray, actionPossession?: string): void;
     /**
      *  Documented separately in enums/Action
      *  @private
      */
-    static readonly Action: any;
+    static get Action(): any;
     /**
      *  Documented separately in enums/Possession
      *  @private
      */
-    static readonly Possession: any;
+    static get Possession(): any;
     /**
      *  Documented separately in AccessControlError
      *  @private
      */
-    static readonly Error: any;
+    static get Error(): any;
     /**
      *  A utility method for deep cloning the given data object(s) while
      *  filtering its properties by the given attribute (glob) notations.

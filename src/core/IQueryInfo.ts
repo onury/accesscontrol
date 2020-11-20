@@ -1,3 +1,5 @@
+import type { ValidRoleOrArray } from '.';
+
 /**
  *  An interface that defines an access information to be queried.
  *  When you start a method chain with `AccessControl#can` method, you're
@@ -10,7 +12,7 @@ interface IQueryInfo {
      *  Indicates a single or multiple roles to be queried.
      *  @type {String|Array<String>}
      */
-    role?: string | string[];
+    role?: ValidRoleOrArray;
     /**
      *  Indicates the resource to be queried.
      *  @type {String}
