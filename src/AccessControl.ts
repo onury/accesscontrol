@@ -71,7 +71,7 @@ import { utils, ERR_LOCK } from './utils';
  *  // since these permissions have common resources, there is an alternative way:
  *  ac.grant('admin')
  *      .resource('profile').createAny().readAny(null, ["*", "!password"])
- *      .resource('video').readAny()..deleteAny();
+ *      .resource('video').readAny().deleteAny();
  *
  *  ac.grant('user')
  *      .readOwn('profile', ["uid", "email", "address.*", "account.*", "!account.roles"])
