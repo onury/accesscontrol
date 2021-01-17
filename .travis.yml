@@ -1,7 +1,7 @@
 language: node_js
 node_js:
+  - '10'
   - '8'
-  - '6'
 before_script: cd $TRAVIS_BUILD_DIR
 script:
   - npm run cover
