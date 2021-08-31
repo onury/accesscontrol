@@ -742,13 +742,13 @@ class AccessControl {
      *  var assets = { notebook: "Mac", car: { brand: "Ford", model: "Mustang", year: 1970, color: "red" } };
      *
      *  var filtered = AccessControl.filter(assets, [ "*", "!car.*", "car.model" ]);
-     *  console.log(assets); // { notebook: "Mac", car: { model: "Mustang" } }
+     *  console.log(filtered); // { notebook: "Mac", car: { model: "Mustang" } }
      *
      *  filtered = AccessControl.filter(assets, "*"); // or AccessControl.filter(assets, ["*"]);
-     *  console.log(assets); // { notebook: "Mac", car: { model: "Mustang" } }
+     *  console.log(filtered); // { notebook: "Mac", car: { model: "Mustang" } }
      *
      *  filtered = AccessControl.filter(assets); // or AccessControl.filter(assets, "");
-     *  console.log(assets); // {}
+     *  console.log(filtered); // {}
      */
     static filter(data: any, attributes: string[]): any {
         return utils.filterAll(data, attributes);
