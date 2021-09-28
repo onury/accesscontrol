@@ -39,7 +39,7 @@ interface IAccessInfo {
      */
     possession?: string;
     /**
-     *  Single or multiple roles for this access information.
+     *  Flag for denied access.
      *  @private
      *  @type {String|Array<String>}
      */
