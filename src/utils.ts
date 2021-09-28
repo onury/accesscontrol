@@ -1,5 +1,5 @@
 // dep modules
-import * as Notation from 'notation';
+import { Notation } from 'notation';
 // own modules
 import { AccessControl } from './';
 import { Action, actions, Possession, possessions } from './enums';
