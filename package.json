@@ -111,6 +111,6 @@
     "typescript": "^2.7.2"
   },
   "dependencies": {
-    "notation": "^1.3.6"
+    "notation": "2.0.0"
   }
 }
