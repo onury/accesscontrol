@@ -1,65 +1,50 @@
 {
   "name": "accesscontrol",
-  "version": "2.2.1",
+  "version": "3.0.0",
   "description": "Role and Attribute based Access Control for Node.js",
-  "main": "./index.js",
-  "directories": {
-    "lib": "./lib",
-    "test": "./test"
+  "author": "Onur Yildirim <onur@cutepilot.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/onury/accesscontrol/issues"
   },
-  "files": [
-    "index.js",
-    "lib",
-    "LICENSE"
-  ],
-  "types": "./lib/index.d.ts",
-  "scripts": {
-    "vuls": "snyk test",
-    "deps": "npm-check -u && snyk test",
-    "clean": "rimraf ./lib",
-    "build": "npm run clean && mkdirp ./lib && tsc",
-    "test": "npm run build && jest --verbose --no-cache",
-    "test!": "jest --verbose --no-cache",
-    "cover": "npm run build && jest --coverage --verbose --no-cache",
-    "cover!": "jest --coverage --verbose --no-cache",
-    "coveralls": "cat ./test/.coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js -v",
-    "report": "open ./test/.coverage/lcov-report/index.html",
-    "docs": "docma -c ./docma.config.json"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "roots": [
-      "<rootDir>/src",
-      "<rootDir>/lib",
-      "<rootDir>/test"
-    ],
-    "transform": {
-      "^.+\\.tsx?$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
-    },
-    "testMatch": [
-      "**/test/(*.)?(spec|test).ts"
-    ],
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "json"
-    ],
-    "testPathIgnorePatterns": [
-      "/backup/",
-      "/.coverage/"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*.ts",
-      "!src/index.ts",
-      "!**/IAccessInfo.ts",
-      "!**/IQueryInfo.ts"
-    ],
-    "coverageDirectory": "./test/.coverage"
-  },
+  "homepage": "https://github.com/onury/accesscontrol#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/onury/accesscontrol.git"
+  },
+  "type": "module",
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.js",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "files": [
+    "lib",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "lint": "biome check src test",
+    "format": "biome check --write src test",
+    "build": "tsc --project tsconfig.build.json",
+    "typecheck": "tsc --noEmit --project tsconfig.json",
+    "pretest": "npm run lint && npm run typecheck",
+    "test": "vitest run",
+    "cover": "vitest run --coverage",
+    "mutation": "stryker run",
+    "docs": "npm --prefix website run build",
+    "docs:dev": "npm --prefix website run dev",
+    "docs:host": "npm --prefix website run dev:host",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "access",
@@ -91,26 +76,18 @@
     "scope",
     "context"
   ],
-  "author": "Onur Yildirim <onur@cutepilot.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/onury/accesscontrol/issues"
-  },
-  "homepage": "https://github.com/onury/accesscontrol#readme",
-  "devDependencies": {
-    "@types/jest": "^22.1.3",
-    "@types/node": "^9.4.6",
-    "coveralls": "^3.0.0",
-    "docma": "^1.5.3",
-    "jest-cli": "^22.4.2",
-    "mkdirp": "^0.5.1",
-    "ncp": "^2.0.0",
-    "rimraf": "^2.6.3",
-    "snyk": "^1.122.0",
-    "ts-jest": "^22.0.4",
-    "typescript": "^2.7.2"
-  },
   "dependencies": {
-    "notation": "^1.3.6"
+    "notation": "3.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.0",
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/vitest-runner": "^9.6.1",
+    "@types/node": "^25.9.3",
+    "@vitest/coverage-istanbul": "^4.1.8",
+    "biome-config-oy": "^1.0.0",
+    "tsconfig-oy": "^2.0.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
   }
 }
