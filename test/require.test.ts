@@ -1,0 +1,119 @@
+/**
+ *  Test Suite: require() mandatory restriction gates (P7, §7.2).
+ *  `granted = (a grant matches) AND (every applicable require-gate passes)`.
+ *  require() can only restrict — never grant.
+ */
+
+import { AccessControl } from '../src/index.js';
+import { helper } from './helper.js';
+
+describe('Test Suite: require() gates (P7)', () => {
+  test('global gate must pass even when a grant matches', () => {
+    const ac = new AccessControl();
+    ac.grant('admin').readAny('post', ['*']);
+    ac.require('$.env == prod');
+    expect(ac.can('admin', { env: 'prod' }).readAny('post').granted).toBe(true);
+    expect(ac.can('admin', { env: 'dev' }).readAny('post').granted).toBe(false);
+  });
+
+  test('require can only restrict: a passing gate never grants on its own', () => {
+    const ac = new AccessControl();
+    ac.grant('admin').readAny('other', ['*']); // admin is a known role…
+    ac.require('$.env == prod'); // gate passes, but no grant exists for `post`
+    expect(ac.can('admin', { env: 'prod' }).readAny('post').granted).toBe(false);
+  });
+
+  test('category gate applies only to resources in that category', () => {
+    const ac = new AccessControl();
+    ac.grant('clerk').readAny('billing/invoice', ['*']);
+    ac.grant('clerk').readAny('media/photo', ['*']);
+    ac.category('billing').require('$.ip == trusted');
+
+    // billing resource is gated
+    expect(ac.can('clerk', { ip: 'trusted' }).readAny('billing/invoice').granted).toBe(true);
+    expect(ac.can('clerk', { ip: 'other' }).readAny('billing/invoice').granted).toBe(false);
+    // a resource in a different category is unaffected
+    expect(ac.can('clerk', { ip: 'other' }).readAny('media/photo').granted).toBe(true);
+  });
+
+  test('resource gate applies only to that resource', () => {
+    const ac = new AccessControl();
+    ac.grant('clerk').readAny('billing/invoice', ['*']);
+    ac.grant('clerk').readAny('billing/report', ['*']);
+    ac.resource('billing/invoice').require('$.mfa == true');
+
+    expect(ac.can('clerk', { mfa: true }).readAny('billing/invoice').granted).toBe(true);
+    expect(ac.can('clerk', { mfa: false }).readAny('billing/invoice').granted).toBe(false);
+    // sibling resource (same category) is not resource-gated
+    expect(ac.can('clerk', { mfa: false }).readAny('billing/report').granted).toBe(true);
+  });
+
+  test('all applicable gates (global + category + resource) must pass', () => {
+    const ac = new AccessControl();
+    ac.grant('clerk').readAny('billing/invoice', ['*']);
+    ac.require('$.env == prod');
+    ac.category('billing').require('$.ip == trusted');
+    ac.resource('billing/invoice').require('$.mfa == true');
+
+    const ok = ac.can('clerk', { env: 'prod', ip: 'trusted', mfa: true });
+    expect(ok.readAny('billing/invoice').granted).toBe(true);
+    // any single failing gate denies
+    expect(
+      ac.can('clerk', { env: 'dev', ip: 'trusted', mfa: true }).readAny('billing/invoice').granted
+    ).toBe(false);
+    expect(
+      ac.can('clerk', { env: 'prod', ip: 'bad', mfa: true }).readAny('billing/invoice').granted
+    ).toBe(false);
+    expect(
+      ac.can('clerk', { env: 'prod', ip: 'trusted', mfa: false }).readAny('billing/invoice').granted
+    ).toBe(false);
+  });
+
+  test('gates use the same condition engine as .where() (operators, $.now)', () => {
+    const ac = new AccessControl();
+    ac.grant('admin').readAny('post', ['*']);
+    ac.require('$.order.value < 1000');
+    expect(ac.can('admin', { order: { value: 500 } }).readAny('post').granted).toBe(true);
+    expect(ac.can('admin', { order: { value: 5000 } }).readAny('post').granted).toBe(false);
+  });
+
+  test('getRequirements() returns a copy by scope', () => {
+    const ac = new AccessControl();
+    ac.require('$.env == prod');
+    ac.category('billing').require('$.ip == trusted');
+    ac.resource('billing/invoice').require('$.mfa == true');
+    const reqs = ac.getRequirements();
+    expect(reqs.global).toHaveLength(1);
+    expect(reqs.categories.billing).toHaveLength(1);
+    expect(reqs.resources['billing/invoice']).toHaveLength(1);
+    // mutating the copy does not affect the engine
+    reqs.global.push(['x', '==', 'y']);
+    expect(ac.getRequirements().global).toHaveLength(1);
+  });
+
+  test('require() and scoped requires are chainable and locked-safe', () => {
+    const ac = new AccessControl();
+    ac.grant('admin').readAny('post', ['*']); // non-empty grants so lock() is allowed
+    expect(ac.require('$.env == prod')).toBe(ac);
+    expect(ac.category('billing').require('$.ip == trusted')).toBe(ac);
+    expect(ac.resource('billing/invoice').require('$.mfa == true')).toBe(ac);
+    ac.lock();
+    helper.expectACError(() => ac.require('$.env == prod'));
+    helper.expectACError(() => ac.category('billing').require('$.ip == trusted'));
+    helper.expectACError(() => ac.resource('billing/invoice').require('$.mfa == true'));
+  });
+
+  test('require gate works through check() as well as can()', () => {
+    const ac = new AccessControl();
+    ac.grant('admin').readAny('post', ['*']);
+    ac.require('$.env == prod');
+    expect(
+      ac.check({ role: 'admin', resource: 'post', action: 'read:any', context: { env: 'prod' } })
+        .granted
+    ).toBe(true);
+    expect(
+      ac.check({ role: 'admin', resource: 'post', action: 'read:any', context: { env: 'dev' } })
+        .granted
+    ).toBe(false);
+  });
+});
