@@ -1,167 +1,88 @@
-## Frequently Asked Questions
+# Frequently Asked Questions
 
-> _This FAQ provides general information about the term "Access Control" but most definitions are specific to AccessControl.js - how the library is implemented._
+> Short answers with pointers into the guides. New to v3? See
+> [What's New](/accesscontrol/whats-new/) and
+> [Migrating from v2](/accesscontrol/migration/).
 
 ### What is "Access Control"?
 
-In information security, **Access Control** is selective restriction of **_access_** to a **_resource_**. 
+The selective restriction of **access** to a **resource**. AccessControl models
+*who* is acting (**roles**), *what* they're doing (**actions**), *what* they act
+on (**resources** and their **attributes**), and decides **whether** it's
+allowed — optionally constrained by **conditions**, **ownership**, and mandatory
+**gates**. It merges [RBAC](https://en.wikipedia.org/wiki/Role-based_access_control)
+and [ABAC](https://en.wikipedia.org/wiki/Attribute-Based_Access_Control).
 
-AccessControl.js ...
-- defines act of accessing by "actions".
-- provides an abstract layer between the application logic and the requested resource and action. 
+### What's an "action"? A "resource"?
 
-### What is an "action"?
+An **action** is the operation performed (the CRUD verbs, or any
+[custom action](/accesscontrol/concepts/actions/)). A **resource** is a uniquely
+named thing being accessed; what counts as a distinct resource is a design
+decision. See [Resources](/accesscontrol/concepts/resources/).
 
-AccessControl.js defines "accessing" by [CRUD][crud] actions (`create`, `read`, `update`, `delete`). It does not specify **how an _action_ is performed** on the _resource_.  But rather, decides **whether the _action_ can be performed** by the accessing party: **_role_**.
+### Do I still have to check ownership myself?
 
-Below is a typical match of AC actions to actual HTTP and database operations:
+**No — that's the big v3 change.** Tell AccessControl how ownership is determined
+once (`policy.ownerField` or `policy.owner`), pass the record in the check
+context, and `own` is enforced. See [Ownership](/accesscontrol/concepts/ownership/).
+With **no** resolver configured, `own` keeps its v2 behavior, so existing code
+isn't silently locked down.
 
-| AccessControl.js | REST/HTTP         | Database|
-| ---------------- | ----------------- | --------|  
-| **`CREATE`**     | `POST`            | `INSERT`|  
-| **`READ`**       | `GET`             | `SELECT`|  
-| **`UPDATE`**     | `PUT` or `PATCH`  | `UPDATE`|  
-| **`DELETE`**     | `DELETE`          | `DELETE`|  
+### `.where()` vs `.require()`?
 
-Most of the time this might be the case; but depending on the context or resource; you could map these actions to completely different operations.
+`.where()` is a *conditional grant* — it can only **add** access under a
+condition. `.require()` is a *mandatory gate* — independent of grants, it can
+only **restrict**. See [Conditions](/accesscontrol/concepts/conditions/) and
+[Require Gates](/accesscontrol/concepts/gates/).
 
-- a **`CREATE`** might mean sending an SMS to a user.
-- a **`READ`** might mean downloading a file.
-- a **`DELETE`** in AccessControl logic might mean an **`UPDATE`** in database.  
-e.g. setting a table field, named `isDeleted` to `1` (soft-delete).
+### `policy` vs `context` — which goes where?
 
-and so on...
+*If a condition reads it with `$.`, it's `context`; if the engine reads it to
+decide behavior, it's `policy`.* See
+[Best Practices › policy vs context](/accesscontrol/best-practices/#policy-vs-context).
 
-### What is a "resource"?
+### Sync or async checks?
 
-A **resource** identifies a unique thing (noun) that's named/referenced and being accessed. This is typically an abstract definition. What the resource actually is; and how that resource is implemented is a **design decision**, the developer makes. 
+Declarative checks are synchronous. A grant/gate that uses a custom function
+(`{ fn, args }`) requires the async path (`grantedAsync` / `checkAsync`). See
+[Async & Custom Functions](/accesscontrol/concepts/async/).
 
-Depending on the context; a resource can be a _document_, a _database record_, an _apple_, the _relationship of two people_, _fear of dark_, a _cat breed_, a _cat_, [etc...][res-examples]
+### Can I use AccessControl with a database?
 
-When defining a resource for AccessControl, the developer should decide whether that _"thing"_...
-- is semantically unique (different than other defined resources),
-- requires a distinguished control of access. 
+Yes — it's storage‑agnostic. Persist the model as flat rows
+(`getGrantsList()`) and rehydrate it; the round‑trip is exact. See
+[Serialization & Databases](/accesscontrol/concepts/serialization/).
 
-For example:
-- We have a database table called `accounts`.
-- The `accounts` table has fields such as `firstName`, `lastName`, `email` and `pwd`.
-- In our application context, a user can modify `firstName` and `lastName` freely. But we'll have a separate page for changing the password and/or email address; which will prompt for current password.
+### How do I catch typos (unknown roles/actions/resources)?
 
-In this scenario, we may have two resources: `account` and `credentials`
-```js
-ac.grant('user')
-  .createAny('account')                           // create new account with all attributes
-  .updateOwn('account', ['*', '!pwd', '!email'])  // update own account except password and email
-  .updateOwn('credentials')                       // update own credentials (password and email)
-```
+Turn on [strict mode](/accesscontrol/concepts/strict/). `roles` is on by
+default; enable `actions`/`resources` to throw on unknown names instead of
+silently denying.
 
-### How do you define a resource?
+### How do I audit decisions?
 
-In AccessControl.js, a resource is defined whenever a permission is granted or denied for the first time, for that resource.
+Subscribe to the `access` event — it fires on **every** resolved check (granted
+and denied) with a denial `reason`. See
+[Events & Auditing](/accesscontrol/concepts/events/).
 
-```js
-ac.can('monkey').createOwn('banana').granted   // false
-ac.hasResource('banana');                      // false
-ac.grant('monkey').createOwn('banana');        // resource is defined for the first time
-ac.hasResource('banana');                      // true
-ac.can('monkey').createOwn('banana').granted   // true
-```
+### What do I do when AccessControl throws?
 
-### Can I use AccessControl.js with a database? How?
-(MySQL,  PostgreSQL, MongoDB, etc..)
+A thrown `AccessControlError` means a fault (usually a misconfiguration), **not**
+a normal "denied" — denials return `granted: false`. **Never** let a thrown
+error fall through to "allow".
 
-AccessControl.js is not coupled with any kind of database system. Actually it's unrelated. It only grants or denies access to a resource. The rest depends on your application's logic and decisions you (the developer) make.
+- On the **request path**, use [`tryCan()`](/accesscontrol/best-practices/#can-vs-trycan):
+  it never throws — every failure resolves to `granted: false`.
+- In **development/tests**, use `can()` so a typo throws loudly.
+- Branch on the stable [`err.code`](/accesscontrol/concepts/strict/#error-codes)
+  (detect with `AccessControl.isACError(err)`), not on message text.
 
-Here is a scenario;
-- Application logic: _"Users can assign folders to users."_  
-In the backend, this is done by creating a record in a relational  table: `folderUsers` 
-- So, we have 3 tables in our database:  `users`, `folders` and `folderUsers` 
-- The relation is established by two fields, in `folderUsers` table:
-  - `folderId` ( foreign-key: `folders.id` )
-  - `userId` ( foreign-key: `users.id` )  
+See [Security Considerations](/accesscontrol/security/) for the full hardening
+story.
 
-- In AccessControl, we'll represent this resource as `"fu-relation"`.  
-And we'll restrict access for `create` actions performed on this resource.
+### Is it production-safe / how is it tested?
 
-In this case, we have 4 options.  
-
-By **creating** a **`fu-relation`** resource, **a user of this role**, can assign...
-
-| # | Permission                                     | covers |
-| - | -----------------------------------------------| -------|
-| 1 | ... **own** `folder` to itself (**own** `user`)|        |
-| 2 | ... **any** `folder` to itself (**own** `user`)| 1      |
-| 3 | ... **own** `folder` to **any** `user`         | 1      |
-| 4 | ... **any** `folder` to **any** `user`         | 1, 2, 3|
-
-When you grant or check for a permission via `.createOwn()`, you (the developer) should decide what **_own_** stands for.  So I will make the following **decision** as the developer.  
-
-In **this context**:
-- **own** `fu-relation` means _"**own** `folder` to **any** `user`"_ (option # 3)
-- **any** `fu-relation` means _"**any** `folder` to **any** `user`"_ (option #4)
-
-With this **decision**:
-- I don't need to check whether the assigned-user is current (_own_) user. 
-- I need to check whether the assigned-folder is _own_ `folder` (implied resource) of the current user.
-
-First I'll define 2 roles; `user` and `admin`; and grant access permissions accordingly:
-```js
-ac.grant('user').createOwn('fu-relation')
-  .grant('admin').createAny('fu-relation');
-```
-So when the resource is accessed, I'll check these permissions, and restrict or allow the request:
-```js
-// psuedo (sync) code
-
-var role = session.role; // role of the requesting user: 'user' or 'admin'
-var userIdToBeAssigned = request.params.userId; // can be any user id
-var folderId = request.params.folderId;
-
-// First check if current role can create "ANY" fu-relation. (ANY > OWN)
-var permission = ac.can(role).createAny('fu-relation');
-
-// if not granted, check if current role can create "OWN" fu-relation:
-if (permission.granted === false) {
-    // Determine whether the implied resource (folder) is "owned" 
-    // by the current user. This is app's responsibility, not AC's.
-    if (session.userId === getFolder(folderId).userId) {
-        // We made sure that the implied resource is "owned" by this user.
-        // Now we can ask AccessControl permission for performing 
-        // the action on the target resource:
-        permission = ac.can(role).createOwn('fu-relation');
-    }
-}
-
-// Finally, execute the operation if allowed:
-if (permission.granted) {
-    // whatever app-logic here.. e.g.:
-    db.insert({ 
-        table: folderUsers,
-        row: { 
-            folderId: request.params.folderId, 
-            userId: userIdToBeAssigned
-        }
-    });  
-} else {
-    // forbidden
-    console.log('Access Denied!');
-}
-```
-
-### What to do when AccessControl.js throws an error?
-
-Granting permissions for valuable resources and managing access levels for user roles... This is a highly sensitive context; in which mostly, any failure or exception becomes critical. So in any case, an `AccessControlError` is thrown right away. **No silent errors**!
-
-**In Development:**
-Hard-test your application with all or most possible use cases, in terms of access management and control. If you see any `AccessControlError` thrown you should definitely fix it immediately. Because this typically indicates that your grants model either has a logical or technical flaw.
-
-**In Production:**
-You did all your tests in development but still, if a caught exception is an instance of `AccessControlError`, I highly recommend the host application should be gracefully shut down when in production.  
-
-For details on errors thrown, see [AccessControl Errors][errors] section.
-
-
-[errors]:http://onury.io/accesscontrol/?content=errors
-[ac]:https://en.wikipedia.org/wiki/Access_control
-[crud]:https://en.wikipedia.org/wiki/Create,_read,_update_and_delete
-[res-examples]:http://stackoverflow.com/a/10883810/112731
+Single pinned runtime dependency, zero production advisories
+(`npm audit --omit=dev`), 100% coverage, mutation‑tested, plus an adversarial
+suite and a property fuzzer. See
+[Best Practices › Quality & testing](/accesscontrol/best-practices/#quality--testing).
