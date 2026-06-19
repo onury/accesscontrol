@@ -2,328 +2,340 @@
     <a href="https://github.com/onury/accesscontrol"><img width="465" height="170" src="https://raw.github.com/onury/accesscontrol/master/ac-logo.png" alt="AccessControl.js" /></a>
 </h1>
 <p align="center">
-    <a href="https://travis-ci.org/onury/accesscontrol"><img src="https://img.shields.io/travis/onury/accesscontrol.svg?branch=master&style=flat-square" alt="Build Status" /></a>
-    <a href="https://coveralls.io/github/onury/accesscontrol?branch=master"><img src="https://img.shields.io/coveralls/github/onury/accesscontrol/master.svg?style=flat-square" alt="Coverage Status" /></a>
-    <a href="https://david-dm.org/onury/accesscontrol"><img src="https://david-dm.org/onury/accesscontrol.svg?style=flat-square" alt="Dependencies" /></a>
-    <a href="https://snyk.io/test/github/onury/accesscontrol"><img src="https://snyk.io/test/github/onury/accesscontrol/badge.svg?style=flat-square" alt="Known Vulnerabilities" /></a>
-    <a href="https://github.com/onury/accesscontrol/graphs/commit-activity"><img src="https://img.shields.io/maintenance/yes/2019.svg?style=flat-square" alt="Maintained" /></a>
-    <br />
-    <a href="https://www.npmjs.com/package/accesscontrol"><img src="http://img.shields.io/npm/v/accesscontrol.svg?style=flat-square" alt="npm" /></a>
-    <a href="https://github.com/onury/accesscontrol"><img src="https://img.shields.io/github/release/onury/accesscontrol.svg?style=flat-square" alt="Release" /></a>
-    <a href="https://www.npmjs.com/package/accesscontrol"><img src="http://img.shields.io/npm/dm/accesscontrol.svg?style=flat-square" alt="Downloads/mo." /></a>
-    <a href="https://github.com/onury/accesscontrol/blob/master/LICENSE"><img src="http://img.shields.io/npm/l/accesscontrol.svg?style=flat-square" alt="License" /></a>
-    <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/written%20in-%20TypeScript%20-6575ff.svg?style=flat-square" alt="TypeScript" /></a>
-    <a href="https://onury.io/accesscontrol/?api=ac"><img src="https://img.shields.io/badge/documentation-click_to_read-c27cf4.svg?documentation=click_to_read&style=flat-square" alt="Documentation" /></a>
-    <br />
-    <sub>© 2019, Onur Yıldırım (<b><a href="https://github.com/onury">@onury</a></b>).</sub>
+  <a href="https://github.com/onury/accesscontrol/actions/workflows/ci.yml"><img src="https://github.com/onury/accesscontrol/actions/workflows/ci.yml/badge.svg" alt="build" /></a>
+  <a href="https://www.npmjs.com/package/accesscontrol"><img src="https://img.shields.io/npm/v/accesscontrol.svg?style=flat&label=&color=%23C6234B&logo=npm" alt="version" /></a>
+  <a href="https://www.npmjs.com/package/accesscontrol"><img src="https://img.shields.io/npm/dm/accesscontrol.svg?style=flat&color=2BB150" alt="downloads" /></a>
+  <a href="https://gist.github.com/onury/d3f3d765d7db2e8b2d050d14315f2ac7"><img src="https://img.shields.io/badge/ESM-F7DF1E?style=flat" alt="ESM" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TS-3260C7?style=flat" alt="TS" /></a>
+  <a href="https://github.com/onury/accesscontrol/blob/master/LICENSE"><img src="https://img.shields.io/npm/l/accesscontrol.svg?style=flat&color=blue" alt="license" /></a>
+  <a href="https://onury.io/accesscontrol"><img src="https://img.shields.io/badge/docs-read-c27cf4?style=flat" alt="documentation" /></a>
 </p>
+
+<p align="center">© 2026, Onur Yıldırım (<b><a href="https://github.com/onury">@onury</a></b>).</p>
 <br />
 
+### Role and Attribute based Access Control for Node.js
 
-### Role and Attribute based Access Control for Node.js  
+Many [RBAC][rbac] (Role-Based Access Control) implementations differ, but the
+basics are widely adopted since they simulate real-life role (job) assignments.
+But as data gets more complex, you need to define policies on resources,
+subjects, even environments — this is [ABAC][abac] (Attribute-Based Access
+Control). Merging the best of both (see this [NIST paper][nist-paper]),
+AccessControl implements RBAC basics **and** ABAC conditions, ownership, and
+mandatory gates.
 
-Many [RBAC][rbac] (Role-Based Access Control) implementations differ, but the basics is widely adopted since it simulates real life role (job) assignments. But while data is getting more and more complex; you need to define policies on resources, subjects or even environments. This is called [ABAC][abac] (Attribute-Based Access Control).
-
-With the idea of merging the best features of the two (see this [NIST paper][nist-paper]); this library implements RBAC basics and also focuses on *resource* and *action* attributes.
-
-<table>
-  <thead>
-    <tr>
-      <th><a href="#installation">Install</a></th>
-      <th><a href="#guide">Examples</a></th>
-      <th><a href="#roles">Roles</a></th>
-      <th><a href="#actions-and-action-attributes">Actions</a></th>
-      <th><a href="#resources-and-resource-attributes">Resources</a></th>
-      <th><a href="#checking-permissions-and-filtering-attributes">Permissions</a></th>
-      <th><a href="#defining-all-grants-at-once">More</a></th>
-      <th><a href="https://github.com/onury/accesscontrol/blob/master/docs/FAQ.md">F.A.Q.</a></th>
-      <th><a href="https://onury.io/accesscontrol?api=ac">API Reference</a></th>
-    </tr>
-  </thead>
-</table>
+> **v3** is **ESM** 🔆 and adds a real policy engine: conditions, enforced
+> ownership, custom actions, `require()` gates, groups/categories, async checks
+> and audit events.
+> &nbsp;✨ **[What's new in v3 →](./docs/WHATS-NEW.md)** &nbsp;·&nbsp; ⬆️ **[Migrating from v2 →](./docs/MIGRATION.md)**
 
 ## Core Features
 
-- Chainable, friendly API.  
-e.g. `ac.can(role).create(resource)`
-- Role hierarchical **inheritance**.
-- Define grants **at once** (e.g. from database result) or **one by one**.
-- Grant/deny permissions by attributes defined by **glob notation** (with nested object support).
-- Ability to **filter** data (model) instance by allowed attributes.
-- Ability to control access on **own** or **any** resources.
-- Ability to **lock** underlying grants model.
-- No **silent** errors.
-- **Fast**. (Grants are stored in memory, no database queries.)
-- Brutally **tested**.
-- TypeScript support.
-
-_In order to build on more solid foundations, this library (v1.5.0+) is completely re-written in TypeScript._
+- Chainable, friendly API — e.g. `ac.can(role).createOwn(resource)`.
+- Role hierarchical **inheritance** with **deny-overrides** (deny always wins).
+- **Conditions** (`.where()`) — declarative ABAC with a readable expression syntax.
+- **Enforced ownership** — `own` actually verifies the record belongs to the user.
+- **Custom actions** beyond CRUD via `.action()` / `.do()`.
+- **`require()` gates** — mandatory restrictions at global / category / resource scope.
+- **Groups & categories** (`/`) — bounded bulk grants; the safe alternative to `*`.
+- **Async checks** + custom condition functions (`defineCondition`, `grantedAsync`).
+- **Events** — an `access` audit stream, plus `change` / `error`.
+- Glob-notation **attribute filtering** of data (with nested objects).
+- Define grants **at once** (object or DB rows) or **one by one**; `lock()` the model.
+- **Fail-closed checks** — `tryCan()` never throws; a failure can't become "allow".
+- **Hardened** — prototype-pollution-safe, ReDoS-guarded opt-in regex, redacted
+  error messages with stable `err.code`, optional Unicode charset.
+- No **silent** errors. **Fast** (in-memory). Strongly **typed**. ESM.
+- **Battle-tested** — 100% coverage, mutation-tested, adversarial + property-fuzz
+  suites; sole runtime dependency (`notation`, same author) pinned exactly, zero
+  production advisories.
 
 ## Installation
 
-with [**npm**](https://www.npmjs.com/package/accesscontrol): `npm i accesscontrol --save`  
-with [**yarn**](https://yarn.pm/accesscontrol): `yarn add accesscontrol`
+```sh
+npm i accesscontrol
+```
+
+```js
+import { AccessControl } from 'accesscontrol';
+```
+
+## Quick Start
+
+```js
+const ac = new AccessControl();
+
+ac.grant('user')                      // define or modify a role
+    .createOwn('video')               // ≡ .createOwn('video', ['*'])
+    .deleteOwn('video')
+    .readAny('video')
+  .grant('admin')                     // switch role, keep the chain
+    .extend('user')                   // inherit user's grants
+    .updateAny('video', ['title'])    // explicit attributes
+    .deleteAny('video');
+
+ac.can('user').createOwn('video').granted;    // true
+ac.can('admin').updateAny('video').attributes; // ['title']
+```
 
 ## Guide
 
+### Roles & Inheritance
+
+Create roles by calling `.grant(role)` or `.deny(role)`. Roles inherit other
+roles with `.extend()`; grants are **additive**, and an explicit `deny` always
+wins — even over inherited grants.
+
 ```js
-const AccessControl = require('accesscontrol');
-// or:
-// import { AccessControl } from 'accesscontrol';
+ac.grant('user').readAny('post', ['*']);
+ac.grant('moderator').extend('user');
+ac.deny('moderator').readAny('post', ['secret']);   // carve a field back
+
+ac.can('moderator').readAny('post').attributes;     // ['*', '!secret']
 ```
 
-### Basic Example
+`deny` does not cascade across possession: `deny create:any` still leaves
+`create:own`.
 
-Define roles and grants one by one.
+### Actions — CRUD and Custom
+
+The CRUD helpers (`createAny`, `readOwn`, `updateAny`, `deleteOwn`, …) are sugar
+over the generic `.action()` / `.do()`, which accept **any** action name:
+
 ```js
-const ac = new AccessControl();
-ac.grant('user')                    // define new or modify existing role. also takes an array.
-    .createOwn('video')             // equivalent to .createOwn('video', ['*'])
-    .deleteOwn('video')
-    .readAny('video')
-  .grant('admin')                   // switch to another role without breaking the chain
-    .extend('user')                 // inherit role capabilities. also takes an array
-    .updateAny('video', ['title'])  // explicitly defined attributes
-    .deleteAny('video');
+ac.grant('editor').action('publish', 'article', ['*']);      // publish (any)
+ac.grant('author').action('publish:own', 'article', ['*']);  // ownership-gated
 
-const permission = ac.can('user').createOwn('video');
-console.log(permission.granted);    // —> true
-console.log(permission.attributes); // —> ['*'] (all attributes)
-
-permission = ac.can('admin').updateAny('video');
-console.log(permission.granted);    // —> true
-console.log(permission.attributes); // —> ['title']
+ac.can('author', { user, article }).do('publish:own', 'article').granted;
+ac.can('admin').do('update', 'post').granted;                // CRUD via .do()
 ```
 
-### Express.js Example
+### Resources, Attributes & Filtering
 
-Check role permissions for the requested resource and action, if granted; respond with filtered attributes.
+Attributes use [glob notation][glob] with negation and nested paths. `filter()`
+returns a copy with only the allowed fields.
 
 ```js
-const ac = new AccessControl(grants);
-// ...
-router.get('/videos/:title', function (req, res, next) {
-    const permission = ac.can(req.user.role).readAny('video');
-    if (permission.granted) {
-        Video.find(req.params.title, function (err, data) {
-            if (err || !data) return res.status(404).end();
-            // filter data by permission attributes and send.
-            res.json(permission.filter(data));
-        });
-    } else {
-        // resource is forbidden for this user/role
-        res.status(403).end();
-    }
+ac.grant('user').readOwn('account', ['*', '!password', 'profile.*']);
+
+const perm = ac.can('user').readOwn('account');
+perm.attributes;                 // ['*', '!password', 'profile.*']
+perm.filter(accountRecord);      // record without `password`
+```
+
+### Possession & Ownership
+
+`any` means any record; `own` means the requester owns it. Tell AccessControl how
+ownership is determined and pass the record in the check context — `own` is then
+**enforced**:
+
+```js
+const ac = new AccessControl({}, { policy: { ownerField: 'ownerId' } });
+ac.grant('user').updateOwn('order', ['*']);
+
+ac.can('user', { user: { id: 7 }, order: { ownerId: 7 } }).updateOwn('order').granted; // true
+ac.can('user', { user: { id: 7 }, order: { ownerId: 9 } }).updateOwn('order').granted; // false
+```
+
+A custom resolver (`policy.owner`) wins over `ownerField`. With no resolver
+configured, `own` keeps its v2 behavior (selects the attribute set; you enforce
+ownership). A blanket `any` grant still satisfies an `own` check.
+
+### Conditions — `.where()` and `.with()`
+
+Attach a condition that decides whether a grant applies. Supply per-check data
+via `can(role, context)`, the fluent `.with()`, or `check({ context })`.
+
+```js
+ac.grant('manager')
+  .where('$.order.value <= 100000')
+  .updateAny('order', ['*']);
+
+ac.can('manager').with({ order: { value: 5000 } }).updateAny('order').granted; // true
+```
+
+Operators: `== != > >= < <=`, `in`, `contains`, `matches`, `startsWith`,
+`endsWith`, `before` / `after` / `between`, `cidr`; combine with `{ and, or, not }`.
+The time helper `$.now.*` is auto-injected. Conditions also accept canonical JSON
+(`['$.order.value', '<=', 100000]`), which is what gets stored/serialized.
+
+> [!NOTE]
+> The `matches` (regex) operator is **opt-in** — enable `engine.allowRegex`
+> (it's a ReDoS surface). Patterns are then screened for catastrophic
+> backtracking. See [Security](https://onury.io/accesscontrol/security/).
+
+### Mandatory Gates — `require()` 
+
+`.where()` conditionally **grants**; `.require()` is an independent gate that can
+only **restrict**. `granted = (a grant matches) AND (every applicable gate passes)`.
+
+```js
+ac.require('$.env == prod');                            // global
+ac.category('billing').require('$.ip cidr 10.0.0.0/8');  // per category
+ac.resource('billing/invoice').require('$.mfa == true'); // per resource
+```
+
+### Groups & Categories — Bounded Bulk Grants
+
+Declare your vocabulary with `setup()`, then grant to a **group** or **category**
+once; members inherit dynamically. `media/photo` and `legal/photo` never collide.
+
+```js
+ac.setup({
+  roles:     { admins: ['admin', 'moderator'], _: ['user'] },
+  resources: { media: ['photo', 'video'], _: ['profile'] },
+});
+ac.grant('admins').readAny('media');                    // group × category
+ac.can('admins/admin').readAny('media/photo').granted;  // true
+
+ac.group('admins').getRoles();        // ['admins/admin', 'admins/moderator']
+ac.category('media').getResources();  // ['media/photo', 'media/video']
+```
+
+`setup()`'s `roles`/`resources` also accept a plain array when you don't need
+grouping (`roles: ['user', 'admin']`).
+
+### Strict Mode
+
+`policy.strict` (boolean or per-key object) turns on loud typo-protection.
+Defaults: `checks` and `roles` **on** (secure), `actions` and `resources` **off**.
+
+```js
+new AccessControl(grants, { policy: { strict: { actions: true, resources: true } } });
+// an unknown action/resource throws instead of silently returning granted:false
+```
+
+### Async Checks & Custom Functions
+
+Register business logic and reference it from a grant or gate as `{ fn, args }`
+(JSON-serializable). Declarative checks stay synchronous; custom/async ones use
+`grantedAsync` / `checkAsync`.
+
+```js
+ac.defineCondition('ipAllowed', async (ctx, args) => isAllowed(ctx.ip, args.cidr));
+ac.grant('admin').where({ fn: 'ipAllowed', args: { cidr: '10.0.0.0/8' } }).readAny('server');
+
+await ac.can('admin', { ip }).readAny('server').grantedAsync;
+```
+
+### Events & Audit
+
+A dependency-free emitter. `access` fires on every resolved check (granted and
+denied) — your audit log, with a denial `reason`. Listeners are observational and
+isolated; a throwing listener never breaks a check.
+
+```js
+ac.on('access', (e) => audit(e));   // { roles, resource, action, granted, reason, ... }
+ac.on('change', (e) => log(e.type));
+ac.on('error', (e) => report(e.error));
+```
+
+### Serialization (for Databases)
+
+```js
+const rows = ac.getGrantsList();          // flat, DB-friendly rows (+ $extend rows)
+const restored = new AccessControl(rows); // round-trips identically
+ac.getGrants();                           // the object form (frozen copy)
+ac.getRequirements();                     // require() gates by scope
+ac.getVocabulary();                       // setup() input: { roles, resources, actions }
+
+// or persist/restore the whole model (grants + gates + vocabulary) in one call:
+await db.savePolicy(JSON.stringify(ac.snapshot()));
+const ac2 = new AccessControl().restore(await db.loadPolicy());
+```
+
+Both object and list inputs are accepted by the constructor and `setGrants()`.
+See **[examples/](./examples)** for a full grants model, an SQL schema, and an
+Express integration.
+
+### `engine` vs `policy` vs `context`
+
+The constructor takes `new AccessControl(grants, { engine, policy, context })` —
+three concerns: **`engine`** (library mechanics & security: `pathPrefix`,
+`allowRegex`, `charset`, `safeErrors`), **`policy`** (your authorization model:
+`ownerField`/`owner`, `strict`, allow-lists), and **`context`** (ambient data
+conditions read via `$.`). Rule of thumb: *library → `engine`, your domain →
+`policy`, condition data → `context`.*
+
+### Express Middleware
+
+```js
+function authorize(action, resource, loadRecord) {
+  return async (req, res, next) => {
+    const record = loadRecord ? await loadRecord(req) : undefined;
+    const ctx = { env: process.env.NODE_ENV, user: req.user, [resource]: record };
+    const perm = ac.can(req.user.role, ctx).action(action, resource);
+    if (!perm.granted) return res.status(403).end();
+    req.permission = perm;
+    next();
+  };
+}
+
+router.get('/articles/:id', authorize('read:any', 'article'), async (req, res) => {
+  const article = await db.findArticle(req.params.id);
+  res.json(req.permission.filter(article)); // filtered to granted attributes
 });
 ```
 
-## Roles
+A fuller version (ownership, custom actions, audit) lives in
+[`examples/express-middleware.example.ts`](./examples/express-middleware.example.ts).
 
-You can create/define roles simply by calling `.grant(<role>)` or `.deny(<role>)` methods on an `AccessControl` instance.  
+## Security & Quality
 
-- Roles can extend other roles.
+Authorization is sensitive, so AccessControl is hardened against the bug classes
+that matter for an access-control library — and clear about the decisions left to
+you.
 
-```js
-// user role inherits viewer role permissions
-ac.grant('user').extend('viewer');
-// admin role inherits both user and editor role permissions
-ac.grant('admin').extend(['user', 'editor']);
-// both admin and superadmin roles inherit moderator permissions
-ac.grant(['admin', 'superadmin']).extend('moderator');
-```
+- **Fail-closed by design.** Denials return `granted: false`; only genuine faults
+  throw. Use `tryCan()` on the request path so a thrown error can never become an
+  accidental *allow*. Errors carry a stable `err.code`.
+- **Prototype-pollution-safe.** The gadget names `__proto__` / `prototype` /
+  `constructor` are rejected, and every name-keyed lookup uses `Object.hasOwn`, so
+  a name like `toString` is treated as data, never a prototype member.
+- **ReDoS-guarded.** The `matches` regex operator is opt-in (`engine.allowRegex`);
+  enabled, patterns are screened for catastrophic backtracking. Condition nesting
+  depth is bounded.
+- **No info leaks by default.** `engine.safeErrors` (on by default) keeps
+  caller-supplied values out of error messages; immutable getters and `lock()`
+  prevent tampering.
+- **Homograph-aware names.** ASCII by default; `Charset.UNICODE` is opt-in with a
+  documented homograph caveat.
 
-- Inheritance is done by reference, so you can grant resource permissions before or after extending a role. 
+> [!IMPORTANT]
+> On the request path, treat a thrown error as **deny**, never allow — or just
+> use `tryCan()`, which never throws.
 
-```js
-// case #1
-ac.grant('admin').extend('user') // assuming user role already exists
-  .grant('user').createOwn('video');
-
-// case #2
-ac.grant('user').createOwn('video')
-  .grant('admin').extend('user');
-
-// below results the same for both cases
-const permission = ac.can('admin').createOwn('video');
-console.log(permission.granted); // true
-```
-
-Notes on inheritance:  
-- A role cannot extend itself.
-- Cross-inheritance is not allowed.  
-e.g. `ac.grant('user').extend('admin').grant('admin').extend('user')` will throw.
-- A role cannot (pre)extend a non-existing role. In other words, you should first create the base role.  e.g. `ac.grant('baseRole').grant('role').extend('baseRole')`
-
-## Actions and Action-Attributes
-
-[CRUD][crud] operations are the actions you can perform on a resource. There are two action-attributes which define the **possession** of the resource: *own* and *any*.
-
-For example, an `admin` role can `create`, `read`, `update` or `delete` (CRUD) **any** `account` resource. But a `user` role might only `read` or `update` its **own** `account` resource.
-
-<table>
-    <thead>
-        <tr>
-            <th>Action</th>
-            <th>Possession</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td rowspan="2">
-            <b>C</b>reate<br />
-            <b>R</b>ead<br />
-            <b>U</b>pdate<br />
-            <b>D</b>elete<br />
-            </td>
-            <td>Own</td>
-            <td>The C|R|U|D action is (or not) to be performed on own resource(s) of the current subject.</td>
-        </tr>
-        <tr>
-            <td>Any</td>
-            <td>The C|R|U|D action is (or not) to be performed on any resource(s); including own.</td>
-        </tr>   
-    </tbody>
-</table>
-
-```js
-ac.grant('role').readOwn('resource');
-ac.deny('role').deleteAny('resource');
-```
-
-_Note that **own** requires you to also check for the actual possession. See [this](https://github.com/onury/accesscontrol/issues/14#issuecomment-328316670) for more._
-
-## Resources and Resource-Attributes
-
-Multiple roles can have access to a specific resource. But depending on the context, you may need to limit the contents of the resource for specific roles.  
-
-This is possible by resource attributes. You can use Glob notation to define allowed or denied attributes.
-
-For example, we have a `video` resource that has the following attributes: `id`, `title` and `runtime`.
-All attributes of *any* `video` resource can be read by an `admin` role:
-```js
-ac.grant('admin').readAny('video', ['*']);
-// equivalent to:
-// ac.grant('admin').readAny('video');
-```
-But the `id` attribute should not be read by a `user` role.  
-```js
-ac.grant('user').readOwn('video', ['*', '!id']);
-// equivalent to:
-// ac.grant('user').readOwn('video', ['title', 'runtime']);
-```
-
-You can also use nested objects (attributes).
-```js
-ac.grant('user').readOwn('account', ['*', '!record.id']);
-```
-
-## Checking Permissions and Filtering Attributes
-
-You can call `.can(<role>).<action>(<resource>)` on an `AccessControl` instance to check for granted permissions for a specific resource and action.
-
-```js
-const permission = ac.can('user').readOwn('account');
-permission.granted;       // true
-permission.attributes;    // ['*', '!record.id']
-permission.filter(data);  // filtered data (without record.id)
-```
-See [express.js example](#expressjs-example).
-
-## Defining All Grants at Once
-
-You can pass the grants directly to the `AccessControl` constructor.
-It accepts either an `Object`:
-
-```js
-// This is actually how the grants are maintained internally.
-let grantsObject = {
-    admin: {
-        video: {
-            'create:any': ['*', '!views'],
-            'read:any': ['*'],
-            'update:any': ['*', '!views'],
-            'delete:any': ['*']
-        }
-    },
-    user: {
-        video: {
-            'create:own': ['*', '!rating', '!views'],
-            'read:own': ['*'],
-            'update:own': ['*', '!rating', '!views'],
-            'delete:own': ['*']
-        }
-    }
-};
-const ac = new AccessControl(grantsObject);
-```
-... or an `Array` (useful when fetched from a database):
-```js
-// grant list fetched from DB (to be converted to a valid grants object, internally)
-let grantList = [
-    { role: 'admin', resource: 'video', action: 'create:any', attributes: '*, !views' },
-    { role: 'admin', resource: 'video', action: 'read:any', attributes: '*' },
-    { role: 'admin', resource: 'video', action: 'update:any', attributes: '*, !views' },
-    { role: 'admin', resource: 'video', action: 'delete:any', attributes: '*' },
-
-    { role: 'user', resource: 'video', action: 'create:own', attributes: '*, !rating, !views' },
-    { role: 'user', resource: 'video', action: 'read:any', attributes: '*' },
-    { role: 'user', resource: 'video', action: 'update:own', attributes: '*, !rating, !views' },
-    { role: 'user', resource: 'video', action: 'delete:own', attributes: '*' }
-];
-const ac = new AccessControl(grantList);
-```
-You can set grants any time...
-```js
-const ac = new AccessControl();
-ac.setGrants(grantsObject);
-console.log(ac.getGrants());
-```
-...unless you lock it:
-```js
-ac.lock().setGrants({}); // throws after locked
-```
+> [!NOTE]
+> **Quality bar:** 100% coverage (statements/branches/functions/lines),
+> mutation-tested (Stryker), plus an adversarial security suite and a seeded
+> property fuzzer. Its only runtime dependency (`notation`, from the same author)
+> is pinned exactly; `npm audit --omit=dev` reports zero advisories. Full
+> details: **[Security Considerations][security]**.
 
 ## Documentation
 
-You can read the full [**API reference**][docs] with lots of details, features and examples.  
-And more at the [F.A.Q. section][faq].
-
-## Change-Log
-
-See [CHANGELOG][changelog].
+See the full documentation & API reference @ [onury.io/accesscontrol](https://onury.io/accesscontrol)
 
 ## Contributing
 
-Clone original project:
-
-```sh
-git clone https://github.com/onury/accesscontrol.git
-```
-
-Install dependencies:
-
 ```sh
 npm install
+npm run build && npm test        # lint, type-check, tests
+npm run cover                     # coverage
 ```
 
-Add tests to relevant file under [/test](test/) directory and run:  
-
-```sh
-npm run build && npm run cover
-```
-
-Use included `tslint.json` and `editorconfig` for style and linting.  
-Travis build should pass, coverage should not degrade.
+Add tests under [`/test`](test/). Coverage and lint must pass.
 
 ## License
 
 [**MIT**][license].
 
-[docs]:http://onury.io/accesscontrol/?api=ac
-[faq]:http://onury.io/accesscontrol/?content=faq
+[license]:https://github.com/onury/accesscontrol/blob/master/LICENSE
+[docs]:https://onury.io/accesscontrol/
+[security]:https://onury.io/accesscontrol/security/
+[best]:https://onury.io/accesscontrol/best-practices/
 [rbac]:https://en.wikipedia.org/wiki/Role-based_access_control
 [abac]:https://en.wikipedia.org/wiki/Attribute-Based_Access_Control
-[crud]:https://en.wikipedia.org/wiki/Create,_read,_update_and_delete
+[glob]:https://github.com/onury/notation
 [nist-paper]:http://csrc.nist.gov/groups/SNS/rbac/documents/kuhn-coyne-weil-10.pdf
 [changelog]:https://github.com/onury/accesscontrol/blob/master/CHANGELOG.md
-[license]:https://github.com/onury/accesscontrol/blob/master/LICENSE
