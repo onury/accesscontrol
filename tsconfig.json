@@ -1,45 +1,22 @@
 {
-    "compileOnSave": false,
-    "compilerOptions": {
-        "declaration": true,
-        "declarationDir": "./lib",
-        "target": "es5",
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "removeComments": false,
-        "noLib": false,
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "lib": ["es6", "es2015", "dom"],
-        "sourceMap": false,
-        "pretty": true,
-        "allowUnreachableCode": false,
-        "allowUnusedLabels": false,
-        "allowJs": false, // cannot be true when decleration is true
-        "noImplicitAny": false,
-        "suppressImplicitAnyIndexErrors": true,
-        "noImplicitReturns": true,
-        "noImplicitUseStrict": false,
-        "noFallthroughCasesInSwitch": true,
-        "typeRoots": [
-            "./node_modules/@types",
-            "./node_modules"
-        ],
-        "types": [
-            "node"
-        ],
-        "outDir": "./lib"
-    },
-    "include": [
-        "./src/**/*.ts"
-    ],
-    "exclude": [
-        "./node_modules",
-        "./lib",
-        "./dev",
-        "./docs",
-        "./test",
-        "./tasks",
-        "./backup"
-    ]
+  "extends": "tsconfig-oy",
+  "compilerOptions": {
+    "ignoreDeprecations": "6.0",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "incremental": false,
+    "outDir": "lib",
+    "declarationDir": "lib",
+    "declarationMap": true,
+    "rootDir": ".",
+    // No `typeRoots`: restricting it (e.g. to ["node_modules/@types"]) breaks
+    // resolution of package-subpath type entries like "vitest/globals", which
+    // does not live under @types. That surfaces as TS2688 here and TS2593
+    // ("Cannot find name 'describe'") across the test files.
+    "types": ["node", "vitest/globals"]
+  },
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ]
 }
