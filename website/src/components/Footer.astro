@@ -1,0 +1,32 @@
+---
+/* ---------------------------------------------------------------------------
+ * Override: Footer  —  the bottom-of-page area (prev/next nav, edit link,
+ * last-updated, and your custom footer content).
+ * ---------------------------------------------------------------------------
+ * Re-renders Starlight's default footer, then adds your own markup beneath it.
+ *
+ * To ENABLE: uncomment the `Footer` line in the `components` map in
+ * astro.config.mjs.
+ *
+ * Docs: https://starlight.astro.build/reference/overrides/#footer
+ * ------------------------------------------------------------------------- */
+import Default from '@astrojs/starlight/components/Footer.astro';
+---
+
+<Default><slot /></Default>
+
+{/* --- your footer content --- */}
+{/*
+<footer class="site-footer">
+  <p>© {new Date().getFullYear()} Your Name · MIT Licensed</p>
+</footer>
+<style>
+  .site-footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--sl-color-hairline);
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+  }
+</style>
+*/}

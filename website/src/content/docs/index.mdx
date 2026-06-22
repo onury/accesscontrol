@@ -1,0 +1,99 @@
+---
+title: AccessControl
+description: Role and Attribute based Access Control for Node.js.
+template: splash
+head:
+  - tag: link
+    attrs:
+      rel: stylesheet
+      href: https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css
+hero:
+  tagline: '<span class="tag-hl">Role &amp; Attribute based Access Control for Node.js — a friendly, chainable API with a real policy engine underneath.</span>'
+  image:
+    html: |
+      <svg class="tape-defs" width="0" height="0" aria-hidden="true"><filter id="tape-wave" x="-20%" y="-90%" width="140%" height="280%"><feTurbulence type="fractalNoise" baseFrequency="0.004 0.007" numOctaves="2" seed="7" result="n"><animate attributeName="baseFrequency" dur="24s" values="0.004 0.007;0.006 0.010;0.004 0.007" repeatCount="indefinite"/></feTurbulence><feDisplacementMap in="SourceGraphic" in2="n" scale="14" xChannelSelector="R" yChannelSelector="G"/></filter></svg>
+      <div class="band band-depth band-depth-a" aria-hidden="true"></div>
+      <div class="band band-depth band-depth-b" aria-hidden="true"></div>
+      <div class="band band-text band-front-a" aria-hidden="true">ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • </div>
+      <div class="band band-text band-front-b" aria-hidden="true">ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • ACCESS CONTROL • </div>
+  actions:
+    - text: Get Started
+      link: /accesscontrol/getting-started/
+      icon: right-arrow
+    - text: What's New in v3
+      link: /accesscontrol/whats-new/
+      variant: minimal
+    - text: View on GitHub
+      link: https://github.com/onury/accesscontrol
+      icon: external
+      variant: minimal
+---
+
+<div class="feature-grid">
+  <div class="feature">
+    <div class="feature-head">
+      <i class="ti ti-fingerprint feature-icon fi-orange"></i>
+      <h3>RBAC + ABAC</h3>
+    </div>
+    <p>Hierarchical role <strong>inheritance</strong> with <strong>deny-overrides</strong>, combined with attribute-based rules — both classic models in one engine.</p>
+  </div>
+  <div class="feature">
+    <div class="feature-head">
+      <i class="ti ti-user-shield feature-icon fi-green"></i>
+      <h3>Enforced Ownership & Groups</h3>
+    </div>
+    <p><code>own</code> verifies the record truly belongs to the requester (set <code>ownerField</code> / <code>owner</code> once). Grant to role <strong>groups</strong> & resource <strong>categories</strong> for bounded bulk access.</p>
+  </div>
+  <div class="feature">
+    <div class="feature-head">
+      <i class="ti ti-new-section feature-icon fi-purple"></i>
+      <h3>Custom Actions & Gates</h3>
+    </div>
+    <p>Go beyond CRUD with <code>.action()</code> / <code>.do()</code>, and add mandatory <code>require()</code> gates that can only restrict access.</p>
+  </div>
+  <div class="feature">
+    <div class="feature-head">
+      <i class="ti ti-arrow-loop-right-2 feature-icon fi-blue"></i>
+      <h3>Conditionals & Async Checks</h3>
+    </div>
+    <p>Attach conditions with <code>.where()</code> — comparisons, <code>in</code>, <code>cidr</code>, time windows (string or JSON). Resolve custom / async logic via <code>grantedAsync</code>.</p>
+  </div>
+  <div class="feature">
+    <div class="feature-head">
+      <i class="ti ti-shield-check feature-icon fi-red"></i>
+      <h3>Hardened & Fail-Closed</h3>
+    </div>
+    <p><code>tryCan()</code> never throws; prototype-pollution-safe names; opt-in, ReDoS-guarded regex; redacted errors with <code>err.code</code>. 100% coverage, mutation-tested & fuzzed. — <a href="/accesscontrol/security/">Security</a></p>
+  </div>
+  <div class="feature">
+    <div class="feature-head">
+      <i class="ti ti-timeline-event-exclamation feature-icon fi-yellow"></i>
+      <h3>Events & Audits</h3>
+    </div>
+    <p>An <code>access</code> event on every decision — granted <em>and</em> denied, with a <code>reason</code> — plus <code>change</code> and <code>error</code> hooks for a full audit trail.</p>
+  </div>
+</div>
+
+```js
+import { AccessControl } from 'accesscontrol';
+
+const ac = new AccessControl({}, { policy: { ownerField: 'ownerId' } });
+
+ac.grant('user').readOwn('profile', ['*', '!password']);
+ac.grant('editor').where('$.article.status == draft').action('publish', 'article');
+
+ac.can('user', { user: { id: 7 }, profile: { ownerId: 7 } }).readOwn('profile').granted; // true
+```
+
+<div class="tech-strip-wrap">
+  <p class="tech-strip-label">We love and support these projects.</p>
+  <div class="tech-strip">
+    <a class="tl-link" href="https://vite.dev" target="_blank" rel="noopener noreferrer" title="Vite" aria-label="Vite"><svg class="tl tl-vite" viewBox="0 0 24 24" role="img" aria-hidden="true"><path d="m8.286 10.578.512-8.657a.306.306 0 0 1 .247-.282L17.377.006a.306.306 0 0 1 .353.385l-1.558 5.403a.306.306 0 0 0 .352.385l2.388-.46a.306.306 0 0 1 .332.438l-6.79 13.55-.123.19a.294.294 0 0 1-.252.14c-.177 0-.35-.152-.305-.369l1.095-5.301a.306.306 0 0 0-.388-.355l-1.433.435a.306.306 0 0 1-.389-.354l.69-3.375a.306.306 0 0 0-.37-.36l-2.32.536a.306.306 0 0 1-.374-.316zm14.976-7.926L17.284 3.74l-.544 1.887 2.077-.4a.8.8 0 0 1 .84.369.8.8 0 0 1 .034.783L12.9 19.93l-.013.025-.015.023-.122.19a.801.801 0 0 1-.672.37.826.826 0 0 1-.634-.302.8.8 0 0 1-.16-.67l1.029-4.981-1.12.34a.81.81 0 0 1-.86-.262.802.802 0 0 1-.165-.67l.63-3.08-2.027.468a.808.808 0 0 1-.768-.233.81.81 0 0 1-.217-.6l.389-6.57-7.44-1.33a.612.612 0 0 0-.64.906L11.58 23.691a.612.612 0 0 0 1.066-.004l11.26-20.135a.612.612 0 0 0-.644-.9z"/></svg></a>
+    <a class="tl-link" href="https://biomejs.dev" target="_blank" rel="noopener noreferrer" title="Biome" aria-label="Biome"><svg class="tl tl-biome" viewBox="0 0 24 24" role="img" aria-hidden="true"><path d="m12 1.608-5.346 9.259a12.069 12.069 0 0 1 6.326-.219l1.807.426-1.7 7.208-1.809-.427c-2.224-.524-4.361.644-5.264 2.507l-1.672-.809c1.276-2.636 4.284-4.232 7.364-3.505l.847-3.592A10.211 10.211 0 0 0 0 22.392h24L12 1.608Z"/></svg></a>
+    <a class="tl-link" href="https://www.npmjs.com" target="_blank" rel="noopener noreferrer" title="npm" aria-label="npm"><svg class="tl tl-npm" viewBox="0 0 24 24" role="img" aria-hidden="true"><path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z"/></svg></a>
+    <a class="tl-link" href="https://nodejs.org" target="_blank" rel="noopener noreferrer" title="Node.js" aria-label="Node.js"><svg class="tl tl-node" viewBox="0 0 24 24" role="img" aria-hidden="true"><path d="M11.998,24c-0.321,0-0.641-0.084-0.922-0.247l-2.936-1.737c-0.438-0.245-0.224-0.332-0.08-0.383 c0.585-0.203,0.703-0.25,1.328-0.604c0.065-0.037,0.151-0.023,0.218,0.017l2.256,1.339c0.082,0.045,0.197,0.045,0.272,0l8.795-5.076 c0.082-0.047,0.134-0.141,0.134-0.238V6.921c0-0.099-0.053-0.192-0.137-0.242l-8.791-5.072c-0.081-0.047-0.189-0.047-0.271,0 L3.075,6.68C2.99,6.729,2.936,6.825,2.936,6.921v10.15c0,0.097,0.054,0.189,0.139,0.235l2.409,1.392 c1.307,0.654,2.108-0.116,2.108-0.89V7.787c0-0.142,0.114-0.253,0.256-0.253h1.115c0.139,0,0.255,0.112,0.255,0.253v10.021 c0,1.745-0.95,2.745-2.604,2.745c-0.508,0-0.909,0-2.026-0.551L2.28,18.675c-0.57-0.329-0.922-0.945-0.922-1.604V6.921 c0-0.659,0.353-1.275,0.922-1.603l8.795-5.082c0.557-0.315,1.296-0.315,1.848,0l8.794,5.082c0.57,0.329,0.924,0.944,0.924,1.603 v10.15c0,0.659-0.354,1.273-0.924,1.604l-8.794,5.078C12.643,23.916,12.324,24,11.998,24z M19.099,13.993 c0-1.9-1.284-2.406-3.987-2.763c-2.731-0.361-3.009-0.548-3.009-1.187c0-0.528,0.235-1.233,2.258-1.233 c1.807,0,2.473,0.389,2.747,1.607c0.024,0.115,0.129,0.199,0.247,0.199h1.141c0.071,0,0.138-0.031,0.186-0.081 c0.048-0.054,0.074-0.123,0.067-0.196c-0.177-2.098-1.571-3.076-4.388-3.076c-2.508,0-4.004,1.058-4.004,2.833 c0,1.925,1.488,2.457,3.895,2.695c2.88,0.282,3.103,0.703,3.103,1.269c0,0.983-0.789,1.402-2.642,1.402 c-2.327,0-2.839-0.584-3.011-1.742c-0.02-0.124-0.126-0.215-0.253-0.215h-1.137c-0.141,0-0.254,0.112-0.254,0.253 c0,1.482,0.806,3.248,4.655,3.248C17.501,17.007,19.099,15.91,19.099,13.993z"/></svg></a>
+    <a class="tl-link" href="https://deno.com" target="_blank" rel="noopener noreferrer" title="Deno" aria-label="Deno"><svg class="tl tl-deno" viewBox="0 0 24 24" role="img" aria-hidden="true"><path d="M1.105 18.02A11.9 11.9 0 0 1 0 12.985q0-.698.078-1.376a12 12 0 0 1 .231-1.34A12 12 0 0 1 4.025 4.02a12 12 0 0 1 5.46-2.771 12 12 0 0 1 3.428-.23c1.452.112 2.825.477 4.077 1.05a12 12 0 0 1 2.78 1.774 12.02 12.02 0 0 1 4.053 7.078A12 12 0 0 1 24 12.985q0 .454-.036.914a12 12 0 0 1-.728 3.305 12 12 0 0 1-2.38 3.875c-1.33 1.357-3.02 1.962-4.43 1.936a4.4 4.4 0 0 1-2.724-1.024c-.99-.853-1.391-1.83-1.53-2.919a5 5 0 0 1 .128-1.518c.105-.38.37-1.116.76-1.437-.455-.197-1.04-.624-1.226-.829-.045-.05-.04-.13 0-.183a.155.155 0 0 1 .177-.053c.392.134.869.267 1.372.35.66.111 1.484.25 2.317.292 2.03.1 4.153-.813 4.812-2.627s.403-3.609-1.96-4.685-3.454-2.356-5.363-3.128c-1.247-.505-2.636-.205-4.06.582-3.838 2.121-7.277 8.822-5.69 15.032a.191.191 0 0 1-.315.19 12 12 0 0 1-1.25-1.634 12 12 0 0 1-.769-1.404M11.57 6.087c.649-.051 1.214.501 1.31 1.236.13.979-.228 1.99-1.41 2.013-1.01.02-1.315-.997-1.248-1.614.066-.616.574-1.575 1.35-1.635"/></svg></a>
+    <a class="tl-link" href="https://bun.sh" target="_blank" rel="noopener noreferrer" title="Bun" aria-label="Bun"><svg class="tl tl-bun" viewBox="0 0 24 24" role="img" aria-hidden="true"><path d="M12 22.596c6.628 0 12-4.338 12-9.688 0-3.318-2.057-6.248-5.219-7.986-1.286-.715-2.297-1.357-3.139-1.89C14.058 2.025 13.08 1.404 12 1.404c-1.097 0-2.334.785-3.966 1.821a49.92 49.92 0 0 1-2.816 1.697C2.057 6.66 0 9.59 0 12.908c0 5.35 5.372 9.687 12 9.687v.001ZM10.599 4.715c.334-.759.503-1.58.498-2.409 0-.145.202-.187.23-.029.658 2.783-.902 4.162-2.057 4.624-.124.048-.199-.121-.103-.209a5.763 5.763 0 0 0 1.432-1.977Zm2.058-.102a5.82 5.82 0 0 0-.782-2.306v-.016c-.069-.123.086-.263.185-.172 1.962 2.111 1.307 4.067.556 5.051-.082.103-.23-.003-.189-.126a5.85 5.85 0 0 0 .23-2.431Zm1.776-.561a5.727 5.727 0 0 0-1.612-1.806v-.014c-.112-.085-.024-.274.114-.218 2.595 1.087 2.774 3.18 2.459 4.407a.116.116 0 0 1-.049.071.11.11 0 0 1-.153-.026.122.122 0 0 1-.022-.083 5.891 5.891 0 0 0-.737-2.331Zm-5.087.561c-.617.546-1.282.76-2.063 1-.117 0-.195-.078-.156-.181 1.752-.909 2.376-1.649 2.999-2.778 0 0 .155-.118.188.085 0 .304-.349 1.329-.968 1.874Zm4.945 11.237a2.957 2.957 0 0 1-.937 1.553c-.346.346-.8.565-1.286.62a2.178 2.178 0 0 1-1.327-.62 2.955 2.955 0 0 1-.925-1.553.244.244 0 0 1 .064-.198.234.234 0 0 1 .193-.069h3.965a.226.226 0 0 1 .19.07c.05.053.073.125.063.197Zm-5.458-2.176a1.862 1.862 0 0 1-2.384-.245 1.98 1.98 0 0 1-.233-2.447c.207-.319.503-.566.848-.713a1.84 1.84 0 0 1 1.092-.11c.366.075.703.261.967.531a1.98 1.98 0 0 1 .408 2.114 1.931 1.931 0 0 1-.698.869v.001Zm8.495.005a1.86 1.86 0 0 1-2.381-.253 1.964 1.964 0 0 1-.547-1.366c0-.384.11-.76.32-1.079.207-.319.503-.567.849-.713a1.844 1.844 0 0 1 1.093-.108c.367.076.704.262.968.534a1.98 1.98 0 0 1 .4 2.117 1.932 1.932 0 0 1-.702.868Z"/></svg></a>
+    <a class="tl-link" href="https://starlight.astro.build" target="_blank" rel="noopener noreferrer" title="Starlight" aria-label="Starlight"><svg class="tl tl-astro" viewBox="0 0 24 24" role="img" aria-hidden="true"><path d="M8.358 20.162c-1.186-1.07-1.532-3.316-1.038-4.944.856 1.026 2.043 1.352 3.272 1.535 1.897.283 3.76.177 5.522-.678.202-.098.388-.229.608-.36.166.473.209.95.151 1.437-.14 1.185-.738 2.1-1.688 2.794-.38.277-.782.525-1.175.787-1.205.804-1.531 1.747-1.078 3.119l.044.148a3.158 3.158 0 0 1-1.407-1.188 3.31 3.31 0 0 1-.544-1.815c-.004-.32-.004-.642-.048-.958-.106-.769-.472-1.113-1.161-1.133-.707-.02-1.267.411-1.415 1.09-.012.053-.028.104-.045.165h.002zm-5.961-4.445s3.24-1.575 6.49-1.575l2.451-7.565c.092-.366.36-.614.662-.614.302 0 .57.248.662.614l2.45 7.565c3.85 0 6.491 1.575 6.491 1.575L16.088.727C15.93.285 15.663 0 15.303 0H8.697c-.36 0-.615.285-.784.727l-5.516 14.99z"/></svg></a>
+  </div>
+</div>

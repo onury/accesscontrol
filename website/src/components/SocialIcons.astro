@@ -1,0 +1,22 @@
+---
+/* ---------------------------------------------------------------------------
+ * Override: SocialIcons  —  the icon links in the top-right of the header.
+ * ---------------------------------------------------------------------------
+ * The icons themselves are configured declaratively in astro.config.mjs
+ * (`starlight({ social: [...] })`) — prefer that for simple link lists.
+ * Override this component only when you need *custom* markup next to them
+ * (e.g. a "Sponsor" button, a version dropdown).
+ *
+ * To ENABLE: uncomment the `SocialIcons` line in the `components` map in
+ * astro.config.mjs.
+ *
+ * Docs: https://starlight.astro.build/reference/overrides/#socialicons
+ * ------------------------------------------------------------------------- */
+import Default from '@astrojs/starlight/components/SocialIcons.astro';
+---
+
+<Default><slot /></Default>
+
+{/* --- e.g. an extra button after the social icons ---
+<a class="sponsor" href="https://github.com/sponsors/onury">♥ Sponsor</a>
+*/}

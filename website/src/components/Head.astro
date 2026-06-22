@@ -1,0 +1,25 @@
+---
+/* ---------------------------------------------------------------------------
+ * Override: Head  —  extra <head> tags (analytics, meta, preconnect, etc.)
+ * ---------------------------------------------------------------------------
+ * This re-renders Starlight's default <Head>, then appends your own tags, so
+ * you never lose the built-in <title>/SEO/canonical handling.
+ *
+ * To ENABLE: uncomment the `Head` line in the `components` map in
+ * astro.config.mjs. Until then this file is inert (nothing imports it).
+ *
+ * Docs: https://starlight.astro.build/guides/overriding-components/
+ *       https://starlight.astro.build/reference/overrides/#head
+ * ------------------------------------------------------------------------- */
+import Default from '@astrojs/starlight/components/Head.astro';
+---
+
+<Default><slot /></Default>
+
+{/* --- add your own head tags below --- */}
+{/*
+<link rel="preconnect" href="https://example.com" />
+<script is:inline>
+  // e.g. privacy-friendly analytics snippet
+</script>
+*/}

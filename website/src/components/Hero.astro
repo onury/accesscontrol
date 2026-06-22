@@ -1,0 +1,25 @@
+---
+/* ---------------------------------------------------------------------------
+ * Override: Hero  —  the big banner on `template: splash` pages (the home page
+ * `index.mdx`). Customize the tagline area, actions, or add a graphic.
+ * ---------------------------------------------------------------------------
+ * Simplest approach: re-render the default Hero (driven by the page's
+ * frontmatter `hero:` block) and add extra markup around it.
+ *
+ * To ENABLE: uncomment the `Hero` line in the `components` map in
+ * astro.config.mjs. Edit the home hero content in
+ * `src/content/docs/index.mdx` (frontmatter `hero:`).
+ *
+ * Docs: https://starlight.astro.build/reference/overrides/#hero
+ * ------------------------------------------------------------------------- */
+import Default from '@astrojs/starlight/components/Hero.astro';
+---
+
+<Default><slot /></Default>
+
+{/* --- e.g. a row of badges / a code sample / a logo strip under the hero --- */}
+{/*
+<div class="hero-extra">
+  <img src="/accesscontrol/badge.svg" alt="" />
+</div>
+*/}

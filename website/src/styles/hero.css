@@ -1,0 +1,178 @@
+/* ===========================================================================
+ * hero.css — "ACCESS CONTROL" police-tape hero background (self-contained)
+ * ---------------------------------------------------------------------------
+ * The band markup is injected via the hero `image.html` slot (see index.mdx):
+ *   .band-depth — blurred, far-away hazard-striped bands (depth of field)
+ *   .band-text  — sharp foreground tape with repeating "ACCESS CONTROL",
+ *                 rippled by an SVG turbulence filter (#tape-wave) + a gentle
+ *                 sway, so it waves like cloth in wind.
+ * The hero copy gets a tight drop shadow so it stays readable over the tape.
+ *
+ * Play here: --tape-color / --tape-text, band opacities & blur, the rotate
+ * angles (the X), animation durations, and the filter `scale` in index.mdx.
+ * Reduced-motion freezes everything.
+ * =========================================================================== */
+
+.hero {
+  position: relative;
+  overflow: visible;             /* let the bg layer break out to full width */
+  isolation: isolate;
+  grid-template-columns: 100%;   /* the injected html is a full-bleed bg, not a column */
+  --tape-color: #f2cb00;         /* hazard yellow */
+  --tape-text: #0b0b0b;          /* near-black print */
+  --scene-opacity: 0.8;          /* dims the WHOLE tape/animation scene (1 = full) */
+  --scene-blur: 0px;             /* blurs the WHOLE scene (0px = sharp) */
+}
+
+/* Full-bleed background layer: 100vw centered on the hero, clipped to itself.
+   The full-width wrapper below gets overflow-x: clip so this never scrolls. */
+.hero > .hero-html {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  margin: 0;
+  z-index: 0;                    /* bands sit at 0 … */
+  display: block;
+  overflow: hidden;             /* clip the bands to the full-width layer */
+  pointer-events: none;
+  object-fit: unset;
+  opacity: var(--scene-opacity); /* one knob to fade the whole background scene … */
+  filter: blur(var(--scene-blur)); /* … and one to blur it */
+}
+.hero > .stack { position: relative; z-index: 1; }   /* … copy sits above them */
+.tape-defs { position: absolute; width: 0; height: 0; }
+/* contain the full-bleed layer to the viewport width (no horizontal scroll) */
+html:not([data-has-sidebar]) :where(main, .content-panel) { overflow-x: clip; }
+
+/* ── Shared band geometry ─────────────────────────────────────────────── */
+.band {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 260%;                   /* span the hero when rotated */
+  box-sizing: border-box;
+  will-change: transform;
+}
+
+/* ── Foreground tape: repeating text, rippled + swaying ───────────────── */
+.band-text {
+  padding: 0.74em 0;             /* ~15% taller band */
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+  font-family: 'Arial Black', 'Helvetica Neue', system-ui, sans-serif;
+  font-weight: 900;
+  font-size: clamp(1rem, 2.1vw, 1.6rem);
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+  color: var(--tape-text);
+  /* thick, evenly-spaced, soft (blurry) fabric folds at a steep diagonal to the
+     band — very transparent so the wave only ripples a faint flag shimmer */
+  background:
+    repeating-linear-gradient(-30deg, transparent 0, rgba(0, 0, 0, 0.14) 16px, transparent 32px),
+    var(--tape-color);
+  /* light (yellow) top edge + dark bottom edge + soft inner sheen => thickness */
+  border-top: 1.5px solid color-mix(in oklab, var(--tape-color) 45%, #fff);
+  border-bottom: 1.5px solid rgba(0, 0, 0, 0.55);
+  box-shadow: inset 0 5px 6px -5px rgba(255, 244, 176, 0.6), inset 0 -5px 7px -5px rgba(0, 0, 0, 0.5);
+  opacity: 0.6;
+  filter: url(#tape-wave);       /* the wind ripple */
+}
+/* front-most tape: a hair of blur (80% of the second tape's) */
+.band-front-a {
+  animation: tape-wind-a 13s ease-in-out infinite;
+  z-index: 2;                    /* closest to us; casts a shadow on the second tape */
+  opacity: 0.72;                 /* less transparent than the second (0.6) */
+  filter: url(#tape-wave) blur(1.4px) drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
+}
+/* second tape sits a touch back — a little more blur (still < the depth bands) */
+.band-front-b {
+  animation: tape-wind-b 15s ease-in-out infinite;
+  z-index: 1;                    /* behind the first tape (a touch further back) */
+  filter: url(#tape-wave) blur(2.1px) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+/* ── Depth-of-field: blurred hazard-striped bands, set back ───────────── */
+.band-depth {
+  height: 5.5rem;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--tape-color) 0 20px,
+    #111 20px 40px
+  );
+}
+.band-depth-a {
+  transform: translate(-50%, -160%) rotate(-32deg) scale(0.92);
+  opacity: 0.35;
+  filter: blur(5px) saturate(0.85);
+}
+.band-depth-b {
+  transform: translate(-50%, 90%) rotate(28deg) scale(0.8);
+  opacity: 0.25;
+  filter: blur(8px) saturate(0.7);
+}
+
+/* Gentle sway (combines with the SVG ripple) — out of sync per band. */
+@keyframes tape-wind-a {
+  0%   { transform: translate(-50%, -50%) rotate(-14deg); }
+  35%  { transform: translate(-50%, -51.5%) rotate(-13deg); }
+  70%  { transform: translate(-50%, -49%) rotate(-14.8deg); }
+  100% { transform: translate(-50%, -50%) rotate(-14deg); }
+}
+@keyframes tape-wind-b {
+  0%   { transform: translate(-50%, -50%) rotate(12deg); }
+  35%  { transform: translate(-50%, -48.5%) rotate(13.2deg); }
+  70%  { transform: translate(-50%, -51%) rotate(11.4deg); }
+  100% { transform: translate(-50%, -50%) rotate(12deg); }
+}
+
+/* ── Readability: tight drop shadow on the hero copy & buttons ────────── */
+.hero .copy h1 {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95), 0 2px 7px rgba(0, 0, 0, 0.55);
+}
+.hero .tagline {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 1px 5px rgba(0, 0, 0, 0.45);
+}
+/* Per-line "marker" highlight: an inline span + box-decoration-break:clone makes
+   each wrapped line get its own padded, rounded box (re-flows responsively). */
+.hero .tagline .tag-hl {
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  background-color: rgba(12, 14, 20, 0.66);
+  padding: 0.12em 0.4em;
+  border-radius: 0.28em;
+  line-height: 2;               /* space so the per-line boxes don't touch */
+}
+.hero .actions a {
+  /* filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7)) drop-shadow(0 2px 5px rgba(0, 0, 0, 0.4)); */
+}
+
+/* ── Hero "Get Started" primary button — adjust freely ────────────────────
+   Targets the big filled action (a.primary). Uncomment/edit any line; the
+   commented ones fall back to Starlight's defaults. */
+.hero .actions a.primary {
+  /* colors */
+  /* background: var(--sl-color-accent); */
+  /* color: #141414; */
+  /* size & shape */
+  /* padding: 0.95rem 1.85rem; */
+  /* font-size: 1.05rem; */
+  /* font-weight: 700; */
+  /* border: 0; */
+  /* border-radius: 999px; */
+  /* lift */
+  /* box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.55); */
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.hero .actions a.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px -10px rgba(0, 0, 0, 0.65);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .band-front-a,
+  .band-front-b { animation: none; }
+}
