@@ -41,9 +41,9 @@
     "test": "vitest run",
     "cover": "vitest run --coverage",
     "mutation": "stryker run",
-    "docs": "npm --prefix website run build",
-    "docs:dev": "npm --prefix website run dev",
-    "docs:host": "npm --prefix website run dev:host",
+    "docs": "npm --prefix site run build",
+    "docs:dev": "npm --prefix site run dev",
+    "docs:host": "npm --prefix site run dev:host",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
