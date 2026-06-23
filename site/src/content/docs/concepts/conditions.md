@@ -21,7 +21,7 @@ ac.can('manager')
   .updateAny('order').granted; // false (condition fails)
 ```
 
-## Supplying context
+## Supplying Context
 
 Three equivalent ways to pass per‑check data:
 
@@ -71,7 +71,7 @@ The reserved `$.now.*` fields (`year`, `month`, `day`, `weekday`, `hour`,
 `minute`, `time`, `date`) are auto‑injected; override `context.now` (a `Date` or
 string) for deterministic tests and `context.tz` for the timezone.
 
-## A multi-clause business rule
+## A Multi-clause Business Rule
 
 Real policies often combine several conditions. Take: *a senior buyer may
 **approve** a purchase order only if they are **not** its creator, it's in their
@@ -113,7 +113,7 @@ A clause that needs a live number (e.g. `approvedToday`) is supplied in the
 check `context`. If it requires I/O (a DB count), compute it before the check or
 use a [custom condition function](/accesscontrol/concepts/async/).
 
-## How conditions are parsed, cast & stored
+## How Conditions Are Parsed, Cast & Stored
 
 A condition can be written four ways, and all of them are accepted anywhere a
 condition is taken (`.where()`, [`.require()`](/accesscontrol/concepts/gates/),
@@ -130,7 +130,7 @@ Internally there is **one** representation — the canonical JSON above. Strings
 are *compiled* into it; combinators are compiled recursively; `{ fn }` is passed
 through untouched.
 
-### Parsing the string form
+### Parsing the String Form
 
 A leaf string is tokenized into exactly three parts — **`path` `operator`
 `value`** — by recognizing the operator keyword/symbol ([see the table
@@ -153,7 +153,7 @@ Values with spaces or characters that would confuse the tokenizer must be
 Nesting depth is bounded (deeply nested `and`/`or`/`not` throws), and the whole
 thing is validated on the way in regardless of which form you used.
 
-### Why the array form avoids surprises
+### Why the Array Form Avoids Surprises
 
 Because the string is *inferred*, the array form is the precise one — you supply
 the exact value and type yourself, with no parsing and no escaping:
@@ -171,7 +171,7 @@ This is also why a value that *looks* like a path is treated as one in a string
 fields) vs `['$.a','==','"$.b"']`-style quoting is unnecessary — pass the literal
 you mean.
 
-### What gets stored
+### What Gets Stored
 
 The compiled canonical form is what every reader returns —
 `getGrants()`, `getGrantsList()`, `getRequirements()`, and `snapshot()` — as
@@ -195,7 +195,7 @@ That stored shape is deliberately the one to persist, because it:
 They are interchangeable as input — the array is simply the normalized output the
 engine keeps.
 
-## Regular expressions
+## Regular Expressions
 
 :::caution[`matches` is opt-in]
 The `matches` operator is **disabled by default** (regular expressions are a
@@ -211,13 +211,13 @@ untrusted authors, prefer a [custom function](/accesscontrol/concepts/async/)
 instead. See [Security](/accesscontrol/security/#regular-expressions-redos--opt-in).
 :::
 
-## where vs require
+## `where` vs `require`
 
 `.where()` conditionally **grants**; [`.require()`](/accesscontrol/concepts/gates/)
 is an independent gate that can only **restrict**. They compose:
 `granted = (a grant matches) AND (every applicable gate passes)`.
 
-## Custom / async conditions
+## Custom / Async Conditions
 
 Business logic that needs I/O lives in a registered function referenced as
 `{ fn, args }` — see [Async & Custom Functions](/accesscontrol/concepts/async/).

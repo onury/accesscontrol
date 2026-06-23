@@ -6,7 +6,7 @@ description: "Frequently asked questions."
 > [What's New](/accesscontrol/whats-new/) and
 > [Migrating from v2](/accesscontrol/migration/).
 
-### What is "Access Control"?
+### What Is "Access Control"?
 
 The selective restriction of **access** to a **resource**. AccessControl models
 *who* is acting (**roles**), *what* they're doing (**actions**), *what* they act
@@ -15,14 +15,14 @@ allowed — optionally constrained by **conditions**, **ownership**, and mandato
 **gates**. It merges [RBAC](https://en.wikipedia.org/wiki/Role-based_access_control)
 and [ABAC](https://en.wikipedia.org/wiki/Attribute-Based_Access_Control).
 
-### What's an "action"? A "resource"?
+### What's an "Action"? A "Resource"?
 
 An **action** is the operation performed (the CRUD verbs, or any
 [custom action](/accesscontrol/concepts/actions/)). A **resource** is a uniquely
 named thing being accessed; what counts as a distinct resource is a design
 decision. See [Resources](/accesscontrol/concepts/resources/).
 
-### Do I still have to check ownership myself?
+### Do I Still Have to Check Ownership Myself?
 
 **No — that's the big v3 change.** Tell AccessControl how ownership is determined
 once (`policy.ownerField` or `policy.owner`), pass the record in the check
@@ -37,37 +37,37 @@ condition. `.require()` is a *mandatory gate* — independent of grants, it can
 only **restrict**. See [Conditions](/accesscontrol/concepts/conditions/) and
 [Require Gates](/accesscontrol/concepts/gates/).
 
-### `policy` vs `context` — which goes where?
+### `policy` vs `context` — Which Goes Where?
 
 *If a condition reads it with `$.`, it's `context`; if the engine reads it to
 decide behavior, it's `policy`.* See
 [Best Practices › policy vs context](/accesscontrol/best-practices/#policy-vs-context).
 
-### Sync or async checks?
+### Sync or Async Checks?
 
 Declarative checks are synchronous. A grant/gate that uses a custom function
 (`{ fn, args }`) requires the async path (`grantedAsync` / `checkAsync`). See
 [Async & Custom Functions](/accesscontrol/concepts/async/).
 
-### Can I use AccessControl with a database?
+### Can I Use AccessControl with a Database?
 
 Yes — it's storage‑agnostic. Persist the model as flat rows
 (`getGrantsList()`) and rehydrate it; the round‑trip is exact. See
 [Serialization & Databases](/accesscontrol/concepts/serialization/).
 
-### How do I catch typos (unknown roles/actions/resources)?
+### How Do I Catch Typos (Unknown Roles/Actions/Resources)?
 
 Turn on [strict mode](/accesscontrol/concepts/strict/). `roles` is on by
 default; enable `actions`/`resources` to throw on unknown names instead of
 silently denying.
 
-### How do I audit decisions?
+### How Do I Audit Decisions?
 
 Subscribe to the `access` event — it fires on **every** resolved check (granted
 and denied) with a denial `reason`. See
 [Events & Auditing](/accesscontrol/concepts/events/).
 
-### What do I do when AccessControl throws?
+### What Do I Do When AccessControl Throws?
 
 A thrown `AccessControlError` means a fault (usually a misconfiguration), **not**
 a normal "denied" — denials return `granted: false`. **Never** let a thrown
@@ -82,7 +82,7 @@ error fall through to "allow".
 See [Security Considerations](/accesscontrol/security/) for the full hardening
 story.
 
-### Is it production-safe / how is it tested?
+### Is It Production-safe / How Is It Tested?
 
 Single pinned runtime dependency, zero production advisories
 (`npm audit --omit=dev`), 100% coverage, mutation‑tested, plus an adversarial

@@ -7,7 +7,7 @@ Role **groups** and resource **categories** let you grant to many roles/resource
 at once, *bounded* to a declared vocabulary — the safe alternative to a blanket
 `*`.
 
-## Declare the vocabulary
+## Declare the Vocabulary
 
 ```js
 ac.setup({
@@ -29,7 +29,7 @@ ac.setup({ roles: ['user', 'admin'], resources: ['post', 'comment'] });
 ```
 :::
 
-## Bulk grant to a group / category
+## Bulk Grant to a Group / Category
 
 Grant once to a group and/or category; members inherit dynamically at check time.
 

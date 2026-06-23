@@ -5,7 +5,7 @@ description: Practical guidance for using AccessControl correctly — can vs try
 
 Short, opinionated guidance for the decisions that come up most often.
 
-## can vs tryCan
+## `can` vs `tryCan`
 
 Both query the same model. The difference is what happens on an **error**
 (invalid input, a `strict` violation, an async‑required check on the sync path):
@@ -36,7 +36,7 @@ ac.can('admin').readAny('report'); // throws if 'admin'/'report' are typos
 Both `can()` and `tryCan()` still emit the `access` (and `error`) events, so
 your audit log is identical either way.
 
-## where vs require
+## `where` vs `require`
 
 - **`.where(condition)`** — a *conditional grant* (ABAC). It can only **add**
   access, under a condition.
@@ -60,7 +60,7 @@ ac.category('billing')
   .require('$.ip cidr 10.0.0.0/8');    // billing/* only from the VPN
 ```
 
-## Model ownership, don't hand-roll it
+## Model Ownership, Don't Hand-roll It
 
 If a rule is "the user owns the record", encode it as ownership + context, not as
 an `if` next to the check. Configure it once, pass the record, let the engine
@@ -82,7 +82,7 @@ Always load the record into the context for `own` checks. (Set
 ownership" behavior.)
 :::
 
-## engine vs policy vs context
+## `engine` vs `policy` vs `context`
 
 `new AccessControl(grants, { engine, policy, context })`. Three buckets, three
 concerns — think **library**, **your domain**, **data**:
@@ -109,7 +109,7 @@ const ac = new AccessControl(grants, {
 });
 ```
 
-## Turn on strict in development
+## Turn On Strict in Development
 
 `strict.roles` is on by default (an unknown role throws). `actions` and
 `resources` are **off** by default — an ungranted action/resource simply denies.
@@ -126,7 +126,7 @@ ac.setup({ actions: ['publish', 'approve'] }); // declare custom vocabulary
 
 Pair this with `can()` (not `tryCan()`) in tests so the throw surfaces.
 
-## Lock the model after building it
+## Lock the Model After Building It
 
 If your grants are fixed at boot, `lock()` the instance. It deep‑freezes the
 model; any later mutation throws. This turns "someone mutated the policy at
@@ -141,7 +141,7 @@ ac.require('$.env == prod');
 ac.lock();          // no more grant/deny/extend/setup/require/setGrants
 ```
 
-## Persist as rows, rebuild on boot
+## Persist as Rows, Rebuild on Boot
 
 Store the flat list (DB‑friendly) and rehydrate; it round‑trips identically.
 
@@ -152,7 +152,7 @@ const ac = new AccessControl(await db.loadPolicy());
 
 See [Serialization & Databases](/accesscontrol/concepts/serialization/).
 
-## Quality & testing
+## Quality & Testing
 
 AccessControl is held to a high bar because a wrong answer here is a
 vulnerability, not a bug:

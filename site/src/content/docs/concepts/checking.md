@@ -56,7 +56,7 @@ const perm = ac.check({
 perm.granted;
 ```
 
-## granted vs attributes
+## `granted` vs `attributes`
 
 - `granted` — *whether* access is allowed (≥ 1 non‑negated attribute).
 - `attributes` — *what fields* are allowed (glob notation).
@@ -70,7 +70,7 @@ ac.grant('u').createAny('post', []);      // explicitly no attributes
 ac.can('u').createAny('post').granted;    // false
 ```
 
-## Filtering the response
+## Filtering the Response
 
 ```js
 const perm = ac.can('user').readOwn('account');
@@ -78,7 +78,7 @@ res.json(perm.filter(account));        // single object
 res.json(perm.filter(accounts));        // array → maps over each
 ```
 
-## Async checks
+## Async Checks
 
 A check whose applicable grant/gate uses a custom `{ fn }` condition must be
 resolved with `grantedAsync` / `checkAsync`:
@@ -95,7 +95,7 @@ const perm = await ac.checkAsync({
 The sync `.granted` throws `ASYNC_REQUIRED` for such checks (or, under
 `tryCan()`, denies). See [Async & Custom Functions](/accesscontrol/concepts/async/).
 
-## Why a check might be denied
+## Why a Check Might Be Denied
 
 Subscribe to the [`access` event](/accesscontrol/concepts/events/) — every
 resolved check (granted and denied) carries a `reason`

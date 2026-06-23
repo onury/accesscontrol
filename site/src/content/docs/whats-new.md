@@ -32,7 +32,7 @@ The time helper `$.now.*` is auto-injected (overridable for deterministic tests)
 Per-check data is supplied via `can(role, context)`, the fluent `.with(context)`,
 or `check({ context })`. Ambient defaults go in `new AccessControl(grants, { context })`.
 
-## 2. Enforced ownership (`own` actually means owned)
+## 2. Enforced Ownership (`own` Actually Means Owned)
 
 In v2, `readOwn`/`updateOwn`/… only chose *which attributes* a user could access —
 confirming the record actually belonged to them was left to your code. **In v3,
@@ -59,7 +59,7 @@ configure ownership but forget to pass the record, `strict.checks` (default
 **on**) denies — secure by default. With **no** resolver configured, `own` keeps
 its v2 behavior, so existing code isn't silently locked down.
 
-## 3. Custom (non-CRUD) actions — `.action()` / `.do()`
+## 3. Custom (Non-CRUD) Actions — `.action()` / `.do()`
 
 Actions are no longer limited to CRUD. Any name works, with the same
 possession/ownership/condition machinery.
@@ -73,7 +73,7 @@ ac.can('author', { user, article }).do('publish:own', 'article').granted;
 `.do()` is the single sanctioned alias of `.action()` and works for CRUD too:
 `ac.can('admin').do('update', 'post')`.
 
-## 4. Deny-overrides resolution
+## 4. Deny-overrides Resolution
 
 Grants are purely additive; to take access away you `deny`, and **deny always
 wins** — including over inherited grants (the v2 inheritance-override fix, #34).
@@ -87,7 +87,7 @@ ac.can('admin').readAny('post').attributes; // ['*', '!secret']
 `deny` does not cascade across possession: `deny create:any` still leaves
 `create:own`.
 
-## 5. `require()` — mandatory restriction gates
+## 5. `require()` — Mandatory Restriction Gates
 
 Where `.where()` conditionally **grants**, `.require()` is an independent gate
 that can only **restrict**. `granted = (a grant matches) AND (every applicable
@@ -99,7 +99,7 @@ ac.category('billing').require('$.ip cidr 10.0.0.0/8'); // per category
 ac.resource('billing/invoice').require('$.mfa == true'); // per resource
 ```
 
-## 6. Role groups & resource categories (`/`) — bounded bulk grants
+## 6. Role Groups & Resource Categories (`/`) — Bounded Bulk Grants
 
 Declare a vocabulary with `setup()`, then grant to a **group** or **category**
 once and have it reach every member dynamically (the safe alternative to a `*`
@@ -118,7 +118,7 @@ ac.can('admins/admin').readAny('media/photo').granted; // true (inherited + cate
 `ac.group('admins').getRoles()`, `ac.category('media').getResources()`,
 `ac.getGroups()`, `ac.removeGroup(...)`.
 
-## 7. Async checks & custom functions
+## 7. Async Checks & Custom Functions
 
 Register business logic and reference it from a grant or gate as
 `{ fn, args }` (which stays JSON-serializable). Declarative checks remain
@@ -131,7 +131,7 @@ ac.grant('admin').where({ fn: 'ipAllowed', args: { cidr: '10.0.0.0/8' } }).readA
 await ac.can('admin', { ip }).readAny('server').grantedAsync;
 ```
 
-## 8. Events & audit hooks
+## 8. Events & Audit Hooks
 
 A built-in, dependency-free emitter. `access` fires on **every** resolved check
 (granted and denied) — your audit log, complete with a denial `reason`. `change`
@@ -143,7 +143,7 @@ ac.on('access', (e) => audit(e)); // { roles, resource, action, granted, reason,
 ac.on('change', (e) => log(e.type));
 ```
 
-## 9. `engine` vs `policy` vs `context`, and serialization
+## 9. `engine` vs `policy` vs `context`, and Serialization
 
 The constructor takes `new AccessControl(grants, { engine, policy, context })` —
 three buckets, three concerns:
@@ -171,7 +171,7 @@ const ac = new AccessControl().restore(await db.loadPolicy()); // restore everyt
 the model from it — a full replace, applied through the validated `setGrants()` /
 `setup()` / `require()` paths. See [Serialization & Databases](/accesscontrol/concepts/serialization/).
 
-## 10. Production hardening
+## 10. Production Hardening
 
 v3 is hardened for the authorization path — see
 [Security Considerations](/accesscontrol/security/) for the full story.

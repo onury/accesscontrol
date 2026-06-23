@@ -32,9 +32,9 @@ want relational rows or finer control.
 - **All three at once** → `snapshot()` / `restore()`.
 :::
 
-## The two grants shapes
+## The Two Grants Shapes
 
-### Object form (canonical, readable)
+### Object Form (Canonical, Readable)
 
 `grants[role][resource][action]` is an **array** of rules
 (`{ attributes, possession?, condition?, effect? }`). Possession omitted ⇒
@@ -56,7 +56,7 @@ want relational rows or finer control.
 }
 ```
 
-### Flat list form (DB‑friendly)
+### Flat List Form (DB‑friendly)
 
 The same model as one row per rule, plus one `$extend` row per role — ideal for
 a relational table:
@@ -78,13 +78,13 @@ const ac = new AccessControl(rows);     // flat list
 const ac2 = new AccessControl(object);  // object form — equivalent
 ```
 
-## A complex example (conditions, deny, groups)
+## A Complex Example (Conditions, Deny, Groups)
 
 This model uses every serializable grant feature: a condition, a `deny` rule
 (deny‑overrides), multiple rules per action, inheritance, and a group/category
 grant via a `/`‑qualified name.
 
-### Object form
+### Object Form
 
 ```json
 {
@@ -115,7 +115,7 @@ grant via a `/`‑qualified name.
 }
 ```
 
-### Flat list form (same model)
+### Flat List Form (Same Model)
 
 ```json
 [
@@ -140,7 +140,7 @@ resources: { content: […] } })`) is not a grant — re‑apply it on restore (
 `strict` and `getGroups()`/`getCategories()`).
 :::
 
-## `snapshot()` / `restore()`: the whole model in one call
+## `snapshot()` / `restore()`: The Whole Model in One Call
 
 A complete model is **grants + gates + vocabulary**. `snapshot()` returns all
 three as one plain‑JSON object (`{ grants, requirements, vocabulary }`);
@@ -177,7 +177,7 @@ call `require()` / `category().require()` / `resource().require()` directly — 
 [below](#require-gates-persist-separately).
 :::
 
-## Save & restore (by hand)
+## Save & Restore (by Hand)
 
 If you'd rather persist the grants on their own (e.g. only the grants change and
 the gates/vocabulary are defined in code), the individual getters still work:
@@ -204,7 +204,7 @@ A grant rule row, fully expanded:
 }
 ```
 
-## require() gates persist separately
+## `require()` Gates Persist Separately
 
 `require()` gates are **not** part of the grants — they live in their own
 structure, in three scopes (global, category, resource):
@@ -260,7 +260,7 @@ access. Persist and restore grants **and** requirements (and `setup()` vocabular
 — or just use `snapshot()` / `restore()`, which carry all three.
 :::
 
-## The simplest store: a single JSONB blob
+## The Simplest Store: A Single JSONB Blob
 
 If you don't need to query individual rules in SQL, skip the relational layout
 entirely: store one `snapshot()` and rehydrate with `restore()`. One row, no
@@ -294,7 +294,7 @@ when you need SQL to query or audit individual rules (e.g. "every role that can
 `delete` on `billing/*`"), or when rows are edited independently.
 :::
 
-## A SQL schema (PostgreSQL)
+## A SQL Schema (PostgreSQL)
 
 One table for rule rows, one for inheritance, one for gates, plus the
 vocabulary.
@@ -342,7 +342,7 @@ INSERT INTO ac_requirements (scope, target, condition) VALUES
   ('category', 'billing', '["$.ip","cidr","10.0.0.0/8"]'::jsonb);
 ```
 
-### MySQL flavor
+### MySQL Flavor
 
 The same schema in MySQL (8.0+): `JSON` instead of `JSONB`, `AUTO_INCREMENT`
 instead of `BIGSERIAL`, and back‑ticks around the reserved word `group`. MySQL
@@ -393,7 +393,7 @@ A runnable grants model, this schema and an Express integration live in the
 repository's
 [`examples/`](https://github.com/onury/accesscontrol/tree/master/examples) folder.
 
-## Inspecting the model
+## Inspecting the Model
 
 ```js
 ac.getGrants();        // object form (a frozen deep copy)
@@ -413,7 +413,7 @@ model (a `require()` gate can't be neutered through an introspection result).
 `getGrants()` is additionally frozen; `snapshot()` returns a plain, editable bag.
 :::
 
-## Conditions & custom functions
+## Conditions & Custom Functions
 
 Declarative `.where()` / `.require()` conditions serialize as canonical JSON
 inside the rows/gates, so they persist for free. Custom `{ fn, args }` conditions

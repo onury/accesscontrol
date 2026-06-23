@@ -25,7 +25,7 @@ import { AccessControl } from 'accesscontrol';
 
 Use a modern Node/bundler. If you're stuck on CommonJS, stay on v2.
 
-## 2. Grants model shape (`getGrants()` output)
+## 2. Grants Model Shape (`getGrants()` Output)
 
 The stored shape changed so possession is a **field** and each action maps to an
 **array of rules** (enabling conditions, deny rules, and multiple rules per
@@ -46,7 +46,7 @@ If you persisted the **object** form from `getGrants()` in v2, re-export it from
 v3 once (`ac.getGrants()` / `ac.getGrantsList()`) and store the new shape. The
 flat-list form is recommended for databases — see "immutable copies" below.
 
-## 3. Inheritance in the flat list uses `$extend` rows
+## 3. Inheritance in the Flat List Uses `$extend` Rows
 
 When defining grants as a flat array, inheritance now travels as its own row.
 
@@ -61,7 +61,7 @@ new AccessControl([
 The programmatic form is unchanged: `ac.grant('admin').extend('editor')` or
 `ac.extendRole('admin', 'editor')`.
 
-## 4. Name handling: case-preserving + restricted charset
+## 4. Name Handling: Case-preserving + Restricted Charset
 
 v2 normalized names loosely. v3 is **case-preserving** and validates against
 `[A-Za-z0-9_-]` (plus the reserved separators below). Two consequences:
@@ -80,7 +80,7 @@ Need international names? Opt into Unicode (mind the homograph caveat):
 `new AccessControl(grants, { engine: { charset: Charset.UNICODE } })`. See
 [Strict Mode, Errors & Names](/accesscontrol/concepts/strict/#charset).
 
-## 5. Deny-overrides (inheritance override fix, #34)
+## 5. Deny-overrides (Inheritance Override Fix, #34)
 
 An explicit `deny` now restricts **inherited** grants too — deny always wins.
 A *smaller child grant no longer shrinks* an inherited grant (grants are purely
@@ -97,7 +97,7 @@ ac.can('moderator').readAny('post').attributes;     // ['*', '!secret']
 `deny` does **not** cascade across possession: `deny create:any` still leaves
 `create:own`.
 
-## 6. Enforced ownership & `strict` (mostly opt-in)
+## 6. Enforced Ownership & `strict` (Mostly Opt-in)
 
 `own` checks can now actually verify ownership (see [WHATS-NEW](/accesscontrol/whats-new/)). This is
 **backward-compatible by default**: with no ownership resolver configured, `own`
@@ -113,7 +113,7 @@ const ac = new AccessControl(grants, { policy: { ownerField: 'ownerId' } });
 same as v2's throw-on-unknown-role. Set `policy: { strict: { roles: false } }`
 for lenient behavior.
 
-## 7. `getGrants()` returns immutable copies
+## 7. `getGrants()` Returns Immutable Copies
 
 `getGrants()` / `getGrantsList()` / `getRequirements()` return frozen deep copies.
 Don't mutate them — go through `grant`/`deny`/`setGrants`/`extendRole`. For
@@ -124,7 +124,7 @@ const rows = ac.getGrantsList();        // DB-friendly rows
 const restored = new AccessControl(rows); // round-trips identically
 ```
 
-## 8. Constructor options & method aliases
+## 8. Constructor Options & Method Aliases
 
 - The constructor takes a second argument:
   `new AccessControl(grants, { engine, policy, context })` —
@@ -142,7 +142,7 @@ const restored = new AccessControl(rows); // round-trips identically
 
 ---
 
-## Quick reference
+## Quick Reference
 
 | v2 | v3 |
 | --- | --- |

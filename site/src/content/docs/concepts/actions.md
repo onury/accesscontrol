@@ -6,7 +6,7 @@ description: CRUD and custom actions via .action()/.do(), and the any vs own pos
 An **action** is the kind of operation performed on a resource. The CRUD verbs
 are built in, and v3 lets you use **any** custom action name.
 
-## CRUD helpers
+## CRUD Helpers
 
 The named helpers are sugar for the four CRUD actions × two possessions:
 
@@ -28,7 +28,7 @@ a `delete` might be a soft‑delete `UPDATE`):
 | `update`      | `PUT` / `PATCH` | `UPDATE` |
 | `delete`      | `DELETE`        | `DELETE` |
 
-## Custom actions
+## Custom Actions
 
 CRUD helpers are sugar over the generic `.action()` (and its alias `.do()`),
 which accept any action name. Possession travels with the `:own` / `:any`
@@ -54,7 +54,7 @@ conditions, deny‑overrides, inheritance and filtering. The CRUD names are just
 convenience.
 :::
 
-## Introspecting actions
+## Introspecting Actions
 
 `getActions()` lists the action names in the model. Pass a role (or roles) to
 scope it to what that role can do — **including inherited** actions:

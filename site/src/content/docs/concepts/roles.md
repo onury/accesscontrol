@@ -74,7 +74,7 @@ ac.getInheritedRolesOf('admin'); // ['user']
 ac.removeRoles('admin');         // also strips it from other roles' $extend
 ```
 
-## Multiple roles in one check
+## Multiple Roles in One Check
 
 Pass an array to check "at least one of these roles allows it". Attributes are
 the **union** across the roles:

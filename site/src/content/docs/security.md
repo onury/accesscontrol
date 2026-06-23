@@ -14,7 +14,7 @@ use [`tryCan()`](#fail-closed-checks) on the request path, and treat a thrown
 error as **deny**, never as allow.
 :::
 
-## Fail-closed checks
+## Fail-closed Checks
 
 A denial returns `granted: false`. An **error** (invalid query, a `strict`
 violation, a misused async condition) is *thrown*. The danger is a caller that
@@ -46,7 +46,7 @@ if (ac.tryCan(role).readAny('post').granted) {
 
 See [Best Practices › can vs tryCan](/accesscontrol/best-practices/#can-vs-trycan).
 
-## Prototype-pollution & inherited keys
+## Prototype-pollution & Inherited Keys
 
 Names (roles, resources, actions, groups, categories) are user/data‑controlled
 strings used as object keys — the classic prototype‑pollution surface.
@@ -69,13 +69,13 @@ ac.can('user').readAny('toString').granted; // false (never throws)
 ac.grant('__proto__');                       // throws RESERVED_NAME
 ```
 
-## Conditions from untrusted sources
+## Conditions from Untrusted Sources
 
 If your grants/conditions are authored **in code** (the common case), they are
 trusted input. If they come from a store that **lower‑privileged users can
 edit**, treat conditions as untrusted and note the following.
 
-### Regular expressions (ReDoS) — opt-in
+### Regular Expressions (ReDoS) — Opt-in
 
 The `matches` operator compiles a regular expression. A malicious pattern can
 cause catastrophic backtracking (CPU DoS).
@@ -94,13 +94,13 @@ only a RE2‑style engine gives that. For fully untrusted authors, prefer custom
 [condition functions](/accesscontrol/concepts/async/) over `matches`.
 :::
 
-### Condition depth
+### Condition Depth
 
 Deeply nested `and`/`or`/`not` trees are rejected at compile time (`> 100`
 levels, `err.code === 'INVALID_CONDITION'`) so a pathological condition from a
 store cannot exhaust the stack on the auth path.
 
-## Error messages & information disclosure
+## Error Messages & Information Disclosure
 
 By default (`engine.safeErrors: true`) error **messages** omit caller‑supplied
 values (names, the raw query/grants object) so request data doesn't leak into
@@ -122,7 +122,7 @@ messages during development.
 Also return **uniform** responses for denials (same status/body) so
 "doesn't exist" vs "denied" isn't observable to a client.
 
-## Names & homographs (charset)
+## Names & Homographs (Charset)
 
 Names are restricted to ASCII `[A-Za-z0-9_-]` by default — which also rules out
 Unicode **homograph** attacks (visually identical names with different code
@@ -147,7 +147,7 @@ copies** — mutating a result can never alter the live model or neuter a
 throws `err.code === 'LOCKED'`. `Permission.attributes` / `.roles` are frozen
 copies too.
 
-## Timing side-channels
+## Timing Side-channels
 
 Authorization isn't constant‑time (more roles/rules/conditions ⇒ more work). In
 practice this is buried under network and DB latency, so it's effectively
@@ -155,7 +155,7 @@ unexploitable for server‑side checks — we treat constant‑time evaluation a
 non‑goal. If it's in your threat model: rate‑limit auth‑sensitive endpoints and
 keep denial responses uniform.
 
-## Supply chain
+## Supply Chain
 
 The published package's **only runtime dependency** is
 [`notation`](https://github.com/onury/notation) — although from the same author,
@@ -166,7 +166,7 @@ it is pinned to an exact version — and there are **zero production advisories*
 npm audit --omit=dev    # audit only what actually ships
 ```
 
-## What testing can and cannot prove
+## What Testing Can and Cannot Prove
 
 100% coverage and mutation testing prove the *written* code behaves; they cannot
 prove the engine is safe against inputs the code never anticipated. AccessControl

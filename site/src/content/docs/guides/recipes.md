@@ -6,7 +6,7 @@ description: Practical patterns — restrict to own records, UI visibility, Reac
 Short, copy-paste answers to the questions that come up most. Each builds on the
 same model you already have — no extra concepts.
 
-## Restrict a user to their own records (ABAC)
+## Restrict a User to Their Own Records (ABAC)
 
 The classic "an author may edit **their own** articles, not everyone's". Configure
 ownership once, grant `own`, and pass the record in the check context — the
@@ -32,7 +32,7 @@ new AccessControl({}, { policy: { owner: (ctx) => ctx.article.authorId === ctx.u
 ac.grant('author').where('$.article.status != locked').updateOwn('article', ['*']);
 ```
 
-## Show / hide UI by permission
+## Show / Hide UI by Permission
 
 AccessControl returns the decision; rendering is your app's job. Compute a plain
 boolean (or the allowed attributes) and branch on it.
@@ -81,7 +81,7 @@ the server for every mutating request (e.g. with the
 [Express middleware](/accesscontrol/guides/express/)).
 :::
 
-## Filter API responses to allowed fields
+## Filter API Responses to Allowed Fields
 
 `permission.filter()` strips a payload (object **or array**) down to the granted
 attributes — so a single role definition shapes what each caller sees.
@@ -91,7 +91,7 @@ const perm = ac.can(role).readAny('account');
 res.json(perm.filter(accounts)); // array → each item filtered
 ```
 
-## One policy across microservices
+## One Policy Across Microservices
 
 Keep a **single source of truth** for the model and distribute it; don't redefine
 grants per service. The whole model serializes to plain JSON via

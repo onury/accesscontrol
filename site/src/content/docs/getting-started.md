@@ -15,7 +15,7 @@ AccessControl v3 is **ESM** and ships TypeScript types.
 import { AccessControl } from 'accesscontrol';
 ```
 
-### Other runtimes
+### Other Runtimes
 
 Because v3 is pure ESM with no Node-only built-in dependencies, it runs beyond
 Node.js (≥ 20):
@@ -36,7 +36,7 @@ Node.js (≥ 20):
 
 The API is identical across runtimes — only the install/import line differs.
 
-## Define grants
+## Define Grants
 
 Create roles with `grant()` / `deny()`, chaining as you go. Roles inherit others
 with `extend()`; grants are additive and an explicit `deny` always wins.
@@ -54,7 +54,7 @@ ac.grant('user')
     .deleteAny('video');
 ```
 
-## Check permissions
+## Check Permissions
 
 ```js
 ac.can('user').createOwn('video').granted;     // true
@@ -83,7 +83,7 @@ Keep `can()` for boot/config and tests, where you *want* a typo to throw. See
 [Best Practices](/accesscontrol/best-practices/#can-vs-trycan).
 :::
 
-## Add a condition
+## Add a Condition
 
 Constrain a grant with `.where()`, and supply per-check data via the context.
 
@@ -93,7 +93,7 @@ ac.grant('manager').where('$.order.value <= 100000').updateAny('order', ['*']);
 ac.can('manager', { order: { value: 5000 } }).updateAny('order').granted; // true
 ```
 
-## Enforce ownership
+## Enforce Ownership
 
 Tell the engine how ownership is determined and pass the record — `own` checks
 are then enforced:
@@ -106,7 +106,7 @@ ac.can('user', { user: { id: 7 }, order: { ownerId: 7 } }).updateOwn('order').gr
 ac.can('user', { user: { id: 7 }, order: { ownerId: 9 } }).updateOwn('order').granted; // false
 ```
 
-## Next steps
+## Next Steps
 
 - **Concepts** (sidebar) — [Conditions](/accesscontrol/concepts/conditions/),
   [Ownership](/accesscontrol/concepts/ownership/),

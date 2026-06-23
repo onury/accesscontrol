@@ -18,7 +18,7 @@ ac.grant('admin')
   .readAny('server');
 ```
 
-## Resolving on the async path
+## Resolving on the Async Path
 
 A check that touches a custom function must use the **async** accessors:
 
@@ -46,7 +46,7 @@ await ac.tryCan('admin', { ip }).readAny('server').grantedAsync; // resolves
 ```
 :::
 
-## Declarative checks stay sync
+## Declarative Checks Stay Sync
 
 Only `{ fn }` conditions require the async path. Purely declarative grants/gates
 resolve synchronously even if you happen to `await` them, so you can use the
@@ -58,7 +58,7 @@ await ac.can('user', { order: { value: 50 } })
   .updateAny('order').grantedAsync; // works (declarative, but awaitable)
 ```
 
-## Caching within a permission
+## Caching Within a Permission
 
 Resolving a permission once memoizes its result: a sync resolve followed by an
 `await` won't re‑resolve (and won't emit a second `access` event).

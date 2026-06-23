@@ -13,7 +13,7 @@ ac.on('change', (e) => log(e.type));
 ac.on('error', (e) => report(e.error));
 ```
 
-## `access` — the audit stream
+## `access` — the Audit Stream
 
 ```js
 ac.on('access', (e) => {
@@ -40,7 +40,7 @@ ac.on('access', (e) => {
 });
 ```
 
-## `change` — policy edits
+## `change` — Policy Edits
 
 Fires when the model is mutated (`grant`, `deny`, `extend`, `set_grants`,
 `setup`, `require`, `remove`, `reset`, `lock`). The payload carries the `type`
@@ -50,7 +50,7 @@ and a `detail`:
 ac.on('change', (e) => log(`policy ${e.type}`, e.detail));
 ```
 
-## `error` — faults
+## `error` — Faults
 
 Fires when a check or operation throws (carries the `AccessControlError`). It
 fires even under [`tryCan()`](/accesscontrol/best-practices/#can-vs-trycan),
@@ -60,7 +60,7 @@ where the check itself returns `granted: false` — so you still observe the fau
 ac.on('error', (e) => report(e.error)); // e.error is an AccessControlError
 ```
 
-## Subscription management
+## Subscription Management
 
 ```js
 const onAccess = (e) => audit(e);

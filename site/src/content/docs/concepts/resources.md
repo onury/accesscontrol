@@ -24,7 +24,7 @@ ac.hasResource('banana');               // true
 ac.getResources();                      // ['account', 'credentials', 'banana']
 ```
 
-## Attributes (glob notation)
+## Attributes (Glob Notation)
 
 Each grant scopes access to a set of attributes using
 [glob notation](https://github.com/onury/notation): `*` (all), `!` (negate),
@@ -47,7 +47,7 @@ Omitting attributes defaults to `['*']` for a grant. An explicit empty array
 `[]` is preserved — a grant with `[]` (or a `deny` with omitted attributes)
 allows **no** attributes, so `granted` is `false`.
 
-## Filtering data
+## Filtering Data
 
 `filter()` returns a **deep copy** of a record (or array of records) containing
 only the allowed attributes — handy for shaping API responses.

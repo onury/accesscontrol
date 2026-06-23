@@ -7,7 +7,7 @@ In v2, `readOwn` / `updateOwn` only chose *which attributes* applied —
 confirming the record actually belonged to the user was **your** job. v3 can
 **enforce** ownership for you.
 
-## ownerField (the convention)
+## `ownerField` (the Convention)
 
 Tell AccessControl which field holds the owner id, then pass both the user and
 the record in the check context. Ownership is
@@ -24,7 +24,7 @@ ac.can('user', { user: { id: 7 }, order: { ownerId: 9 } })
   .updateOwn('order').granted; // false (not owned)
 ```
 
-## A custom resolver
+## A Custom Resolver
 
 For anything beyond a single field (composite keys, membership, async‑free
 lookups against the context), provide `policy.owner(ctx)`. It **wins** over
@@ -53,7 +53,7 @@ ac.can('admin', { user, order }).updateOwn('order').granted; // true
 ```
 :::
 
-## When ownership can't be verified
+## When Ownership Can't Be Verified
 
 With a resolver configured but the record (or owner) missing from the context,
 the check is **denied** under the default `strict.checks: true` — fail closed.
@@ -72,7 +72,7 @@ attribute set and enforce ownership yourself). With **no** resolver configured
 at all, `own` is never gated — existing v2 code isn't silently locked down.
 :::
 
-## Record-level rules without hand-rolled checks
+## Record-level Rules without Hand-rolled Checks
 
 Express "can assign **own** folder to **any** user" as ownership + possession,
 then let the engine decide:

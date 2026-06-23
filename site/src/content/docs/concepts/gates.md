@@ -30,7 +30,7 @@ ac.resource('billing/invoice')
   .require('$.mfa == true');                        // just billing/invoice
 ```
 
-## Example: layered gates
+## Example: Layered Gates
 
 ```js
 const ac = new AccessControl(grants, {
@@ -49,7 +49,7 @@ ac.can('accountant', { ip, mfa: true })
 A denial by a gate surfaces as `reason: 'require_failed'` on the
 [`access` event](/accesscontrol/concepts/events/).
 
-## Inspecting gates
+## Inspecting Gates
 
 ```js
 ac.getRequirements();
@@ -62,7 +62,7 @@ gates. (A `require()` gate must not be neuterable through an introspection
 result.)
 :::
 
-## Async gates
+## Async Gates
 
 A gate may use a custom `{ fn, args }` condition; like conditional grants, that
 moves the check to the [async path](/accesscontrol/concepts/async/)
