@@ -50,6 +50,7 @@ export default defineConfig({
       customCss: [
         '@onury/docs-kit/styles/custom.css',
         '@onury/docs-kit/styles/theme.css',
+        './src/styles/overrides.css',
         './src/styles/hero.css'
       ],
       plugins: [

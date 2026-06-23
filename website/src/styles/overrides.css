@@ -1,0 +1,12 @@
+/* ===========================================================================
+ * overrides.css — PER-PROJECT theme tokens (loaded after the shared theme).
+ * ---------------------------------------------------------------------------
+ * The shared look comes from @onury/docs-kit. Override tokens here to give THIS
+ * docs site its own flavor without affecting the other projects.
+ * =========================================================================== */
+
+:root {
+  /* AccessControl's brand accent (hazard yellow — matches the police-tape hero). */
+  --oy-accent: rgb(255, 201, 51);
+  /* --oy-accent-high: var(--oy-accent); */
+}
