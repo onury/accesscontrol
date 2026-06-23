@@ -77,7 +77,7 @@
     "context"
   ],
   "dependencies": {
-    "notation": "3.0.0"
+    "notation": "3.0.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.0",
