@@ -79,6 +79,10 @@
   "dependencies": {
     "notation": "3.0.1"
   },
+  "overrides": {
+    "jsdom": "^26",
+    "qs": "^6.15.2"
+  },
   "devDependencies": {
     "@biomejs/biome": "^2.5.0",
     "@stryker-mutator/core": "^9.6.1",
