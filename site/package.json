@@ -1,5 +1,5 @@
 {
-  "name": "accesscontrol-website",
+  "name": "accesscontrol-site",
   "private": true,
   "type": "module",
   "description": "Documentation site for AccessControl (Astro + Starlight via @onury/docs-kit). Not published.",

@@ -12,13 +12,13 @@ GitHub Pages **project** site, served at **https://onury.io/accesscontrol**.
 ## Develop
 
 ```bash
-npm --prefix website install
-npm --prefix website run dev      # preview at localhost
-npm --prefix website run build    # production build → website/dist
+npm --prefix site install
+npm --prefix site run dev      # preview at localhost
+npm --prefix site run build    # production build → site/dist
 ```
 
 (If the kit is wired as a local `file:` dependency for theme development, install
-with `npm --prefix website install --install-links`.)
+with `npm --prefix site install --install-links`.)
 
 ## What comes from the kit vs. what's yours
 
@@ -87,7 +87,7 @@ repo name, or assets 404).
 ## Update the shared theme
 
 ```bash
-npm --prefix website update @onury/docs-kit
+npm --prefix site update @onury/docs-kit
 ```
 
 The kit is pinned to `github:onury/docs-kit#v1`; updating rolls in the latest shared theme.

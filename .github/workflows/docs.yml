@@ -8,11 +8,10 @@ on:
   push:
     branches: [master]
     paths:
-      - 'website/**'
+      - 'site/**'
       - 'src/**'
       - 'README.md'
       - 'CHANGELOG.md'
-      - 'docs/**'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
 
@@ -36,20 +35,20 @@ jobs:
           node-version: 22
           cache: npm
           # The library root git-ignores its lockfile; cache on the docs lock.
-          cache-dependency-path: website/package-lock.json
+          cache-dependency-path: site/package-lock.json
       # Root deps so TypeDoc can resolve the library's imported types. Use
       # `install` (not `ci`) because the root lockfile isn't committed.
       - run: npm install --no-audit --no-fund
       - name: Install docs deps
-        working-directory: website
+        working-directory: site
         run: npm ci
       - name: Build docs site
-        working-directory: website
+        working-directory: site
         run: npm run build
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: website/dist
+          path: site/dist
 
   deploy:
     needs: build

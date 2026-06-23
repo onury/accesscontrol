@@ -1,6 +1,8 @@
-# Migrating from AccessControl v2 to v3
-
-> ✨ **See what you can do _more_ with v3 →** [WHATS-NEW.md](./WHATS-NEW.md)
+---
+title: "Migrating from AccessControl v2 to v3"
+description: "Upgrade guide from AccessControl v2 to v3."
+---
+> ✨ **See what you can do _more_ with v3 →** [WHATS-NEW.md](/accesscontrol/whats-new/)
 
 v3 is a focused modernization. The everyday API — `grant`/`deny`, `can`,
 `createAny`/`readOwn`/…, `permission.granted` / `.attributes` / `.filter()` —
@@ -97,7 +99,7 @@ ac.can('moderator').readAny('post').attributes;     // ['*', '!secret']
 
 ## 6. Enforced ownership & `strict` (mostly opt-in)
 
-`own` checks can now actually verify ownership (see [WHATS-NEW](./WHATS-NEW.md)). This is
+`own` checks can now actually verify ownership (see [WHATS-NEW](/accesscontrol/whats-new/)). This is
 **backward-compatible by default**: with no ownership resolver configured, `own`
 behaves exactly like v2 (it selects the `own` attribute set; you enforce
 ownership). You only get enforcement when you opt in:
@@ -152,4 +154,5 @@ const restored = new AccessControl(rows); // round-trips identically
 | `own` = attribute set only | `own` enforced when `ownerField`/`owner` configured |
 | mutable `getGrants()` | frozen copy; use `getGrantsList()` for DBs |
 
-> ✨ **See what you can do _more_ with v3 →** [WHATS-NEW.md](./WHATS-NEW.md)
+> ✨ **See what you can do _more_ with v3 →** [WHATS-NEW.md](/accesscontrol/whats-new/)
+

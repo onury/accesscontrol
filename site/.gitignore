@@ -8,7 +8,4 @@ node_modules/
 
 # generated content (created at build time)
 src/content/docs/api/
-src/content/docs/whats-new.md
-src/content/docs/migration.md
-src/content/docs/faq.md
 src/content/docs/changelog.md

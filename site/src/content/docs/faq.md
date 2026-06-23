@@ -1,5 +1,7 @@
-# Frequently Asked Questions
-
+---
+title: "Frequently Asked Questions"
+description: "Frequently asked questions."
+---
 > Short answers with pointers into the guides. New to v3? See
 > [What's New](/accesscontrol/whats-new/) and
 > [Migrating from v2](/accesscontrol/migration/).
@@ -86,3 +88,4 @@ Single pinned runtime dependency, zero production advisories
 (`npm audit --omit=dev`), 100% coverage, mutation‑tested, plus an adversarial
 suite and a property fuzzer. See
 [Best Practices › Quality & testing](/accesscontrol/best-practices/#quality--testing).
+

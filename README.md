@@ -27,7 +27,7 @@ mandatory gates.
 > **v3** is **ESM** 🔆 and adds a real policy engine: conditions, enforced
 > ownership, custom actions, `require()` gates, groups/categories, async checks
 > and audit events.
-> &nbsp;✨ **[What's new in v3 →](./docs/WHATS-NEW.md)** &nbsp;·&nbsp; ⬆️ **[Migrating from v2 →](./docs/MIGRATION.md)**
+> &nbsp;✨ **[What's new in v3 →](https://onury.io/accesscontrol/whats-new/)** &nbsp;·&nbsp; ⬆️ **[Migrating from v2 →](https://onury.io/accesscontrol/migration/)**
 
 ## Core Features
 

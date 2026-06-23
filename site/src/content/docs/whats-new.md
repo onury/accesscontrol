@@ -1,10 +1,12 @@
-# What's New in AccessControl v3
-
+---
+title: "What's New in AccessControl v3"
+description: "New capabilities in AccessControl v3."
+---
 v3 keeps the friendly, chainable API you know and adds a real **policy engine** on
 top of it: conditions, enforced ownership, custom actions, mandatory gates,
 groups/categories, async checks, and an audit event stream.
 
-> Upgrading from v2? See **[MIGRATION.md](./MIGRATION.md)** for a side-by-side
+> Upgrading from v2? See **[MIGRATION.md](/accesscontrol/migration/)** for a side-by-side
 > "same result in v3" mapping.
 
 ---
@@ -208,6 +210,7 @@ v3 is hardened for the authorization path — see
 
 ---
 
-See **[MIGRATION.md](./MIGRATION.md)** to move an existing v2 setup over, and the
+See **[MIGRATION.md](/accesscontrol/migration/)** to move an existing v2 setup over, and the
 runnable **[examples/](../examples)** for a full grants model, SQL schema, and an
 Express integration.
+
