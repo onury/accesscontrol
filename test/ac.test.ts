@@ -182,6 +182,32 @@ describe('Test Suite: AccessControl', () => {
     helper.expectACError(() => ac.setGrants([{ resource: 'video', action: 'create:any' }]));
     helper.expectACError(() => ac.setGrants([{ role: 'admin', resource: 'video' }]));
     helper.expectACError(() => ac.setGrants([{ role: 'admin', action: 'create:any' }]));
+
+    // gh #109 — a flat list straight from a datastore (e.g. Mongoose `.lean()`
+    // docs) carries extra non-grant keys like `_id`/`__v`. These surplus
+    // properties must be ignored, not rejected.
+    expect(() =>
+      ac.setGrants([
+        {
+          _id: 'a1',
+          __v: 0,
+          role: 'admin',
+          resource: 'video',
+          action: 'create:any',
+          attributes: ['*']
+        },
+        {
+          _id: 'a2',
+          __v: 0,
+          role: 'admin',
+          resource: 'video',
+          action: 'read:any',
+          attributes: ['*']
+        }
+      ] as unknown as IGrantsList)
+    ).not.toThrow();
+    expect(ac.can('admin').createAny('video').granted).toBe(true);
+    expect(ac.can('admin').readAny('video').granted).toBe(true);
   });
 
   test('construct with grants array or object, output a grants object', () => {
@@ -214,6 +240,28 @@ describe('Test Suite: AccessControl', () => {
     expect(ac.can('user').readOwn('account').attributes).toEqual(['*']);
     expect(ac.can('admin').readOwn('account').granted).toBe(true);
     expect(ac.can('admin').readOwn('account').attributes).toEqual(['*']);
+  });
+
+  // gh #108 — a role defined only via `$extend` (no own grants) must resolve
+  // regardless of declaration order. The two-pass object parser materializes
+  // every role key before applying inheritance, so the extended base may appear
+  // before or after the extender.
+  test('object grants: role defined only via $extend resolves in any order (#108)', () => {
+    const base: IGrants = {
+      base_member: { user: { read: [{ possession: 'own', attributes: ['*'] }] } }
+    };
+    const paid: IGrants = { paid_member: { $extend: ['base_member'] } };
+
+    // base declared BEFORE extender
+    let ac = new AccessControl({ ...base, ...paid });
+    expect(ac.can('paid_member').readOwn('user').granted).toBe(true);
+
+    // base declared AFTER extender (the exact #108 shape)
+    ac = new AccessControl({ ...paid, ...base });
+    expect(ac.can('paid_member').readOwn('user').granted).toBe(true);
+
+    // a genuinely non-existent base still throws (distinct from #108)
+    helper.expectACError(() => new AccessControl({ paid_member: { $extend: ['ghost'] } }));
   });
 
   test('reset grants with #reset() only', () => {
@@ -1089,6 +1137,41 @@ describe('Test Suite: AccessControl', () => {
     filtered = permission.filter(data);
     expect(filtered).toEqual(expect.any(Array));
     expect(filtered.length).toEqual(data.length);
+  });
+
+  // gh #92 / #83 — filter() must return a PLAIN deep clone built from own
+  // enumerable properties only. Framework/ODM internals living on the prototype
+  // (Mongoose's `$__`/`$isNew`, BSON getters, etc.) must NOT leak into the
+  // filtered output, and the source document must be left untouched.
+  test('Permission#filter() returns a plain clone, dropping prototype internals (#92/#83)', () => {
+    // a Mongoose-like document: real data as own props, internals on the prototype
+    class Doc {
+      get $__() {
+        return { strictMode: true };
+      }
+      get $isNew() {
+        return false;
+      }
+      constructor(
+        public id: number,
+        public name: string,
+        public secret: string
+      ) {}
+    }
+    const ac = new AccessControl();
+    ac.grant('user').readOwn('account', ['*', '!secret']);
+    const doc = new Doc(1, 'onur', 'topsecret');
+
+    const out = ac.can('user').readOwn('account').filter(doc) as UnknownObject;
+    expect(out.name).toEqual('onur');
+    expect(out.id).toEqual(1);
+    expect(out.secret).toBeUndefined(); // negated attribute removed
+    expect(out.$__).toBeUndefined(); // prototype getter dropped
+    expect(out.$isNew).toBeUndefined();
+    expect(Object.getPrototypeOf(out)).toBe(Object.prototype); // plain object, not a Doc
+    // source document is left intact (filter clones, never mutates)
+    expect(out).not.toBe(doc);
+    expect(doc.secret).toEqual('topsecret');
   });
 
   test('union granted attributes for extended roles, on query', () => {
