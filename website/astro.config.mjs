@@ -47,6 +47,7 @@ export default defineConfig({
         { icon: 'github', label: 'GitHub', href: 'https://github.com/onury/accesscontrol' }
       ],
       // Shared theme (from @onury/docs-kit) + this project's bespoke hero.
+      components: { Head: '@onury/docs-kit/components/Head.astro' },
       customCss: [
         '@onury/docs-kit/styles/custom.css',
         '@onury/docs-kit/styles/theme.css',
