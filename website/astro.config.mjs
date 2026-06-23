@@ -58,7 +58,7 @@ export default defineConfig({
           entryPoints: ['../src/index.ts'],
           tsconfig: '../tsconfig.build.json',
           output: 'api',
-          sidebar: { label: 'API Reference', collapsed: true },
+          sidebar: { label: 'API Reference', collapsed: false },
           typeDoc: { githubPages: false, excludeInternal: true, sort: ['source-order'] }
         })
       ],
