@@ -9,4 +9,5 @@
   /* AccessControl's brand accent (hazard yellow — matches the police-tape hero). */
   --oy-accent: rgb(255, 201, 51);
   /* --oy-accent-high: var(--oy-accent); */
+  --oy-hero-align: start; /* left-align the hero copy (over the full-bleed tape) */
 }
