@@ -13,8 +13,10 @@
   <a href="https://onury.io/accesscontrol"><img src="https://img.shields.io/badge/docs-read-c27cf4?style=flat" alt="documentation" /></a>
 </p>
 
-<p align="center">© 2026, Onur Yıldırım (<b><a href="https://github.com/onury">@onury</a></b>).</p>
-<br />
+> [!IMPORTANT]
+> This module is **ESM** 🔆. Please [**read this**](https://gist.github.com/onury/d3f3d765d7db2e8b2d050d14315f2ac7).
+
+> © 2026, Onur Yıldırım ([@onury](https://github.com/onury)). MIT License.
 
 ### Role and Attribute based Access Control for Node.js
 
@@ -26,9 +28,9 @@ Control). Merging the best of both (see this [NIST paper][nist-paper]),
 AccessControl implements RBAC basics **and** ABAC conditions, ownership, and
 mandatory gates.
 
-> **v3** is **ESM** 🔆 and adds a real policy engine: conditions, enforced
-> ownership, custom actions, `require()` gates, groups/categories, async checks
-> and audit events.
+> [!TIP]
+> **v3** adds a real policy engine: conditions, enforced ownership, custom
+> actions, `require()` gates, groups/categories, async checks and audit events.
 > &nbsp;✨ **[What's new in v3 →](https://onury.io/accesscontrol/whats-new/)** &nbsp;·&nbsp; ⬆️ **[Migrating from v2 →](https://onury.io/accesscontrol/migration/)**
 
 ## Core Features
