@@ -12,6 +12,8 @@
   --oy-hero-align: start; /* left-align the hero copy (over the full-bleed tape) */
 }
 
-/* ── Light mode only — header tweaks (dark mode unchanged). ─────────────────── */
+/* ── Light mode only — header + sidebar tweaks (dark mode unchanged). ───────── */
 :root[data-theme='light'] .header .site-title { color: #000; }
 :root[data-theme='light'] header.header { border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
+/* Selected sidebar item: black label on the amber accent (was low-contrast white). */
+:root[data-theme='light'] .sidebar a[aria-current='page'] { color: #000; }
