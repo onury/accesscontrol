@@ -146,6 +146,9 @@ html:not([data-has-sidebar]) :where(main, .content-panel) { overflow-x: clip; }
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
   background-color: rgba(12, 14, 20, 0.66);
+  /* The highlight box is always dark, so keep the text light in BOTH themes
+     (otherwise light mode renders dark text on the dark box — unreadable). */
+  color: #f3f4f6;
   padding: 0.12em 0.4em;
   border-radius: 0.28em;
   line-height: 2;               /* space so the per-line boxes don't touch */
