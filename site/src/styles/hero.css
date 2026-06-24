@@ -153,6 +153,15 @@ html:not([data-has-sidebar]) :where(main, .content-panel) { overflow-x: clip; }
   border-radius: 0.28em;
   line-height: 2;               /* space so the per-line boxes don't touch */
 }
+/* ── Light mode only (dark mode unchanged) ──────────────────────────────────
+ * Over the bright tape: dark copy on a translucent-white highlight (no shadow),
+ * and a dark label on the amber button. */
+:root[data-theme='light'] .hero .tagline { text-shadow: none; }
+:root[data-theme='light'] .hero .tagline .tag-hl {
+  color: #000;
+  background-color: #ffffff70;
+}
+:root[data-theme='light'] .hero .actions a.primary { color: #000; }
 .hero .actions a {
   /* filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7)) drop-shadow(0 2px 5px rgba(0, 0, 0, 0.4)); */
 }

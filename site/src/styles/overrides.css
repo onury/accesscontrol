@@ -11,3 +11,7 @@
   /* --oy-accent-high: var(--oy-accent); */
   --oy-hero-align: start; /* left-align the hero copy (over the full-bleed tape) */
 }
+
+/* ── Light mode only — header tweaks (dark mode unchanged). ─────────────────── */
+:root[data-theme='light'] .header .site-title { color: #000; }
+:root[data-theme='light'] header.header { border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
