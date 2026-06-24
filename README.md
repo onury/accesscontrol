@@ -1,5 +1,5 @@
 <p align="center">
-    <a href="https://onury.io/accesscontrol"><img src="https://raw.githubusercontent.com/onury/accesscontrol/v3/ac-caution.svg" alt="AccessControl.js" width="100%" /></a>
+    <a href="https://onury.io/accesscontrol"><img src="https://raw.githubusercontent.com/onury/accesscontrol/master/ac-caution.svg" alt="AccessControl.js" width="100%" /></a>
 </p>
 
 <p align="center">
@@ -318,6 +318,11 @@ you.
 ## Documentation
 
 See the full documentation & API reference @ [onury.io/accesscontrol](https://onury.io/accesscontrol)
+
+## Related Projects
+
+- [**notation**](https://github.com/onury/notation) — Read, modify, and filter the contents of objects and arrays via dot/bracket notation strings or glob patterns.
+- [**configuard**](https://github.com/onury/configuard) — Build a nested, typed configuration object from a flat list of settings — with `${...}` templating and accessor-based (ABAC) filtering.
 
 ## License
 
