@@ -322,7 +322,7 @@ See the full documentation & API reference @ [onury.io/accesscontrol](https://on
 ## Related Projects
 
 - [**notation**](https://github.com/onury/notation) — Read, modify, and filter the contents of objects and arrays via dot/bracket notation strings or glob patterns.
-- [**configuard**](https://github.com/onury/configuard) — Build a nested, typed configuration object from a flat list of settings — with `${...}` templating and accessor-based (ABAC) filtering.
+- [**configuard**](https://github.com/onury/configuard) — Turn flat config rows from a database table into a nested, typed configuration object — with `${...}` templating and accessor-based (ABAC) filtering.
 
 ## License
 
