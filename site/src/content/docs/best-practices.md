@@ -82,6 +82,53 @@ Always load the record into the context for `own` checks. (Set
 ownership" behavior.)
 :::
 
+## Ship Booleans, Not the Policy
+
+Access control runs on the **server**. The client should never receive your
+grants — only *decisions*. Compute them with `tryCan()` (which never throws on
+the view path) and send a small **capability map**:
+
+```js
+const caps = {
+  canEditPost:   ac.tryCan(role).updateAny('post').granted,
+  canSeeRevenue: ac.tryCan(role).readAny('dashboard:revenue').granted
+};
+res.json(caps); // the UI shows/hides from these flags
+```
+
+The client learns *what it can do*, not *how the policy is built*.
+
+:::caution[UI gating is UX, not security]
+Hiding a button is a usability nicety, not a boundary — a hidden control is
+still reachable. **Always re-check on the server** when the action runs.
+:::
+
+**Don't**
+
+- Never send `getGrants()` / `getGrantsList()` — or a single role's slice of
+  them — to the browser.
+- Never re-instantiate `AccessControl` in the client to "check locally". The
+  policy leaks, and a client-side check can't be trusted anyway.
+
+**Do**
+
+- Decide on the server and send booleans (a capability map), or render
+  server-side (SSR) so the markup arrives already gated.
+- For a data-driven menu, model the surface as a **resource** and return only
+  the allowed items:
+
+  ```js
+  ac.grant('guest').read('menu', ['home'])
+    .grant('user').read('menu', ['home', 'profile', 'videos']);
+
+  const items = ac.can(role).read('menu').attributes; // ['home','profile','videos']
+  res.json(items); // client renders only these
+  ```
+
+:::note[This comes up a lot]
+Related discussions: [#31](https://github.com/onury/accesscontrol/issues/31), [#62](https://github.com/onury/accesscontrol/issues/62), [#101](https://github.com/onury/accesscontrol/issues/101).
+:::
+
 ## `engine` vs `policy` vs `context`
 
 `new AccessControl(grants, { engine, policy, context })`. Three buckets, three
