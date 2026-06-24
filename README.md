@@ -1,5 +1,5 @@
 <h1 align="center">
-    <a href="https://onury.io/accesscontrol"><img src="https://raw.githubusercontent.com/onury/accesscontrol/v3/ac-caution-tape.svg" alt="AccessControl.js" width="100%" /></a>
+    <a href="https://onury.io/accesscontrol"><img src="https://raw.githubusercontent.com/onury/accesscontrol/v3/ac-caution.svg" alt="AccessControl.js" width="100%" /></a>
 </h1>
 <p align="center">
   <a href="https://github.com/onury/accesscontrol/actions/workflows/ci.yml"><img src="https://github.com/onury/accesscontrol/actions/workflows/ci.yml/badge.svg" alt="build" /></a>
