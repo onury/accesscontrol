@@ -1,0 +1,26 @@
+---
+/**
+ * Stretches the AccessControl police-tape hero background to span from the top
+ * of the page (behind the header) down to the bottom of the hero — matching the
+ * notation & Configuard heroes. It only repositions the existing `.hero-html`
+ * tape layer (sets its top/height); the tape animation itself is unchanged. The
+ * bottom fade is a CSS mask in hero.css.
+ */
+---
+
+<script>
+  (() => {
+    const hero = document.querySelector('.hero');
+    const layer = hero && hero.querySelector('.hero-html');
+    if (!hero || !layer) return;
+    const fit = () => {
+      const top = Math.max(0, hero.getBoundingClientRect().top + window.scrollY);
+      layer.style.top = -top + 'px';
+      layer.style.height = top + hero.offsetHeight + 'px';
+    };
+    fit();
+    let rt = 0;
+    window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(fit, 150); });
+    window.addEventListener('load', fit);
+  })();
+</script>

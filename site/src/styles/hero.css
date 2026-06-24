@@ -41,6 +41,10 @@
   object-fit: unset;
   opacity: var(--scene-opacity); /* one knob to fade the whole background scene … */
   filter: blur(var(--scene-blur)); /* … and one to blur it */
+  /* The layer spans page-top → hero-bottom (top/height set by HeroStage.astro);
+     fade it out at the bottom so the tape dissolves before the content. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 120px), transparent);
+          mask-image: linear-gradient(to bottom, #000 calc(100% - 120px), transparent);
 }
 .hero > .stack { position: relative; z-index: 1; }   /* … copy sits above them */
 .tape-defs { position: absolute; width: 0; height: 0; }
