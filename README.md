@@ -3,6 +3,8 @@
 </h1>
 <p align="center">
   <a href="https://github.com/onury/accesscontrol/actions/workflows/ci.yml"><img src="https://github.com/onury/accesscontrol/actions/workflows/ci.yml/badge.svg" alt="build" /></a>
+  <a href="#security--quality"><img src="https://img.shields.io/badge/coverage-100%25-2BB150?logo=vitest&logoColor=%23FDC72B&style=flat" alt="coverage" /></a>
+  <a href="https://stryker-mutator.io/docs/"><img src="https://img.shields.io/badge/mutation-88%25-2BB150?style=flat" alt="mutation score" /></a>
   <a href="https://www.npmjs.com/package/accesscontrol"><img src="https://img.shields.io/npm/v/accesscontrol.svg?style=flat&label=&color=%23C6234B&logo=npm" alt="version" /></a>
   <a href="https://www.npmjs.com/package/accesscontrol"><img src="https://img.shields.io/npm/dm/accesscontrol.svg?style=flat&color=2BB150" alt="downloads" /></a>
   <a href="https://gist.github.com/onury/d3f3d765d7db2e8b2d050d14315f2ac7"><img src="https://img.shields.io/badge/ESM-F7DF1E?style=flat" alt="ESM" /></a>
@@ -315,16 +317,6 @@ you.
 ## Documentation
 
 See the full documentation & API reference @ [onury.io/accesscontrol](https://onury.io/accesscontrol)
-
-## Contributing
-
-```sh
-npm install
-npm run build && npm test        # lint, type-check, tests
-npm run cover                     # coverage
-```
-
-Add tests under [`/test`](test/). Coverage and lint must pass.
 
 ## License
 
