@@ -1,6 +1,6 @@
 <h1 align="center">
     <a href="https://onury.io/accesscontrol"><img src="https://raw.githubusercontent.com/onury/accesscontrol/v3/ac-caution.svg" alt="AccessControl.js" width="100%" /></a>
-</h1>
+
 <p align="center">
   <a href="https://github.com/onury/accesscontrol/actions/workflows/ci.yml"><img src="https://github.com/onury/accesscontrol/actions/workflows/ci.yml/badge.svg" alt="build" /></a>
   <a href="#security--quality"><img src="https://img.shields.io/badge/coverage-100%25-2BB150?logo=vitest&logoColor=%23FDC72B&style=flat" alt="coverage" /></a>
