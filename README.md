@@ -1,5 +1,6 @@
-<h1 align="center">
+<p align="center">
     <a href="https://onury.io/accesscontrol"><img src="https://raw.githubusercontent.com/onury/accesscontrol/v3/ac-caution.svg" alt="AccessControl.js" width="100%" /></a>
+</p>
 
 <p align="center">
   <a href="https://github.com/onury/accesscontrol/actions/workflows/ci.yml"><img src="https://github.com/onury/accesscontrol/actions/workflows/ci.yml/badge.svg" alt="build" /></a>
@@ -12,6 +13,7 @@
   <a href="https://github.com/onury/accesscontrol/blob/master/LICENSE"><img src="https://img.shields.io/npm/l/accesscontrol.svg?style=flat&color=blue" alt="license" /></a>
   <a href="https://onury.io/accesscontrol"><img src="https://img.shields.io/badge/docs-read-c27cf4?style=flat" alt="documentation" /></a>
 </p>
+
 
 > This module is **ESM** 🔆. Please [**read this**](https://gist.github.com/onury/d3f3d765d7db2e8b2d050d14315f2ac7).
 
