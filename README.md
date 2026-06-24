@@ -16,8 +16,6 @@
 > [!IMPORTANT]
 > This module is **ESM** 🔆. Please [**read this**](https://gist.github.com/onury/d3f3d765d7db2e8b2d050d14315f2ac7).
 
-> © 2026, Onur Yıldırım ([@onury](https://github.com/onury)). MIT License.
-
 ### Role and Attribute based Access Control for Node.js
 
 Many [RBAC][rbac] (Role-Based Access Control) implementations differ, but the
@@ -322,7 +320,7 @@ See the full documentation & API reference @ [onury.io/accesscontrol](https://on
 
 ## License
 
-[**MIT**][license].
+© 2026, Onur Yıldırım. [**MIT**][license] License.
 
 [license]:https://github.com/onury/accesscontrol/blob/master/LICENSE
 [docs]:https://onury.io/accesscontrol/
