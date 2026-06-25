@@ -16,6 +16,35 @@ describe('Test Suite: require() gates (P7)', () => {
     expect(ac.can('admin', { env: 'dev' }).readAny('post').granted).toBe(false);
   });
 
+  test('a gate fails closed when its context property is missing or absent', () => {
+    const ac = new AccessControl();
+    ac.grant('admin').readAny('post', ['*']);
+    ac.require('$.env == prod');
+    // property omitted from a supplied context → `$.env` resolves to undefined
+    // → `undefined === 'prod'` is false → gate fails → denied.
+    expect(ac.can('admin', { user: 'x' }).readAny('post').granted).toBe(false);
+    // no context at all behaves identically.
+    expect(ac.can('admin').readAny('post').granted).toBe(false);
+    // and the denial carries the gate-specific reason.
+    let reason = '';
+    ac.on('access', (e) => {
+      reason = e.reason ?? '';
+    });
+    ac.can('admin', {}).readAny('post');
+    expect(reason).toBe('require_failed');
+  });
+
+  test('a negated gate operator fails OPEN on a missing property (sharp edge)', () => {
+    // `==` denies on absence (fail-closed); negative operators do NOT. With the
+    // property absent, `undefined !== 'dev'` is true → the gate passes. Prefer the
+    // positive assertion form (`$.env == prod`) so absence denies.
+    const ac = new AccessControl();
+    ac.grant('admin').readAny('post', ['*']);
+    ac.require('$.env != dev');
+    expect(ac.can('admin', {}).readAny('post').granted).toBe(true); // ⚠ passes
+    expect(ac.can('admin', { env: 'dev' }).readAny('post').granted).toBe(false);
+  });
+
   test('require can only restrict: a passing gate never grants on its own', () => {
     const ac = new AccessControl();
     ac.grant('admin').readAny('other', ['*']); // admin is a known role…

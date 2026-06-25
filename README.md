@@ -178,6 +178,12 @@ ac.category('billing').require('$.ip cidr 10.0.0.0/8');  // per category
 ac.resource('billing/invoice').require('$.mfa == true'); // per resource
 ```
 
+A gate **fails closed** when its context property is missing: `$.env` resolves to
+`undefined`, so `$.env == prod` is `false` and the check is denied (`reason:
+'require_failed'`). One sharp edge — a *negative* operator fails **open** on
+absence (`undefined != 'dev'` is `true`), so prefer the positive assertion form
+(`$.env == prod`) for gates. See the [gates docs](https://onury.io/accesscontrol/concepts/gates/).
+
 ### Groups & Categories — Bounded Bulk Grants
 
 Declare your vocabulary with `setup()`, then grant to a **group** or **category**
