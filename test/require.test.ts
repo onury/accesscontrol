@@ -27,7 +27,7 @@ describe('Test Suite: require() gates (P7)', () => {
     expect(ac.can('admin').readAny('post').granted).toBe(false);
     // and the denial carries the gate-specific reason.
     let reason = '';
-    ac.on('access', (e) => {
+    ac.on('access', (e: any) => {
       reason = e.reason ?? '';
     });
     ac.can('admin', {}).readAny('post');
