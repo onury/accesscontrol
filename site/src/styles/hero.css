@@ -145,7 +145,7 @@ html:not([data-has-sidebar]) :where(main, .content-panel) { overflow-x: clip; }
 .hero .tagline .tag-hl {
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
-  background-color: rgba(12, 14, 20, 0.66);
+  background-color: rgba(12, 14, 20, 0.25);
   /* The highlight box is always dark, so keep the text light in BOTH themes
      (otherwise light mode renders dark text on the dark box — unreadable). */
   color: #f3f4f6;

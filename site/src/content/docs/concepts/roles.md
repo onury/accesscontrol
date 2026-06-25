@@ -15,8 +15,8 @@ const ac = new AccessControl();
 ac.grant('user')
     .createOwn('video')
     .readAny('video')
-  .grant('admin')          // switch role, keep the chain
-    .extend('user')        // inherit user's grants
+  .grant('admin')   // switch role, keep the chain
+    .extend('user') // inherit user's grants
     .deleteAny('video');
 ```
 

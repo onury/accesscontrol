@@ -185,7 +185,7 @@ ac.grant('user').readAny('post', ['*', '!authorId']);
 ac.grant('admin').extend('user').updateAny('post', ['*']);
 ac.require('$.env == prod');
 
-ac.lock();          // no more grant/deny/extend/setup/require/setGrants
+ac.lock(); // no more grant/deny/extend/setup/require/setGrants
 ```
 
 ## Persist as Rows, Rebuild on Boot
@@ -193,7 +193,7 @@ ac.lock();          // no more grant/deny/extend/setup/require/setGrants
 Store the flat list (DB‑friendly) and rehydrate; it round‑trips identically.
 
 ```js
-await db.savePolicy(ac.getGrantsList());          // one row per rule + $extend rows
+await db.savePolicy(ac.getGrantsList()); // one row per rule + $extend rows
 const ac = new AccessControl(await db.loadPolicy());
 ```
 

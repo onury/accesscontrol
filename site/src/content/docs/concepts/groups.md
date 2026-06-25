@@ -34,7 +34,7 @@ ac.setup({ roles: ['user', 'admin'], resources: ['post', 'comment'] });
 Grant once to a group and/or category; members inherit dynamically at check time.
 
 ```js
-ac.grant('admins').readAny('media');                   // group × category
+ac.grant('admins').readAny('media'); // group × category
 
 ac.can('admins/admin').readAny('media/photo').granted; // true
 ac.can('admins/moderator').readAny('media/video').granted; // true

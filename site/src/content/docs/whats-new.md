@@ -94,7 +94,7 @@ that can only **restrict**. `granted = (a grant matches) AND (every applicable
 gate passes)`, so adding a gate can never widen access.
 
 ```js
-ac.require('$.env == prod');                          // global
+ac.require('$.env == prod'); // global
 ac.category('billing').require('$.ip cidr 10.0.0.0/8'); // per category
 ac.resource('billing/invoice').require('$.mfa == true'); // per resource
 ```
@@ -110,7 +110,7 @@ ac.setup({
   roles:     { admins: ['admin', 'moderator'], _: ['user'] },
   resources: { media: ['photo', 'video'], _: ['profile'] },
 });
-ac.grant('admins').readAny('media');                  // group × category
+ac.grant('admins').readAny('media'); // group × category
 ac.can('admins/admin').readAny('media/photo').granted; // true (inherited + categorized)
 ```
 

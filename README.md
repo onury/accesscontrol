@@ -110,7 +110,7 @@ ac.grant('editor').action('publish', 'article', ['*']);      // publish (any)
 ac.grant('author').action('publish:own', 'article', ['*']);  // ownership-gated
 
 ac.can('author', { user, article }).do('publish:own', 'article').granted;
-ac.can('admin').do('update', 'post').granted;                // CRUD via .do()
+ac.can('admin').do('update', 'post').granted; // CRUD via .do()
 ```
 
 ### Resources, Attributes & Filtering
@@ -122,8 +122,8 @@ returns a copy with only the allowed fields.
 ac.grant('user').readOwn('account', ['*', '!password', 'profile.*']);
 
 const perm = ac.can('user').readOwn('account');
-perm.attributes;                 // ['*', '!password', 'profile.*']
-perm.filter(accountRecord);      // record without `password`
+perm.attributes;            // ['*', '!password', 'profile.*']
+perm.filter(accountRecord); // record without `password`
 ```
 
 ### Possession & Ownership

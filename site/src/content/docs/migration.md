@@ -54,7 +54,7 @@ When defining grants as a flat array, inheritance now travels as its own row.
 // v3 flat list
 new AccessControl([
   { role: 'editor', resource: 'post', action: 'read:any', attributes: ['*'] },
-  { role: 'admin', $extend: ['editor'] },          // inheritance row
+  { role: 'admin', $extend: ['editor'] }, // inheritance row
 ]);
 ```
 

@@ -23,11 +23,11 @@ A gate applies at one of three scopes. On a check, the applicable gates are the
 gates — all must pass.
 
 ```js
-ac.require('$.env == prod');                       // global: every check
+ac.require('$.env == prod');        // global: every check
 ac.category('billing')
-  .require('$.ip cidr 10.0.0.0/8');                 // any billing/* resource
+  .require('$.ip cidr 10.0.0.0/8'); // any billing/* resource
 ac.resource('billing/invoice')
-  .require('$.mfa == true');                        // just billing/invoice
+  .require('$.mfa == true');        // just billing/invoice
 ```
 
 ## Example: Layered Gates
@@ -37,7 +37,7 @@ const ac = new AccessControl(grants, {
   context: { env: process.env.NODE_ENV }
 });
 
-ac.require('$.env == prod');                        // 1) prod only
+ac.require('$.env == prod'); // 1) prod only
 ac.category('billing').require('$.ip cidr 10.0.0.0/8'); // 2) + from the VPN
 ac.resource('billing/invoice').require('$.mfa == true'); // 3) + MFA
 
@@ -62,9 +62,9 @@ ac.grant('admin').readAny('post', ['*']);
 ac.require('$.env == prod');
 
 ac.can('admin', { env: 'prod' }).readAny('post').granted; // true
-ac.can('admin', { env: 'dev'  }).readAny('post').granted; // false
-ac.can('admin', {               }).readAny('post').granted; // false  ← env missing
-ac.can('admin'                   ).readAny('post').granted; // false  ← no context at all
+ac.can('admin', { env: 'dev' }).readAny('post').granted;  // false
+ac.can('admin', {}).readAny('post').granted;              // false  ← env missing
+ac.can('admin').readAny('post').granted;                  // false  ← no context
 ```
 
 With `env` absent, `$.env` is `undefined`, `undefined === 'prod'` is `false`, the
@@ -78,8 +78,8 @@ comparing to `undefined`. A **negative** operator inverts that: with the propert
 absent, `undefined != 'dev'` is `true`, so the gate **passes**.
 
 ```js
-ac.require('$.env != dev');             // "block dev"
-ac.can('admin', {}).readAny('post').granted;             // true  ⚠ env missing slips through
+ac.require('$.env != dev'); // "block dev"
+ac.can('admin', {}).readAny('post').granted; // ⚠ true — env absent slips through
 ac.can('admin', { env: 'dev' }).readAny('post').granted; // false
 ```
 

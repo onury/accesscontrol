@@ -74,8 +74,8 @@ ac.can('u').createAny('post').granted;    // false
 
 ```js
 const perm = ac.can('user').readOwn('account');
-res.json(perm.filter(account));        // single object
-res.json(perm.filter(accounts));        // array → maps over each
+res.json(perm.filter(account));  // single object
+res.json(perm.filter(accounts)); // array → maps over each
 ```
 
 ## Async Checks

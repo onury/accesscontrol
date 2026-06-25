@@ -184,7 +184,7 @@ the gates/vocabulary are defined in code), the individual getters still work:
 
 ```js
 // persist
-await db.savePolicy(ac.getGrantsList());        // grants (rows)
+await db.savePolicy(ac.getGrantsList()); // grants (rows)
 
 // rebuild on boot
 const ac = new AccessControl(await db.loadPolicy());
@@ -197,10 +197,10 @@ A grant rule row, fully expanded:
   role: 'author',
   resource: 'post',
   action: 'publish',
-  possession: 'own',                              // omitted ⇒ 'any'
+  possession: 'own',                           // omitted ⇒ 'any'
   attributes: ['*'],
-  condition: ['$.post.status', '==', 'draft'],     // optional (canonical JSON)
-  effect: 'deny'                                    // optional (deny rule)
+  condition: ['$.post.status', '==', 'draft'], // optional (canonical JSON)
+  effect: 'deny'                               // optional (deny rule)
 }
 ```
 
@@ -210,7 +210,7 @@ A grant rule row, fully expanded:
 structure, in three scopes (global, category, resource):
 
 ```js
-ac.require('$.env == prod');                          // global  — every check
+ac.require('$.env == prod'); // global  — every check
 ac.category('billing').require('$.ip cidr 10.0.0.0/8'); // category — billing/*
 ac.resource('billing/invoice').require('$.mfa == true'); // resource — one resource
 ```
