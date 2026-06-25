@@ -12,6 +12,16 @@
   --oy-hero-align: start; /* left-align the hero copy (over the full-bleed tape) */
 }
 
+/* ── Heading ladder fix ────────────────────────────────────────────────────
+ * The shared theme pins h1/h2 to flat sizes (2.2rem / 1.5rem) but leaves h3–h6
+ * on Starlight's responsive vars, where `--sl-text-h3` grows to 1.8125rem on
+ * wide screens — LARGER than the 1.5rem h2. That inverts the hierarchy wherever
+ * an h3 sits under an h2 (the changelog, API reference, FAQ, conditions, …).
+ * Pin h3/h4 to a flat ladder under h2 so version/section sizing is always
+ * descending at every width. */
+.sl-markdown-content h3:not(:where(.not-content *)) { font-size: 1.3rem; }
+.sl-markdown-content h4:not(:where(.not-content *)) { font-size: 1.15rem; }
+
 /* ── Light mode only — header + sidebar tweaks (dark mode unchanged). ───────── */
 :root[data-theme='light'] .header .site-title { color: #000; }
 :root[data-theme='light'] header.header { border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
