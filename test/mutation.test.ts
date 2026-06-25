@@ -146,6 +146,40 @@ describe('Mutation kills: condition compiler messages & edges', () => {
     expect(compileCondition('$.n == -3.5')).toEqual(['$.n', '==', -3.5]);
   });
 
+  test('operand type inference: bareword type is spelled, not field-derived', () => {
+    // numeric-looking barewords become numbers (regardless of the path name)…
+    expect(compileCondition('$.num == 100')).toEqual(['$.num', '==', 100]);
+    expect(compileCondition('$.str == 100')).toEqual(['$.str', '==', 100]); // still a number!
+    // …quote to force the string form
+    expect(compileCondition('$.str == "100"')).toEqual(['$.str', '==', '100']);
+    expect(compileCondition("$.str == '100'")).toEqual(['$.str', '==', '100']);
+    // leading zeros are lost to Number() — the classic gotcha
+    expect(compileCondition('$.code == 007')).toEqual(['$.code', '==', 7]);
+    expect(compileCondition('$.code == "007"')).toEqual(['$.code', '==', '007']);
+    // plain alphabetic enums are unambiguous → string sugar is safe
+    expect(compileCondition('$.status != locked')).toEqual(['$.status', '!=', 'locked']);
+    // a value that *looks* like a path is read as a path ref unless quoted
+    expect(compileCondition('$.a == $.b')).toEqual(['$.a', '==', '$.b']);
+    expect(compileCondition('$.a == "$.b"')).toEqual(['$.a', '==', '$.b']); // literal string
+    // keyword barewords coerce; quote to keep the string
+    expect(compileCondition('$.s == true')).toEqual(['$.s', '==', true]);
+    expect(compileCondition('$.s == "true"')).toEqual(['$.s', '==', 'true']);
+    expect(compileCondition('$.s == "null"')).toEqual(['$.s', '==', 'null']);
+  });
+
+  test('=== / !== are accepted aliases, normalized to ==/!=', () => {
+    expect(compileCondition('$.a === 1')).toEqual(['$.a', '==', 1]);
+    expect(compileCondition('$.a !== 1')).toEqual(['$.a', '!=', 1]);
+    expect(compileCondition('$.a not === 1')).toEqual({ not: ['$.a', '==', 1] });
+    // canonical (array) input is normalized too
+    expect(compileCondition(['$.a', '===', 1])).toEqual(['$.a', '==', 1]);
+    expect(compileCondition(['$.a', '!==', 1])).toEqual(['$.a', '!=', 1]);
+    // a non-string op in a leaf is rejected (not treated as an alias lookup)
+    expect(grab(() => compileCondition(['$.a', 123, 1] as any)).message).toContain(
+      'Unknown operator "123"'
+    );
+  });
+
   test('compiler error messages', () => {
     expect(grab(() => compileCondition("$.s == 'oops")).message).toContain('Unterminated quote');
     expect(grab(() => compileCondition('$.x in [a, b')).message).toContain('Unterminated "["');

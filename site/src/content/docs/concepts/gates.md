@@ -23,7 +23,7 @@ A gate applies at one of three scopes. On a check, the applicable gates are the
 gates — all must pass.
 
 ```js
-ac.require('$.env == prod');        // global: every check
+ac.require('$.env == "prod"');      // global: every check
 ac.category('billing')
   .require('$.ip cidr 10.0.0.0/8'); // any billing/* resource
 ac.resource('billing/invoice')
@@ -37,7 +37,7 @@ const ac = new AccessControl(grants, {
   context: { env: process.env.NODE_ENV }
 });
 
-ac.require('$.env == prod'); // 1) prod only
+ac.require('$.env == "prod"'); // 1) prod only
 ac.category('billing').require('$.ip cidr 10.0.0.0/8'); // 2) + from the VPN
 ac.resource('billing/invoice').require('$.mfa == true'); // 3) + MFA
 
@@ -59,7 +59,7 @@ For the common **positive assertion** this is exactly the behavior you want:
 
 ```js
 ac.grant('admin').readAny('post', ['*']);
-ac.require('$.env == prod');
+ac.require('$.env == "prod"');
 
 ac.can('admin', { env: 'prod' }).readAny('post').granted; // true
 ac.can('admin', { env: 'dev' }).readAny('post').granted;  // false
@@ -78,16 +78,16 @@ comparing to `undefined`. A **negative** operator inverts that: with the propert
 absent, `undefined != 'dev'` is `true`, so the gate **passes**.
 
 ```js
-ac.require('$.env != dev'); // "block dev"
+ac.require('$.env != "dev"'); // "block dev"
 ac.can('admin', {}).readAny('post').granted; // ⚠ true — env absent slips through
 ac.can('admin', { env: 'dev' }).readAny('post').granted; // false
 ```
 
 This is standard JavaScript comparison semantics, not a special case. For a
-mandatory gate, prefer the **positive assertion** form (`$.env == prod`,
+mandatory gate, prefer the **positive assertion** form (`$.env == "prod"`,
 `$.mfa == true`, `$.ip cidr …`) so that *absence denies*. If you must use a
 negative predicate, also assert presence — e.g.
-`{ and: ['$.env != dev', '$.env in [prod, staging, dev]'] }`.
+`{ and: ['$.env != "dev"', '$.env in ["prod", "staging", "dev"]'] }`.
 :::
 
 The same resolution rule applies to [`.where()`](/accesscontrol/concepts/conditions/)

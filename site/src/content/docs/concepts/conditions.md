@@ -44,6 +44,10 @@ const ac = new AccessControl(grants, { context: { env: process.env.NODE_ENV } })
 Operands are **notation paths** (`$.order.value`) read from the context, or
 literals. Quote to force a string (`"100"` vs `100`).
 
+`==` / `!=` are **strict** — they compare value *and* type with no coercion, so
+`100` (number) never equals `"100"` (string). The JS spellings `===` / `!==` are
+accepted as aliases (normalized to `==` / `!=` in the stored form).
+
 | Group | Operators |
 | --- | --- |
 | Comparison | `==` `!=` `>` `>=` `<` `<=` |
@@ -59,7 +63,7 @@ ac.grant('user')
   .updateOwn('doc');
 
 ac.grant('ops')
-  .where({ and: ['$.env == prod', '$.ip cidr 10.0.0.0/8'] })
+  .where({ and: ['$.env == "prod"', '$.ip cidr 10.0.0.0/8'] })
   .readAny('server');
 
 ac.grant('night')
@@ -152,6 +156,27 @@ Values with spaces or characters that would confuse the tokenizer must be
 **quoted** — `'$.title == "in review"'` → `['$.title', '==', 'in review']`.
 Nesting depth is bounded (deeply nested `and`/`or`/`not` throws), and the whole
 thing is validated on the way in regardless of which form you used.
+
+:::caution[The type comes from the *token*, not the field — quote when in doubt]
+A plain alphabetic value needs no quotes: `'$.status != locked'` is the idiomatic
+way to write a string enum and compiles to `['$.status', '!=', 'locked']`. But the
+type is inferred from **how the value is spelled**, not from the field name. A
+bareword that looks like a number, `true`/`false`/`null`, or a `$.path` is parsed
+as *that* type — so `'$.code == 100'` is a **number** comparison even when `code`
+holds the string `"100"`, and with strict `==` the two never match (a silent
+mismatch, not an error). **Quote** anything that could be misread:
+
+```js
+'$.code == 100'    // number 100 — won't match a "100" string
+'$.code == "100"'  // string "100"
+'$.code == 007'    // number 7 — leading zero lost!
+'$.flag == "true"' // string, not the boolean
+'$.ref == "$.x"'   // literal string, not a path reference
+```
+
+These docs quote string literals by convention for exactly this reason; reach for
+the [array form](#why-the-array-form-avoids-surprises) when you want zero inference.
+:::
 
 ### Why the Array Form Avoids Surprises
 

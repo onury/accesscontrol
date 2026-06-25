@@ -159,7 +159,10 @@ ac.can('manager').with({ order: { value: 5000 } }).updateAny('order').granted; /
 
 Operators: `== != > >= < <=`, `in`, `contains`, `matches`, `startsWith`,
 `endsWith`, `before` / `after` / `between`, `cidr`; combine with `{ and, or, not }`.
-The time helper `$.now.*` is auto-injected. Conditions also accept canonical JSON
+`==` / `!=` are **strict** (no coercion; `===` / `!==` accepted as aliases), and a
+literal's type is inferred from how it's written — `100` is a number, `"100"` a
+string — so quote string values you don't want coerced. The time helper `$.now.*`
+is auto-injected. Conditions also accept canonical JSON
 (`['$.order.value', '<=', 100000]`), which is what gets stored/serialized.
 
 > [!NOTE]
@@ -173,16 +176,16 @@ The time helper `$.now.*` is auto-injected. Conditions also accept canonical JSO
 only **restrict**. `granted = (a grant matches) AND (every applicable gate passes)`.
 
 ```js
-ac.require('$.env == prod');                            // global
+ac.require('$.env == "prod"');                            // global
 ac.category('billing').require('$.ip cidr 10.0.0.0/8');  // per category
 ac.resource('billing/invoice').require('$.mfa == true'); // per resource
 ```
 
 A gate **fails closed** when its context property is missing: `$.env` resolves to
-`undefined`, so `$.env == prod` is `false` and the check is denied (`reason:
+`undefined`, so `$.env == "prod"` is `false` and the check is denied (`reason:
 'require_failed'`). One sharp edge — a *negative* operator fails **open** on
 absence (`undefined != 'dev'` is `true`), so prefer the positive assertion form
-(`$.env == prod`) for gates. See the [gates docs](https://onury.io/accesscontrol/concepts/gates/).
+(`$.env == "prod"`) for gates. See the [gates docs](https://onury.io/accesscontrol/concepts/gates/).
 
 ### Groups & Categories — Bounded Bulk Grants
 

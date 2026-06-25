@@ -210,7 +210,7 @@ A grant rule row, fully expanded:
 structure, in three scopes (global, category, resource):
 
 ```js
-ac.require('$.env == prod'); // global  — every check
+ac.require('$.env == "prod"'); // global  — every check
 ac.category('billing').require('$.ip cidr 10.0.0.0/8'); // category — billing/*
 ac.resource('billing/invoice').require('$.mfa == true'); // resource — one resource
 ```

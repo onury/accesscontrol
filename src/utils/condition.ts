@@ -42,6 +42,13 @@ function restampCode(err: unknown, prefix: string): unknown {
 
 /** Comparison operators kept in symbol form in the compiled triple. */
 const COMPARISON_OPS = ['==', '!=', '>=', '<=', '>', '<'];
+/**
+ * Author-facing operator aliases, normalized to the canonical form at compile
+ * time. `==`/`!=` are already *strict* (`===`/`!==` semantics), so the JS-style
+ * `===`/`!==` spellings are accepted as synonyms — never stored, so the canonical
+ * (serialized) triple always uses `==`/`!=`.
+ */
+const OP_ALIASES: Record<string, string> = { '===': '==', '!==': '!=' };
 /** Membership operators. `nin` is intentionally dropped — use `not … in`. */
 const MEMBERSHIP_OPS = ['in', 'contains'];
 /** String operators. */
@@ -235,9 +242,10 @@ function compileExpression(expr: string, pathPrefix: string): ConditionJSON {
   // `!=` stays its own operator and is handled below, not via this modifier.
   const negated = t[1] === 'not';
   const opIdx = negated ? 2 : 1;
-  const op = t[opIdx];
+  const rawOp = t[opIdx];
+  const op = OP_ALIASES[rawOp] ?? rawOp;
   if (!ALL_OPS.includes(op)) {
-    throw new AccessControlError(`Unknown operator "${op}" in condition: "${expr}".`);
+    throw new AccessControlError(`Unknown operator "${rawOp}" in condition: "${expr}".`);
   }
   const rhsTokens = t.slice(opIdx + 1);
   if (rhsTokens.length === 0) {
@@ -260,14 +268,16 @@ function normalizeLeaf(node: unknown[]): ConditionJSON {
       `Invalid condition leaf (expected [lhs, op, rhs]): ${JSON.stringify(node)}.`
     );
   }
-  const op = node[1];
+  const rawOp = node[1];
+  const op = typeof rawOp === 'string' ? (OP_ALIASES[rawOp] ?? rawOp) : rawOp;
   if (typeof op !== 'string' || !ALL_OPS.includes(op)) {
-    throw new AccessControlError(`Unknown operator "${String(op)}" in condition leaf.`);
+    throw new AccessControlError(`Unknown operator "${String(rawOp)}" in condition leaf.`);
   }
   if (op === 'between') validateBetween(node[2]);
   if (op === 'cidr' && typeof node[2] === 'string') validateIpMembers([node[2]]);
   if (op === 'in' && Array.isArray(node[2]) && node[2].some(isIpLike)) validateIpMembers(node[2]);
-  return node as ConditionLeaf;
+  // normalize an aliased operator (===/!==) into the canonical triple
+  return (op === rawOp ? node : [node[0], op, node[2]]) as ConditionLeaf;
 }
 
 /**

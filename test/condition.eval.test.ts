@@ -29,6 +29,26 @@ describe('Test Suite: condition evaluator', () => {
     expect(check('$.s == "true"', { s: 'true' })).toBe(true); // quoted stays string
   });
 
+  test('type inference: strict equality never coerces number ↔ string', () => {
+    // RHS `100` is a number no matter the field name → only matches a number
+    expect(check('$.num == 100', { num: 100 })).toBe(true);
+    expect(check('$.num == 100', { num: '100' })).toBe(false); // string ctx, number rhs
+    expect(check('$.str == 100', { str: '100' })).toBe(false); // the gotcha: no coercion
+    // quoting the literal makes it a string → matches the string context
+    expect(check('$.str == "100"', { str: '100' })).toBe(true);
+    expect(check('$.str == "100"', { str: 100 })).toBe(false);
+    // plain alphabetic enums need no quotes
+    expect(check('$.status != locked', { status: 'active' })).toBe(true);
+    expect(check('$.status != locked', { status: 'locked' })).toBe(false);
+  });
+
+  test('=== / !== behave identically to == / != (strict)', () => {
+    expect(check('$.a === 1', { a: 1 })).toBe(true);
+    expect(check('$.a === 1', { a: '1' })).toBe(false); // strict, like ==
+    expect(check('$.a !== 1', { a: 2 })).toBe(true);
+    expect(check('$.role === admin', { role: 'admin' })).toBe(true);
+  });
+
   test('path vs path operands', () => {
     expect(
       check('$.user.id == $.order.creatorId', { user: { id: 7 }, order: { creatorId: 7 } })

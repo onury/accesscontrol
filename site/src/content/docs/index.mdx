@@ -79,7 +79,7 @@ import { AccessControl } from 'accesscontrol';
 const ac = new AccessControl({}, { policy: { ownerField: 'ownerId' } });
 
 ac.grant('user').readOwn('profile', ['*', '!password']);
-ac.grant('editor').where('$.article.status == draft').action('publish', 'article');
+ac.grant('editor').where('$.article.status == "draft"').action('publish', 'article');
 
 ac.can('user', { user: { id: 7 }, profile: { ownerId: 7 } }).readOwn('profile').granted; // true
 ```

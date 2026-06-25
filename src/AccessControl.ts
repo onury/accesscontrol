@@ -545,7 +545,7 @@ export class AccessControl {
    * @throws {AccessControlError} - If locked.
    *
    * @example
-   * ac.require('$.env == prod');                       // global
+   * ac.require('$.env == "prod"'); // global
    * ac.category('billing').require('$.ip cidr 10.0.0.0/8');
    * ac.resource('billing/invoice').require('$.now.hour between [9, 18]');
    */

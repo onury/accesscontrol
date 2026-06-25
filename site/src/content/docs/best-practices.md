@@ -52,12 +52,12 @@ a *specific* role conditional access.
 
 ```js
 ac.grant('manager')
-  .where('$.order.value <= 100000')   // managers, but only small orders
+  .where('$.order.value <= 100000') // managers, but only small orders
   .updateAny('order', ['*']);
 
-ac.require('$.env == prod');           // everyone, every check, prod only
+ac.require('$.env == "prod"');      // everyone, every check, prod only
 ac.category('billing')
-  .require('$.ip cidr 10.0.0.0/8');    // billing/* only from the VPN
+  .require('$.ip cidr 10.0.0.0/8'); // billing/* only from the VPN
 ```
 
 ## Model Ownership, Don't Hand-roll It
@@ -183,7 +183,7 @@ runtime" from a possibility into an error.
 const ac = new AccessControl();
 ac.grant('user').readAny('post', ['*', '!authorId']);
 ac.grant('admin').extend('user').updateAny('post', ['*']);
-ac.require('$.env == prod');
+ac.require('$.env == "prod"');
 
 ac.lock(); // no more grant/deny/extend/setup/require/setGrants
 ```

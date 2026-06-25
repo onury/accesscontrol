@@ -29,7 +29,7 @@ For anything more involved than a field match, use a custom resolver or a
 
 ```js
 new AccessControl({}, { policy: { owner: (ctx) => ctx.article.authorId === ctx.user.id } });
-ac.grant('author').where('$.article.status != locked').updateOwn('article', ['*']);
+ac.grant('author').where('$.article.status != "locked"').updateOwn('article', ['*']);
 ```
 
 ## Show / Hide UI by Permission
