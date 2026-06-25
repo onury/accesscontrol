@@ -1,6 +1,6 @@
 {
   "name": "accesscontrol",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Role and Attribute based Access Control for Node.js",
   "homepage": "https://onury.io/accesscontrol",
   "author": "Onur Yildirim <onur@cutepilot.com>",

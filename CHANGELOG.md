@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
 
+## 3.0.1 (2026-06-25)
+
+### Added
+- **`===` / `!==` condition operators.** Accepted as aliases for `==` / `!=`
+  (which are already **strict** — value *and* type, no coercion). They're
+  normalized to the canonical operator at compile time, so stored/serialized
+  conditions are unchanged.
+
+### Docs
+- Quote string literals in condition examples and document operand **type
+  inference**: a literal's type comes from how it's written (`100` is a number,
+  `"100"` a string), so quote any value that could be misread as a
+  number / `true`/`false`/`null` / `$.path`.
+
+
 ## 3.0.0 (2026-06-14)
 
 The release that turns AccessControl from RBAC-with-attribute-filtering into a
