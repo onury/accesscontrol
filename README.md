@@ -330,6 +330,7 @@ See the full documentation & API reference @ [onury.io/accesscontrol](https://on
 
 ## Related Projects
 
+- [**nestjs-accesscontrol**](https://github.com/onury/nestjs-accesscontrol) — The official NestJS integration for this package: fluent CRUD decorators, a fail-closed guard, and attribute filtering.
 - [**notation**](https://github.com/onury/notation) — Read, modify, and filter the contents of objects and arrays via dot/bracket notation strings or glob patterns.
 - [**configuard**](https://github.com/onury/configuard) — Turn flat config rows from a database table into a nested, typed configuration object — with `${...}` templating and accessor-based (ABAC) filtering.
 
