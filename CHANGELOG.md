@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
 
+## Unreleased
+
+### Tooling
+- **CI now enforces the full quality bar.** The workflow runs `typecheck → lint → build → cover` across the Node 20/22/24 matrix and a dedicated **mutation** job (Stryker, on Node 24) — so 100% coverage and the mutation threshold are gated on every push and PR, not just `build` + `test`.
+
+
 ## 3.0.1 (2026-06-25)
 
 ### Added

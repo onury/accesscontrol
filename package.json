@@ -3,15 +3,12 @@
   "version": "3.0.1",
   "description": "Role and Attribute based Access Control for Node.js",
   "homepage": "https://onury.io/accesscontrol",
-  "author": "Onur Yildirim <onur@cutepilot.com>",
+  "author": "Onur Yıldırım <onur@cutepilot.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/onury/accesscontrol/issues"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/onury/accesscontrol.git"
-  },
+  "repository": "onury/accesscontrol",
   "type": "module",
   "main": "./lib/index.js",
   "module": "./lib/index.js",
