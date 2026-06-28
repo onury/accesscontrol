@@ -95,6 +95,7 @@ export default defineConfig({
             { label: 'Best Practices', slug: 'best-practices' },
             { label: 'Security Considerations', slug: 'security' },
             { label: 'Express Integration', slug: 'guides/express' },
+            { label: 'NestJS Integration', slug: 'guides/nestjs' },
             { label: 'Recipes & Integrations', slug: 'guides/recipes' }
           ]
         },
