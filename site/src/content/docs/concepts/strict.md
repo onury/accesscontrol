@@ -72,32 +72,36 @@ See [Security › Fail-closed checks](/accesscontrol/security/#fail-closed-check
 
 ### Error codes
 
-Every `AccessControlError` carries a stable `err.code` (the `ErrorCode` enum) —
-the part of the API you should branch on. Messages are redacted by default and
-may change wording.
+Every `AccessControlError` carries a stable `err.code` (the `ErrorCode` enum) — the part of the API you should branch on. Messages are redacted by default and may change wording.
 
-| code | when |
-| --- | --- |
-| `INVALID_NAME` | empty/malformed name |
-| `RESERVED_NAME` | a reserved keyword (`__proto__`, `prototype`, `constructor`, `_`) |
-| `INVALID_QUERY` | malformed check query (`IQueryInfo`) |
-| `INVALID_SETUP` | malformed `setup()` vocabulary |
-| `INVALID_GRANT` | invalid grant rule / grants object |
-| `INVALID_ACTION` | invalid action name or possession |
-| `ROLE_NOT_FOUND` | referenced role doesn't exist |
-| `INVALID_INHERITANCE` | self / cross / non‑existent inheritance |
-| `UNKNOWN_ACTION` / `UNKNOWN_RESOURCE` | strict‑mode unknown name |
-| `LOCKED` | mutation attempted after `lock()` |
-| `ASYNC_REQUIRED` | a `{ fn }` condition was hit on the sync path |
-| `INVALID_CONDITION` | malformed / too‑deeply‑nested condition |
-| `UNKNOWN_CONDITION_FN` | unregistered custom function name |
-| `REGEX_DISABLED` / `UNSAFE_REGEX` | `matches` disabled, or an unsafe pattern |
+The **phase** column tells you *when* a code can reach you: **author** codes throw while the policy is being built or loaded (grant chainers, the constructor, `setGrants()`, `require()`, `restore()`) — they mean the policy itself is bad, and they surface at startup, not per request. **check** codes throw while resolving a permission — the policy loaded fine, but this particular check couldn't be answered.
+
+| code | when | phase |
+| --- | --- | --- |
+| `INVALID_NAME` | empty/malformed name | both |
+| `RESERVED_NAME` | a reserved keyword (`__proto__`, `prototype`, `constructor`, `_`) | both |
+| `INVALID_QUERY` | malformed check query (`IQueryInfo`) | check |
+| `INVALID_SETUP` | malformed `setup()` vocabulary | author |
+| `INVALID_GRANT` | invalid grant rule / grants object | author |
+| `INVALID_ACTION` | invalid action name or possession | both |
+| `ROLE_NOT_FOUND` | referenced role doesn't exist | both |
+| `INVALID_INHERITANCE` | self / cross / non‑existent inheritance | author |
+| `UNKNOWN_ACTION` / `UNKNOWN_RESOURCE` | strict‑mode unknown name | check |
+| `LOCKED` | mutation attempted after `lock()` | author |
+| `ASYNC_REQUIRED` | a `{ fn }` condition was hit on the sync path | check |
+| `INVALID_CONDITION` | malformed / too‑deeply‑nested condition | author |
+| `UNKNOWN_CONDITION_FN` | unregistered custom function name | check |
+| `REGEX_DISABLED` / `UNSAFE_REGEX` | `matches` disabled, or an unsafe pattern | check |
+| `INVALID_DTREXP` | malformed or over‑long [`during` expression](/accesscontrol/concepts/conditions/#temporal-scheduling--during) | author |
+| `DTREXP_NEVER_MATCHES` | a `during` expression that can never match (e.g. `D30 M2`) | author |
 
 ```js
 import { ErrorCode } from 'accesscontrol';
 
 if (err.code === ErrorCode.ROLE_NOT_FOUND) { /* … */ }
 ```
+
+The split is what makes [`tryCan()`](/accesscontrol/security/#fail-closed-checks) safe to use on the request path: **check**-phase throws are swallowed into a denial (the `error` event still fires for your logs), while **author**-phase throws happen where you want a crash — at load time, before any request is served. The full generated reference lives at [API › ErrorCode](/accesscontrol/api/enumerations/errorcode/).
 
 ### Namespacing codes (`engine.errorCodePrefix`)
 
