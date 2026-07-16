@@ -175,6 +175,8 @@ ac.grant('editor').where('$.now during "T0900:1800 E1:5"').updateAny('post');
 > (it's a ReDoS surface). Patterns are then screened for catastrophic
 > backtracking. See [Security](https://onury.io/accesscontrol/security/).
 
+See the [conditions docs](https://onury.io/accesscontrol/concepts/conditions/).
+
 ### Mandatory Gates — `require()` 
 
 `.where()` conditionally **grants**; `.require()` is an independent gate that can
