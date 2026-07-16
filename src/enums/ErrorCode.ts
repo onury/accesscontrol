@@ -37,5 +37,9 @@ export enum ErrorCode {
   /** The `matches` operator is disabled (`engine.allowRegex` is off). */
   REGEX_DISABLED = 'REGEX_DISABLED',
   /** A regular expression is malformed or potentially catastrophic. */
-  UNSAFE_REGEX = 'UNSAFE_REGEX'
+  UNSAFE_REGEX = 'UNSAFE_REGEX',
+  /** A `during` dtrexp expression is malformed or too long. */
+  INVALID_DTREXP = 'INVALID_DTREXP',
+  /** A `during` dtrexp expression can never match (unsatisfiable). */
+  DTREXP_NEVER_MATCHES = 'DTREXP_NEVER_MATCHES'
 }

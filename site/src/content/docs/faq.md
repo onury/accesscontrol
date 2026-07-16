@@ -84,8 +84,5 @@ story.
 
 ### Is It Production-safe / How Is It Tested?
 
-Single pinned runtime dependency, zero production advisories
-(`npm audit --omit=dev`), 100% coverage, mutation‑tested, plus an adversarial
-suite and a property fuzzer. See
-[Best Practices › Quality & testing](/accesscontrol/best-practices/#quality--testing).
+Two exactly-pinned runtime dependencies ([`notation`](https://github.com/onury/notation) and [`dtrexp`](https://github.com/DTRExp/dtrexp-js), both from the same author), zero production advisories (`npm audit --omit=dev`), 100% coverage, mutation‑tested, plus an adversarial suite and a property fuzzer. See [Best Practices › Quality & testing](/accesscontrol/best-practices/#quality--testing).
 

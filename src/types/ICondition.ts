@@ -3,6 +3,7 @@
  * (prefixed by the configured `pathPrefix`, default `$.`) read from the
  * check-time context, or literal values.
  * @example ['$.order.value', '>', 100000]
+ * @example ['$.now', 'during', 'T0900:1800 E1:5'] // dtrexp schedule (Mon–Fri, 09:00–18:00)
  */
 export type ConditionLeaf = [unknown, string, unknown];
 
@@ -37,10 +38,8 @@ export interface ConditionCombinator {
  * - a comparison **leaf** (`[lhs, op, rhs]`),
  * - a **combinator** object (`{ and | or | not }`),
  * - a **custom-fn** reference (`{ fn, args }`),
- * - or the **string sugar** form (e.g. `'$.order.value > 100000'`) which
+ * - or the **string sugar** form (e.g. `'$.order.value > 100000'`, or
+ *   `'$.now during "T0900:1800 E1:5"'` for a temporal schedule) which
  *   compiles to the canonical JSON above.
- *
- * Note: evaluation is implemented in a later phase; the type is defined now so
- * the grant model can carry/serialize conditions.
  */
 export type ConditionJSON = ConditionLeaf | ConditionCombinator | ConditionFn | string;

@@ -1,7 +1,7 @@
 import { AccessControlError } from '../core/index.js';
 import { Action, ErrorCode, Possession } from '../enums/index.js';
 import type { AccessControl } from '../index.js';
-import type { ConditionJSON, IAccessInfo, IGrants } from '../types/index.js';
+import type { ConditionJSON, ConditionLeaf, IAccessInfo, IGrants } from '../types/index.js';
 import {
   commitToGrants,
   ecode,
@@ -25,6 +25,13 @@ import {
 export class Access {
   /** Inner `IAccessInfo` object. */
   protected _: IAccessInfo = {};
+
+  /**
+   * Pending `.during()` expressions. Kept separate from `_.condition` and
+   * merged at commit so a later `.where()` (which overwrites the condition by
+   * contract) can never silently drop an attached schedule.
+   */
+  protected _during: string[] = [];
 
   /** Main grants object. */
   protected _ac: AccessControl;
@@ -158,6 +165,33 @@ export class Access {
    */
   where(condition: ConditionJSON): Access {
     this._.condition = condition;
+    return this;
+  }
+
+  /**
+   * Attaches a temporal schedule to this grant: it applies only while the
+   * check instant — the reserved `$.now` (i.e. `context.now`, defaulting to
+   * the current time) — is covered by the given
+   * {@link https://dtrexp.org | dtrexp} expression. Shorthand for AND-ing
+   * `['$.now', 'during', expression]` into this grant's condition; composes
+   * with `.where()` regardless of call order. The timezone comes from the
+   * reserved `context.tz` (IANA name; defaults to the system zone). The
+   * expression is validated when the chain commits (on the action call):
+   * malformed or never-matching expressions throw.
+   *
+   * Repeated calls AND together (all schedules must cover the instant); to
+   * express alternatives, use a union (`|`) inside a single expression.
+   * @param expression - A dtrexp date-time range / recurrence expression.
+   * @returns - Self instance of `Access`.
+   *
+   * @example
+   * ac.grant('trader')
+   *   .where('$.order.value <= 100000')
+   *   .during('T0900:1800 E1:5') // Mon–Fri, 09:00–18:00
+   *   .updateAny('order', ['*']);
+   */
+  during(expression: string): Access {
+    this._during.push(expression);
     return this;
   }
 
@@ -482,6 +516,15 @@ export class Access {
     // denies all (deny-overrides). Explicit `[]` is preserved.
     this._.attributes = attributes ? toStringArray(attributes) : ['*'];
 
+    // fold pending `.during()` schedules into the condition (AND semantics).
+    if (this._during.length > 0) {
+      const leaves = this._during.map(
+        (expr) => [`${this._pathPrefix}.now`, 'during', expr] as ConditionLeaf
+      );
+      const parts = this._.condition === undefined ? leaves : [this._.condition, ...leaves];
+      this._.condition = parts.length === 1 ? parts[0] : { and: parts };
+    }
+
     commitToGrants(this._grants, this._, false, this._pathPrefix, this._nameOpts);
 
     // announce the policy edit (grant/deny) before resetting per-action state.
@@ -494,9 +537,10 @@ export class Access {
     });
 
     // important: reset per-action state for chained methods (attributes and the
-    // condition from `.where()` apply only to the action just committed)
+    // condition from `.where()`/`.during()` apply only to the action just committed)
     this._.attributes = undefined;
     this._.condition = undefined;
+    this._during = [];
 
     return this;
   }

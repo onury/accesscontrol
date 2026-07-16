@@ -49,6 +49,13 @@ ac.can('accountant', { ip, mfa: true })
 A denial by a gate surfaces as `reason: 'require_failed'` on the
 [`access` event](/accesscontrol/concepts/events/).
 
+Gates take the same condition language as `.where()` — including [temporal schedules](/accesscontrol/concepts/conditions/#temporal-scheduling--during), which turn a gate into a time-box for a whole scope:
+
+```js
+// nothing under `billing` moves outside weekday business hours
+ac.category('billing').require('$.now during "T0900:1800 E1:5"');
+```
+
 ## Missing Context — Gates Fail Closed
 
 A gate's condition is evaluated against the check-time context. There is **no

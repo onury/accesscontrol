@@ -1,4 +1,5 @@
 // dep modules
+import { type DTRExp, type DTRExpSyntaxError, parse as parseDTRExp } from 'dtrexp';
 import { Notation } from 'notation';
 // own modules
 import { AccessControlError } from '../core/index.js';
@@ -54,7 +55,7 @@ const MEMBERSHIP_OPS = ['in', 'contains'];
 /** String operators. */
 const STRING_OPS = ['matches', 'startsWith', 'endsWith'];
 /** Time operators. */
-const TIME_OPS = ['before', 'after', 'between'];
+const TIME_OPS = ['before', 'after', 'between', 'during'];
 /** Network operator — explicit single-range alias (the list case folds into `in`). */
 const NETWORK_OPS = ['cidr'];
 
@@ -100,6 +101,57 @@ function assertSafeRegex(src: string): void {
     }
     m = quantGroup.exec(src);
   }
+}
+
+/** Upper bound on a `during` expression's source length (a coarse DoS guard). */
+const MAX_DTREXP_LENGTH = 1000;
+
+/**
+ * Upper bound on the `during` parse cache. Expressions originate from grant
+ * authors (a real policy holds a handful of distinct strings), but grants may
+ * be deserialized from an untrusted store and {@link evaluateCondition} is an
+ * exported utility — an unbounded string-keyed map would be a memory-growth
+ * vector. A miss past the bound only costs one cheap re-parse.
+ */
+const MAX_DTREXP_CACHE = 500;
+
+/** Module-level `during` parse cache: dtrexp source → immutable compiled instance. */
+const dtrexpCache = new Map<string, DTRExp>();
+
+/**
+ * Parses a `during` dtrexp expression — or returns the cached instance.
+ * `DTRExp` instances are immutable ("parse once, evaluate many"); the cache is
+ * FIFO-bounded by {@link MAX_DTREXP_CACHE}. Exported only as an internal test
+ * hook (not part of the public API surface).
+ *
+ * @throws {AccessControlError} - If the expression is too long or malformed
+ * (carries dtrexp's message and character position; original error as `cause`).
+ */
+export function getDTRExp(expression: string, errorCodePrefix: string = ''): DTRExp {
+  if (expression.length > MAX_DTREXP_LENGTH) {
+    throw new AccessControlError(`"during" expression too long (> ${MAX_DTREXP_LENGTH}).`, {
+      code: ecode(errorCodePrefix, ErrorCode.INVALID_DTREXP)
+    });
+  }
+  const cached = dtrexpCache.get(expression);
+  if (cached) return cached;
+  let dtr: DTRExp;
+  try {
+    dtr = parseDTRExp(expression);
+  } catch (err) {
+    // per the dtrexp contract, parse() only throws DTRExpSyntaxError — wrap
+    // unconditionally (the `matches` invalid-regex precedent).
+    const { position, message } = err as DTRExpSyntaxError;
+    throw new AccessControlError(
+      `Invalid "during" expression at position ${position}: ${message}`,
+      { code: ecode(errorCodePrefix, ErrorCode.INVALID_DTREXP), cause: err }
+    );
+  }
+  if (dtrexpCache.size >= MAX_DTREXP_CACHE) {
+    dtrexpCache.delete(dtrexpCache.keys().next().value as string);
+  }
+  dtrexpCache.set(expression, dtr);
+  return dtr;
 }
 
 const NUMERIC_RE = /^-?\d+(\.\d+)?$/;
@@ -209,6 +261,34 @@ function validateBetween(rhs: unknown): void {
   }
 }
 
+/**
+ * Validates a `during` rhs: a static, parseable, satisfiable dtrexp expression
+ * string. A context path is rejected — the expression must be known at author
+ * time (grants are serialized JSON; scheduling data does not come from the
+ * check-time context). A parseable expression that can never match (dtrexp's
+ * unsatisfiability lint, e.g. `D30 M2`) is an authoring bug on a security
+ * policy and is rejected outright — the `validateBetween` spirit.
+ */
+function validateDuring(rhs: unknown, pathPrefix: string, errorCodePrefix: string): void {
+  if (typeof rhs !== 'string' || rhs.trim() === '') {
+    throw new AccessControlError('"during" expects a static dtrexp expression string.', {
+      code: ecode(errorCodePrefix, ErrorCode.INVALID_DTREXP)
+    });
+  }
+  if (isPath(rhs, pathPrefix)) {
+    throw new AccessControlError(
+      '"during" expects a static dtrexp expression, not a context path.',
+      { code: ecode(errorCodePrefix, ErrorCode.INVALID_DTREXP) }
+    );
+  }
+  const dtr = getDTRExp(rhs, errorCodePrefix);
+  if (dtr.warnings.length > 0) {
+    throw new AccessControlError(`"during" expression never matches: ${dtr.warnings[0].message}`, {
+      code: ecode(errorCodePrefix, ErrorCode.DTREXP_NEVER_MATCHES)
+    });
+  }
+}
+
 /** Whether a value is an IP- or CIDR-shaped string literal. */
 function isIpLike(v: unknown): boolean {
   return typeof v === 'string' && (IPV4_RE.test(v) || CIDR_RE.test(v));
@@ -232,7 +312,11 @@ function validateIpMembers(members: unknown[]): void {
 }
 
 /** Compiles a single sugar expression string into a canonical leaf (or `{not}`). */
-function compileExpression(expr: string, pathPrefix: string): ConditionJSON {
+function compileExpression(
+  expr: string,
+  pathPrefix: string,
+  errorCodePrefix: string
+): ConditionJSON {
   const t = tokenize(expr);
   if (t.length < 3) {
     throw new AccessControlError(`Invalid condition expression: "${expr}".`);
@@ -254,6 +338,7 @@ function compileExpression(expr: string, pathPrefix: string): ConditionJSON {
   const rhs = parseOperand(rhsTokens.join(' '), pathPrefix);
 
   if (op === 'between') validateBetween(rhs);
+  if (op === 'during') validateDuring(rhs, pathPrefix, errorCodePrefix);
   if (op === 'cidr' && typeof rhs === 'string') validateIpMembers([rhs]);
   if (op === 'in' && Array.isArray(rhs) && rhs.some(isIpLike)) validateIpMembers(rhs);
 
@@ -262,7 +347,11 @@ function compileExpression(expr: string, pathPrefix: string): ConditionJSON {
 }
 
 /** Validates/normalizes an already-array leaf and its (typed) operands. */
-function normalizeLeaf(node: unknown[]): ConditionJSON {
+function normalizeLeaf(
+  node: unknown[],
+  pathPrefix: string,
+  errorCodePrefix: string
+): ConditionJSON {
   if (node.length !== 3) {
     throw new AccessControlError(
       `Invalid condition leaf (expected [lhs, op, rhs]): ${JSON.stringify(node)}.`
@@ -274,6 +363,7 @@ function normalizeLeaf(node: unknown[]): ConditionJSON {
     throw new AccessControlError(`Unknown operator "${String(rawOp)}" in condition leaf.`);
   }
   if (op === 'between') validateBetween(node[2]);
+  if (op === 'during') validateDuring(node[2], pathPrefix, errorCodePrefix);
   if (op === 'cidr' && typeof node[2] === 'string') validateIpMembers([node[2]]);
   if (op === 'in' && Array.isArray(node[2]) && node[2].some(isIpLike)) validateIpMembers(node[2]);
   // normalize an aliased operator (===/!==) into the canonical triple
@@ -312,8 +402,8 @@ export function compileCondition(
       code: ic
     });
   }
-  if (typeof input === 'string') return compileExpression(input, pathPrefix);
-  if (Array.isArray(input)) return normalizeLeaf(input);
+  if (typeof input === 'string') return compileExpression(input, pathPrefix, errorCodePrefix);
+  if (Array.isArray(input)) return normalizeLeaf(input, pathPrefix, errorCodePrefix);
   if (type(input) === 'object') {
     const node = input as Record<string, unknown>;
     if ('fn' in node) return node as ConditionJSON; // custom fn — passthrough
@@ -386,7 +476,10 @@ function deriveNow(date: Date, tz?: string): UnknownObject {
     date: `${year}-${String(monthNum).padStart(2, '0')}-${parts.day}`,
     time: `${hour}:${parts.minute}`,
     hour: Number(hour),
-    minute: Number(parts.minute)
+    minute: Number(parts.minute),
+    // the raw instant — makes `$.now` itself a valid dtrexp DateInput (the
+    // `{ epochMilliseconds }` shape), so `$.now during "…"` needs no special-casing.
+    epochMilliseconds: date.getTime()
   };
 }
 
@@ -426,6 +519,35 @@ function toComparable(v: unknown): number | string {
     if (!Number.isNaN(t)) return t;
   }
   return v as string;
+}
+
+/**
+ * Coerces a resolved `during` lhs to a dtrexp `DateInput`; `undefined` means
+ * not date-like — the leaf then evaluates `false` (fail-closed), never throws.
+ */
+function toDateInput(
+  v: unknown
+): Date | number | string | { epochMilliseconds: number } | undefined {
+  if (v instanceof Date) return Number.isNaN(v.getTime()) ? undefined : v;
+  if (typeof v === 'number') return Number.isFinite(v) ? v : undefined;
+  if (typeof v === 'string') return Number.isNaN(Date.parse(v)) ? undefined : v;
+  if (type(v) === 'object') {
+    const epoch = (v as { epochMilliseconds?: unknown }).epochMilliseconds;
+    // Number.isFinite() implies typeof number — no coercion, unlike isFinite()
+    if (Number.isFinite(epoch)) return v as { epochMilliseconds: number };
+  }
+  return undefined;
+}
+
+/**
+ * The system IANA timezone. Used as the `during` default so it stays
+ * consistent with `deriveNow`, which also falls back to the system zone when
+ * `context.tz` is absent — one tz story across the condition system. Not
+ * memoized: Node re-resolves the zone when `process.env.TZ` changes at
+ * runtime, and a stale memo would silently diverge from `deriveNow`.
+ */
+function systemTz(): string {
+  return new Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 
 /** Inclusive `between`: numbers/dates ordered; `HH:MM` supports overnight wrap. */
@@ -468,7 +590,13 @@ function evalIn(lhs: unknown, rhs: unknown[]): boolean {
 }
 
 /** Applies a comparison operator to resolved operands. */
-function applyOp(op: string, lhs: unknown, rhs: unknown, allowRegex: boolean): boolean {
+function applyOp(
+  op: string,
+  lhs: unknown,
+  rhs: unknown,
+  allowRegex: boolean,
+  tz?: string
+): boolean {
   switch (op) {
     case '==':
       return lhs === rhs;
@@ -515,6 +643,11 @@ function applyOp(op: string, lhs: unknown, rhs: unknown, allowRegex: boolean): b
       return toComparable(lhs) > toComparable(rhs);
     case 'between':
       return Array.isArray(rhs) && evalBetween(lhs, rhs);
+    case 'during': {
+      const instant = toDateInput(lhs);
+      if (typeof rhs !== 'string' || instant === undefined) return false; // fail-closed
+      return getDTRExp(rhs).covers(instant, { tz: tz ?? systemTz() });
+    }
     case 'cidr':
       return typeof lhs === 'string' && ipMatches(lhs, String(rhs));
     /* istanbul ignore next */
@@ -535,7 +668,9 @@ function evalLeaf(
   const R = Array.isArray(rhs)
     ? rhs.map((r) => resolveOperand(r, ctx, pathPrefix))
     : resolveOperand(rhs, ctx, pathPrefix);
-  return applyOp(op as string, L, R, allowRegex);
+  // reserved `tz` survives prepareContext's spread — `during` evaluates in it.
+  const tz = typeof ctx.tz === 'string' ? ctx.tz : undefined;
+  return applyOp(op as string, L, R, allowRegex, tz);
 }
 
 /** Recursively evaluates a canonical condition node. */

@@ -211,3 +211,43 @@ describe('Test Suite: vocabulary + snapshot/restore round-trip', () => {
 function byRow(a: any, b: any): number {
   return JSON.stringify(a).localeCompare(JSON.stringify(b));
 }
+
+describe('during — serialization round-trip', () => {
+  const BH = 'T0900:1800 E1:5';
+  const monMorning = { now: '2026-07-20T10:00:00Z', tz: 'UTC' };
+  const satMorning = { now: '2026-07-18T10:00:00Z', tz: 'UTC' };
+
+  function buildScheduledAc(): AccessControl {
+    const ac = new AccessControl();
+    ac.grant('editor').where('$.post.status == draft').during(BH).updateAny('post', ['*']);
+    ac.require(`$.now during "${BH}"`);
+    return ac;
+  }
+
+  test('grants + gates with during survive list/object/snapshot round-trips', () => {
+    const ac = buildScheduledAc();
+    // object → list → object
+    const fromList = new AccessControl(ac.getGrantsList());
+    expect(fromList.getGrants()).toEqual(ac.getGrants());
+    // snapshot → restore (includes the require gates)
+    const restored = new AccessControl().restore(ac.snapshot());
+    expect(restored.getGrants()).toEqual(ac.getGrants());
+    expect(restored.getRequirements()).toEqual(ac.getRequirements());
+    expect(restored.getRequirements().global).toEqual([['$.now', 'during', BH]]);
+  });
+
+  test('a rebuilt model produces identical check results', () => {
+    const ac = buildScheduledAc();
+    const restored = new AccessControl().restore(ac.snapshot());
+    const draft = { post: { status: 'draft' } };
+    for (const when of [monMorning, satMorning]) {
+      const ctx = { ...when, ...draft };
+      expect(restored.can('editor', ctx).updateAny('post').granted).toBe(
+        ac.can('editor', ctx).updateAny('post').granted
+      );
+    }
+    // sanity: the schedule actually flips the verdict across the two contexts
+    expect(ac.can('editor', { ...monMorning, ...draft }).updateAny('post').granted).toBe(true);
+    expect(ac.can('editor', { ...satMorning, ...draft }).updateAny('post').granted).toBe(false);
+  });
+});

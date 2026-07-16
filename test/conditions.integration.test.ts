@@ -126,4 +126,124 @@ describe('Test Suite: conditions (integration)', () => {
     // report is readable with no context
     expect(ac.can('manager').readAny('report').granted).toBe(true);
   });
+
+  describe('during — temporal schedules (dtrexp)', () => {
+    const BH = 'T0900:1800 E1:5'; // Mon–Fri, 09:00–18:00
+    const monMorning = { now: '2026-07-20T10:00:00Z', tz: 'UTC' }; // in window
+    const satMorning = { now: '2026-07-18T10:00:00Z', tz: 'UTC' }; // out (weekend)
+
+    test('.during() alone gates a grant by schedule (stored canonical)', () => {
+      const ac = new AccessControl();
+      ac.grant('editor').during(BH).updateAny('post', ['*']);
+      const grants = ac.getGrants() as any;
+      expect(grants.editor.post.update[0].condition).toEqual(['$.now', 'during', BH]);
+      expect(ac.can('editor', monMorning).updateAny('post').granted).toBe(true);
+      expect(ac.can('editor', satMorning).updateAny('post').granted).toBe(false);
+    });
+
+    test('.where().during() — both must hold (AND)', () => {
+      const ac = new AccessControl();
+      ac.grant('trader')
+        .where('$.order.value <= 100000')
+        .during(BH)
+        .updateAny('order', ['*']);
+      const grants = ac.getGrants() as any;
+      expect(grants.trader.order.update[0].condition).toEqual({
+        and: [
+          ['$.order.value', '<=', 100000],
+          ['$.now', 'during', BH]
+        ]
+      });
+      const small = { order: { value: 500 } };
+      const large = { order: { value: 500000 } };
+      expect(ac.can('trader', { ...monMorning, ...small }).updateAny('order').granted).toBe(true);
+      expect(ac.can('trader', { ...monMorning, ...large }).updateAny('order').granted).toBe(false);
+      expect(ac.can('trader', { ...satMorning, ...small }).updateAny('order').granted).toBe(false);
+    });
+
+    test('.during().where() — the schedule survives a later .where() (order-independent)', () => {
+      const ac = new AccessControl();
+      ac.grant('trader')
+        .during(BH)
+        .where('$.order.value <= 100000')
+        .updateAny('order', ['*']);
+      // the schedule is folded at commit — .where()'s overwrite cannot drop it
+      const grants = ac.getGrants() as any;
+      expect(grants.trader.order.update[0].condition).toEqual({
+        and: [
+          ['$.order.value', '<=', 100000],
+          ['$.now', 'during', BH]
+        ]
+      });
+      const small = { order: { value: 500 } };
+      expect(ac.can('trader', { ...satMorning, ...small }).updateAny('order').granted).toBe(false);
+      expect(ac.can('trader', { ...monMorning, ...small }).updateAny('order').granted).toBe(true);
+    });
+
+    test('repeated .during() calls AND together', () => {
+      const ac = new AccessControl();
+      // weekday business hours AND within July 2026
+      ac.grant('temp').during(BH).during('20260701:20260731').readAny('report', ['*']);
+      const grants = ac.getGrants() as any;
+      expect(grants.temp.report.read[0].condition).toEqual({
+        and: [
+          ['$.now', 'during', BH],
+          ['$.now', 'during', '20260701:20260731']
+        ]
+      });
+      expect(ac.can('temp', monMorning).readAny('report').granted).toBe(true);
+      // a Monday in-window but outside July 2026
+      expect(
+        ac.can('temp', { now: '2026-08-03T10:00:00Z', tz: 'UTC' }).readAny('report').granted
+      ).toBe(false);
+    });
+
+    test('.during() does not leak to later chained actions', () => {
+      const ac = new AccessControl();
+      ac.grant('editor').during(BH).updateAny('post', ['*']).readAny('post', ['*']);
+      const grants = ac.getGrants() as any;
+      expect(grants.editor.post.update[0].condition).toEqual(['$.now', 'during', BH]);
+      expect(grants.editor.post.read[0].condition).toBeUndefined();
+      // read works out-of-window; update does not
+      expect(ac.can('editor', satMorning).readAny('post').granted).toBe(true);
+      expect(ac.can('editor', satMorning).updateAny('post').granted).toBe(false);
+    });
+
+    test('an out-of-schedule denial carries reason "condition_failed"', () => {
+      const ac = new AccessControl();
+      ac.grant('editor').during(BH).updateAny('post', ['*']);
+      let reason = '';
+      ac.on('access', (e: any) => {
+        reason = e.reason ?? '';
+      });
+      ac.can('editor', satMorning).updateAny('post');
+      expect(reason).toBe('condition_failed');
+    });
+
+    test('custom engine.pathPrefix applies to .during() leaves too', () => {
+      const ac = new AccessControl({}, { engine: { pathPrefix: '@' } });
+      ac.grant('editor').during(BH).updateAny('post', ['*']);
+      const grants = ac.getGrants() as any;
+      expect(grants.editor.post.update[0].condition).toEqual(['@.now', 'during', BH]);
+      expect(ac.can('editor', monMorning).updateAny('post').granted).toBe(true);
+      expect(ac.can('editor', satMorning).updateAny('post').granted).toBe(false);
+    });
+
+    test('an invalid .during() expression throws when the chain commits', () => {
+      const ac = new AccessControl();
+      expect(() => ac.grant('editor').during('T9999').updateAny('post', ['*'])).toThrow(
+        /during/
+      );
+      expect(() => ac.grant('editor').during('D30 M2').updateAny('post', ['*'])).toThrow(
+        /never matches/
+      );
+    });
+
+    test('async path: grantedAsync resolves the same schedule verdicts', async () => {
+      const ac = new AccessControl();
+      ac.grant('editor').during(BH).updateAny('post', ['*']);
+      expect(await ac.can('editor', monMorning).updateAny('post').grantedAsync).toBe(true);
+      expect(await ac.can('editor', satMorning).updateAny('post').grantedAsync).toBe(false);
+    });
+  });
 });

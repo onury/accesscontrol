@@ -53,7 +53,7 @@ accepted as aliases (normalized to `==` / `!=` in the stored form).
 | Comparison | `==` `!=` `>` `>=` `<` `<=` |
 | Membership | `in`, `contains` |
 | String | `startsWith`, `endsWith`, `matches` |
-| Time | `before`, `after`, `between` |
+| Time | `before`, `after`, `between`, `during` |
 | Network | `cidr` |
 | Combinators | `{ and }`, `{ or }`, `{ not }` |
 
@@ -71,9 +71,38 @@ ac.grant('night')
   .createAny('report');
 ```
 
-The reserved `$.now.*` fields (`year`, `month`, `day`, `weekday`, `hour`,
-`minute`, `time`, `date`) are auto‑injected; override `context.now` (a `Date` or
-string) for deterministic tests and `context.tz` for the timezone.
+The reserved `$.now.*` fields (`year`, `month`, `day`, `weekday`, `hour`, `minute`, `time`, `date`, `epochMilliseconds`) are auto‑injected; override `context.now` (a `Date` or string) for deterministic tests and `context.tz` for the timezone.
+
+## Temporal Scheduling — `during`
+
+The time operators above compare single fields. For real schedules — recurrences, calendar ranges, unions of windows — the `during` operator matches an instant against a [dtrexp](https://dtrexp.org) expression:
+
+```js
+// weekday business hours
+ac.grant('editor')
+  .where('$.now during "T0900:1800 E1:5"')
+  .updateAny('post');
+
+// the fluent shorthand — same stored form, composes with .where()
+ac.grant('editor').during('T0900:1800 E1:5').updateAny('post');
+
+// weekends within a date range, or any union of windows
+ac.grant('oncall')
+  .where('$.now during "E6:7 20260701:20261001 | T2200:0600 E1:5"')
+  .readAny('alert');
+```
+
+A dtrexp expression is compact and precise: `T0900:1800` is a half-open time window (09:00 in, 18:00 out), `E1:5` is Mon–Fri, `D13 E5` is every Friday the 13th, `|` unions alternatives. The full syntax lives at [dtrexp.org](https://dtrexp.org).
+
+What to know:
+
+- **Any date-like left side.** `$.now` checks the moment of the access check; any other path works too, as long as it resolves to a `Date`, epoch milliseconds, an ISO string, or a `{ epochMilliseconds }` object — e.g. `'$.booking.start during "T0900:1800 E1:5"'` constrains the *data*, not the clock. A left side that isn't date-like makes the condition **false** (fail-closed) — it never throws at check time.
+- **The timezone is an evaluation parameter, never part of the expression.** `during` evaluates in `context.tz` (IANA name), the same reserved key the `$.now.*` fields use; with no `tz` it uses the system zone — one timezone story across the whole condition system.
+- **The expression must be a static quoted string.** Grants are serialized JSON; the schedule is part of the *policy*, so a context path on the right side is rejected. Always quote the expression in sugar (they contain spaces and `|`).
+- **Validation happens when the grant is committed, not at check time.** A malformed expression throws `INVALID_DTREXP` (with dtrexp's message and character position), and an expression that can never match — like `D30 M2`, February 30th — throws `DTREXP_NEVER_MATCHES`. A grants document from your database either loads whole or fails loudly at startup.
+- **Parse once, evaluate many.** Compiled expressions are cached (bounded), and a coverage check is a handful of integer comparisons — no occurrence iteration on the authorization path.
+
+`during` works everywhere conditions do: in `{ and, or, not }` combinators, in [`require()` gates](/accesscontrol/concepts/gates/), on the sync *and* async check paths, and in serialized grants.
 
 ## A Multi-clause Business Rule
 

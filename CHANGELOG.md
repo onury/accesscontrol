@@ -3,10 +3,25 @@
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
 
-## Unreleased
+## 3.1.0 (2026-07-16)
+
+### Added
+- **Temporal schedules — the `during` condition operator.** Grants (and `require()` gates) can now be constrained to real schedules — recurrences, calendar ranges, unions of windows — via [dtrexp](https://dtrexp.org) expressions: `.where('$.now during "T0900:1800 E1:5"')` means weekdays, 09:00–18:00. Joins `before` / `after` / `between` in the Time operator family; works in string sugar, canonical JSON, combinators, gates, and on both the sync and async check paths.
+- **`.during(expression)` chainer** on grants — fluent shorthand that ANDs a `['$.now', 'during', …]` leaf into the grant's condition at commit; composes with `.where()` regardless of call order, and repeated calls AND together.
+- **Any date-like left side.** Beyond `$.now`, the checked instant can come from context data (`'$.booking.start during "…"'`) as a `Date`, epoch milliseconds, ISO string, or `{ epochMilliseconds }` object. A non-date-like value evaluates **false** (fail-closed), never throws at check time.
+- **`$.now.epochMilliseconds`** — the raw instant, now part of the derived `$.now.*` fields.
+- **Error codes `INVALID_DTREXP` and `DTREXP_NEVER_MATCHES`.** Expressions are validated at every grants entry point (chainer commit, constructor, `setGrants`, grants-list, `require()`, `restore()`): malformed ones throw with dtrexp's message and character position; parseable-but-never-matching ones (`D30 M2`) are rejected as authoring bugs.
+
+### Security
+- The `during` surface is bounded like the rest of the condition DSL: expression length cap (1000 chars), commit-time validation, and a bounded FIFO parse cache — untrusted serialized grants can't reach the check path unvalidated or grow memory through distinct expression strings.
+- Timezone comes from the reserved `context.tz` (IANA name), the same key `$.now.*` uses; with no `tz`, both evaluate in the **system zone** — one timezone story across the condition system.
+
+### Dependencies
+- Added [`dtrexp`](https://github.com/DTRExp/dtrexp-js) `1.0.1` (exactly pinned, same author, zero transitive dependencies). Engines unchanged (Node ≥ 20).
 
 ### Tooling
 - **CI now enforces the full quality bar.** The workflow runs `typecheck → lint → build → cover` across the Node 20/22/24 matrix and a dedicated **mutation** job (Stryker, on Node 24) — so 100% coverage and the mutation threshold are gated on every push and PR, not just `build` + `test`.
+- CI pins `TZ=Europe/Istanbul` so system-timezone default paths stay distinguishable from UTC in tests and mutation runs.
 
 
 ## 3.0.1 (2026-06-25)

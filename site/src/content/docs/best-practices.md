@@ -210,5 +210,4 @@ vulnerability, not a bug:
 - An **adversarial security suite** and a **seeded property fuzzer** assert
   invariants 100%/mutation can't (see [Security › What testing can and cannot
   prove](/accesscontrol/security/#what-testing-can-and-cannot-prove)).
-- Zero production advisories (`npm audit --omit=dev`); single, pinned runtime
-  dependency.
+- Zero production advisories (`npm audit --omit=dev`); two exactly-pinned runtime dependencies, both from the same author.

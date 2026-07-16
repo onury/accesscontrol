@@ -100,6 +100,10 @@ Deeply nested `and`/`or`/`not` trees are rejected at compile time (`> 100`
 levels, `err.code === 'INVALID_CONDITION'`) so a pathological condition from a
 store cannot exhaust the stack on the auth path.
 
+### Temporal Expressions (`during`)
+
+The [`during` operator](/accesscontrol/concepts/conditions/#temporal-scheduling--during)'s dtrexp expressions are bounded the same way: a length cap (> 1000 chars rejected, `err.code === 'INVALID_DTREXP'`), full validation at grant-commit time — malformed expressions throw `INVALID_DTREXP` with the parser's character position, and satisfiable-looking-but-never-matching ones throw `DTREXP_NEVER_MATCHES` — and a **bounded** parse cache (FIFO, 500 entries), so hostile serialized grants can neither reach the check path unvalidated nor grow memory through distinct expression strings. A non-date-like left side evaluates `false` (fail-closed), never throws.
+
 ## Error Messages & Information Disclosure
 
 By default (`engine.safeErrors: true`) error **messages** omit caller‑supplied
@@ -157,10 +161,7 @@ keep denial responses uniform.
 
 ## Supply Chain
 
-The published package's **only runtime dependency** is
-[`notation`](https://github.com/onury/notation) — although from the same author,
-it is pinned to an exact version — and there are **zero production advisories**
-(`npm audit --omit=dev`). Recommended for consumers:
+The published package has **two runtime dependencies** — [`notation`](https://github.com/onury/notation) and [`dtrexp`](https://github.com/DTRExp/dtrexp-js) (the engine behind the `during` operator) — both from the same author, both pinned to exact versions, and there are **zero production advisories** (`npm audit --omit=dev`). Recommended for consumers:
 
 ```sh
 npm audit --omit=dev    # audit only what actually ships

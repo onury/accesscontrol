@@ -19,7 +19,7 @@
 
 📖 &nbsp;**Full documentation & guides:** &nbsp;**[onury.io/accesscontrol](https://onury.io/accesscontrol)**
 
-### Role and Attribute based Access Control for Node.js
+### Role and Attribute Based Access Control for Node.js
 
 Many [RBAC][rbac] (Role-Based Access Control) implementations differ, but the
 basics are widely adopted since they simulate real-life role (job) assignments.
@@ -51,9 +51,7 @@ mandatory gates.
 - **Hardened** — prototype-pollution-safe, ReDoS-guarded opt-in regex, redacted
   error messages with stable `err.code`, optional Unicode charset.
 - No **silent** errors. **Fast** (in-memory). Strongly **typed**. ESM.
-- **Battle-tested** — 100% coverage, mutation-tested, adversarial + property-fuzz
-  suites; sole runtime dependency (`notation`, same author) pinned exactly, zero
-  production advisories.
+- **Battle-tested** — 100% coverage, mutation-tested, adversarial + property-fuzz suites; both runtime dependencies (`notation`, `dtrexp` — same author) pinned exactly, zero production advisories.
 
 ## Installation
 
@@ -159,13 +157,18 @@ ac.grant('manager')
 ac.can('manager').with({ order: { value: 5000 } }).updateAny('order').granted; // true
 ```
 
-Operators: `== != > >= < <=`, `in`, `contains`, `matches`, `startsWith`,
-`endsWith`, `before` / `after` / `between`, `cidr`; combine with `{ and, or, not }`.
-`==` / `!=` are **strict** (no coercion; `===` / `!==` accepted as aliases), and a
-literal's type is inferred from how it's written — `100` is a number, `"100"` a
-string — so quote string values you don't want coerced. The time helper `$.now.*`
-is auto-injected. Conditions also accept canonical JSON
-(`['$.order.value', '<=', 100000]`), which is what gets stored/serialized.
+Operators: `== != > >= < <=`, `in`, `contains`, `matches`, `startsWith`, `endsWith`, `before` / `after` / `between` / `during`, `cidr`; combine with `{ and, or, not }`.
+
+`==` / `!=` are **strict** (no coercion; `===` / `!==` accepted as aliases), and a literal's type is inferred from how it's written — `100` is a number, `"100"` a string — so quote string values you don't want coerced. The time helper `$.now.*` is auto-injected. Conditions also accept canonical JSON (`['$.order.value', '<=', 100000]`), which is what gets stored/serialized.
+
+Temporal schedules use [dtrexp](https://dtrexp.org) expressions — compact date-time ranges and recurrences, evaluated in `context.tz`:
+
+```js
+// editors publish only on weekdays, 09:00–18:00
+ac.grant('editor').during('T0900:1800 E1:5').updateAny('post');
+// same thing in condition sugar — combine it with anything:
+ac.grant('editor').where('$.now during "T0900:1800 E1:5"').updateAny('post');
+```
 
 > [!NOTE]
 > The `matches` (regex) operator is **opt-in** — enable `engine.allowRegex`
@@ -322,9 +325,9 @@ you.
 > [!NOTE]
 > **Quality bar:** 100% coverage (statements/branches/functions/lines),
 > mutation-tested (Stryker), plus an adversarial security suite and a seeded
-> property fuzzer. Its only runtime dependency (`notation`, from the same author)
-> is pinned exactly; `npm audit --omit=dev` reports zero advisories. Full
-> details: **[Security Considerations][security]**.
+> property fuzzer. Its runtime dependencies (`notation` and `dtrexp`, both from
+> the same author) are pinned exactly; `npm audit --omit=dev` reports zero
+> advisories. Full details: **[Security Considerations][security]**.
 
 ## Documentation
 
@@ -334,6 +337,7 @@ See the full documentation & API reference @ [onury.io/accesscontrol](https://on
 
 - [**nestjs-accesscontrol**](https://github.com/onury/nestjs-accesscontrol) — The official NestJS integration for this package: fluent CRUD decorators, a fail-closed guard, and attribute filtering.
 - [**notation**](https://github.com/onury/notation) — Read, modify, and filter the contents of objects and arrays via dot/bracket notation strings or glob patterns.
+- [**dtrexp**](https://github.com/DTRExp/dtrexp-js) — Compact date-time range & recurrence expressions, evaluated by coverage — the engine behind the `during` operator. Spec & docs @ [dtrexp.org](https://dtrexp.org).
 - [**configuard**](https://github.com/onury/configuard) — Turn flat config rows from a database table into a nested, typed configuration object — with `${...}` templating and accessor-based (ABAC) filtering.
 
 ## License

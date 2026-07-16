@@ -1,6 +1,6 @@
 {
   "name": "accesscontrol",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "Role and Attribute based Access Control for Node.js",
   "homepage": "https://onury.io/accesscontrol",
   "author": "Onur Yıldırım <onur@cutepilot.com>",
@@ -74,6 +74,7 @@
     "context"
   ],
   "dependencies": {
+    "dtrexp": "1.0.1",
     "notation": "3.0.1"
   },
   "overrides": {

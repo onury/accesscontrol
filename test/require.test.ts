@@ -146,3 +146,61 @@ describe('Test Suite: require() gates (P7)', () => {
     ).toBe(false);
   });
 });
+
+describe('during — temporal require() gates', () => {
+  const BH = 'T0900:1800 E1:5'; // Mon–Fri, 09:00–18:00
+  const monMorning = { now: '2026-07-20T10:00:00Z', tz: 'UTC' };
+  const satMorning = { now: '2026-07-18T10:00:00Z', tz: 'UTC' };
+
+  test('a global during gate time-boxes every check', () => {
+    const ac = new AccessControl();
+    ac.grant('admin').readAny('post', ['*']);
+    ac.require(`$.now during "${BH}"`);
+    expect(ac.can('admin', monMorning).readAny('post').granted).toBe(true);
+    expect(ac.can('admin', satMorning).readAny('post').granted).toBe(false);
+  });
+
+  test('category and resource during gates apply to their scope only', () => {
+    const ac = new AccessControl();
+    ac.grant('user').readAny('billing/invoice', ['*']).readAny('blog/post', ['*']);
+    ac.category('billing').require(`$.now during "${BH}"`);
+    // billing is time-boxed; blog is not
+    expect(ac.can('user', satMorning).readAny('billing/invoice').granted).toBe(false);
+    expect(ac.can('user', monMorning).readAny('billing/invoice').granted).toBe(true);
+    expect(ac.can('user', satMorning).readAny('blog/post').granted).toBe(true);
+
+    const ac2 = new AccessControl();
+    ac2.grant('user').readAny('report', ['*']);
+    ac2.resource('report').require(`$.now during "${BH}"`);
+    expect(ac2.can('user', satMorning).readAny('report').granted).toBe(false);
+    expect(ac2.can('user', monMorning).readAny('report').granted).toBe(true);
+  });
+
+  test('a failed during gate reports reason "require_failed"', () => {
+    const ac = new AccessControl();
+    ac.grant('admin').readAny('post', ['*']);
+    ac.require(`$.now during "${BH}"`);
+    let reason = '';
+    ac.on('access', (e: any) => {
+      reason = e.reason ?? '';
+    });
+    ac.can('admin', satMorning).readAny('post');
+    expect(reason).toBe('require_failed');
+  });
+
+  test('async path: checkAsync honors during gates', async () => {
+    const ac = new AccessControl();
+    ac.grant('admin').readAny('post', ['*']);
+    ac.require(`$.now during "${BH}"`);
+    const q = (context: any) =>
+      ac.checkAsync({ role: 'admin', resource: 'post', action: 'read:any', context });
+    expect((await q(monMorning)).granted).toBe(true);
+    expect((await q(satMorning)).granted).toBe(false);
+  });
+
+  test('an invalid during gate expression throws at require() time', () => {
+    const ac = new AccessControl();
+    helper.expectACError(() => ac.require('$.now during "T9999"'));
+    helper.expectACError(() => ac.require('$.now during "D30 M2"'), 'never matches');
+  });
+});

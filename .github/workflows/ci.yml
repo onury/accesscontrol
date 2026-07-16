@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [master]
 
+env:
+  # a non-UTC zone keeps the system-timezone default paths (`during`, $.now.*)
+  # distinguishable from UTC in tests and mutation runs.
+  TZ: Europe/Istanbul
+
 jobs:
   test:
     runs-on: ubuntu-latest

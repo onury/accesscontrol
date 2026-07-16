@@ -21,6 +21,7 @@
 
 import type { IGrantsList } from '../src/index.js';
 import { AccessControl } from '../src/index.js';
+import { getDTRExp } from '../src/utils/index.js';
 
 // ----- deterministic RNG (mulberry32) -----
 function rng(seed: number): () => number {
@@ -247,6 +248,39 @@ describe('Invariants (seeded fuzz, 400 models)', () => {
           expect(twice).toEqual(once);
         }
       }
+    }
+  });
+});
+
+describe('Invariant: a during schedule only restricts, never grants', () => {
+  test('for any instant, scheduled ⊆ unscheduled (same attributes when granted)', () => {
+    const BH = 'T0900:1800 E1:5';
+    const plain = new AccessControl();
+    plain.grant('u').updateAny('doc', ['id', 'name']);
+    const scheduled = new AccessControl();
+    scheduled.grant('u').during(BH).updateAny('doc', ['id', 'name']);
+
+    // a deterministic spread of instants: weekday/weekend, in/out of hours, boundaries
+    const instants = [
+      '2026-07-20T09:00:00Z', // Mon window start (inclusive)
+      '2026-07-20T10:00:00Z', // Mon in-window
+      '2026-07-20T17:59:00Z', // Mon last covered minute
+      '2026-07-20T18:00:00Z', // Mon window end (exclusive)
+      '2026-07-20T03:00:00Z', // Mon pre-window
+      '2026-07-18T10:00:00Z', // Saturday
+      '2026-07-19T23:59:00Z' // Sunday night
+    ];
+    for (const now of instants) {
+      const ctx = { now, tz: 'UTC' };
+      const p = plain.can('u', ctx).updateAny('doc');
+      const s = scheduled.can('u', ctx).updateAny('doc');
+      // restriction: scheduled granted ⇒ plain granted (never the reverse)
+      if (s.granted) {
+        expect(p.granted).toBe(true);
+        expect(s.attributes).toEqual(p.attributes);
+      }
+      // and the schedule itself decides exactly per dtrexp coverage
+      expect(s.granted).toBe(getDTRExp(BH).covers(now, { tz: 'UTC' }));
     }
   });
 });

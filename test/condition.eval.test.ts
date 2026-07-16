@@ -2,7 +2,12 @@
  *  Test Suite: condition evaluator (canonical JSON → boolean, §5.3/§5.4).
  */
 
-import { compileCondition, evaluateCondition, evaluateConditionAsync } from '../src/utils/index.js';
+import {
+  compileCondition,
+  evaluateCondition,
+  evaluateConditionAsync,
+  getDTRExp
+} from '../src/utils/index.js';
 import { helper } from './helper.js';
 
 // Convenience: compile sugar then evaluate against a context.
@@ -139,6 +144,121 @@ describe('Test Suite: condition evaluator', () => {
     helper.expectACError(() => check('$.name matches (', { name: 'x' }));
     // `not` with no right-hand operand
     helper.expectACError(() => compileCondition('$.a not >'));
+  });
+
+  describe('during — dtrexp schedules (§5.7)', () => {
+    // business hours: Mon–Fri, 09:00–18:00 (half-open per dtrexp `T`)
+    const BH = '$.now during "T0900:1800 E1:5"';
+    // 2026-07-20 is a Monday; 2026-07-18 a Saturday.
+
+    test('covers/misses the window (deterministic via fixed now + tz)', () => {
+      expect(check(BH, { now: '2026-07-20T10:00:00Z', tz: 'UTC' })).toBe(true);
+      expect(check(BH, { now: '2026-07-18T10:00:00Z', tz: 'UTC' })).toBe(false); // Saturday
+      // half-open time window: start inclusive, end exclusive
+      expect(check(BH, { now: '2026-07-20T09:00:00Z', tz: 'UTC' })).toBe(true);
+      expect(check(BH, { now: '2026-07-20T18:00:00Z', tz: 'UTC' })).toBe(false);
+      // Date instance for `now` behaves identically to the ISO string
+      expect(check(BH, { now: new Date('2026-07-20T10:00:00Z'), tz: 'UTC' })).toBe(true);
+    });
+
+    test('context.tz shifts the evaluation zone (same instant, different verdicts)', () => {
+      const now = '2026-07-20T16:30:00Z'; // 16:30 UTC = 19:30 in Istanbul (UTC+3)
+      expect(check(BH, { now, tz: 'UTC' })).toBe(true);
+      expect(check(BH, { now, tz: 'Europe/Istanbul' })).toBe(false);
+    });
+
+    test('tz omitted ⇒ system zone, consistent with $.now.* derivation', () => {
+      // no `tz` in context: `during` must evaluate in the *system* zone — the
+      // same default deriveNow uses. The expectation is computed from Intl
+      // itself, so the test is exact in any zone (CI pins a non-UTC TZ so the
+      // system-zone default stays distinguishable from dtrexp's UTC default).
+      // 16:30 UTC Monday: in-window under UTC, out-of-window in zones ≥ UTC+2
+      // — so a mutant hardcoding UTC gives the wrong answer on any such system
+      // zone (dev machines + CI both pin a non-UTC TZ).
+      const now = new Date('2026-07-20T16:30:00Z');
+      const parts = new Intl.DateTimeFormat('en-US', {
+        weekday: 'short',
+        hour: '2-digit',
+        hour12: false
+      }).formatToParts(now);
+      const get = (t: string) => parts.find((p) => p.type === t)?.value ?? '';
+      const isWeekday = !['Sat', 'Sun'].includes(get('weekday'));
+      const hour = Number(get('hour')) % 24; // some engines render midnight as 24
+      const expected = isWeekday && hour >= 9 && hour < 18;
+      expect(check(BH, { now })).toBe(expected);
+      // …and it agrees with the Intl-derived $.now fields for the same context.
+      expect(check('$.now.hour between [9, 17]', { now })).toBe(expected);
+      // a non-string tz is ignored (treated as absent → system zone), never
+      // passed through to dtrexp (which would throw a RangeError on it).
+      expect(check(BH, { now, tz: 123 })).toBe(expected);
+    });
+
+    test('any date-like LHS: Date, epoch ms, ISO string, { epochMilliseconds }', () => {
+      const cond = '$.meeting.start during "T0900:1800 E1:5"';
+      const inWindow = Date.parse('2026-07-20T10:00:00Z');
+      const ctxOf = (start: unknown) => ({ meeting: { start }, tz: 'UTC' });
+      expect(check(cond, ctxOf(new Date(inWindow)))).toBe(true);
+      expect(check(cond, ctxOf(inWindow))).toBe(true);
+      expect(check(cond, ctxOf('2026-07-20T10:00:00Z'))).toBe(true);
+      expect(check(cond, ctxOf({ epochMilliseconds: inWindow }))).toBe(true);
+      // out-of-window instant misses through every shape
+      expect(check(cond, ctxOf('2026-07-18T10:00:00Z'))).toBe(false);
+    });
+
+    test('fail-closed: a non-date-like LHS evaluates false, never throws', () => {
+      const cond = '$.x during "T0900:1800 E1:5"';
+      expect(check(cond, { x: 'admin', tz: 'UTC' })).toBe(false);
+      expect(check(cond, { x: null, tz: 'UTC' })).toBe(false);
+      expect(check(cond, { tz: 'UTC' })).toBe(false); // missing path → undefined
+      expect(check(cond, { x: Number.NaN, tz: 'UTC' })).toBe(false);
+      expect(check(cond, { x: Number.POSITIVE_INFINITY, tz: 'UTC' })).toBe(false);
+      expect(check(cond, { x: new Date('nope'), tz: 'UTC' })).toBe(false); // Invalid Date
+      expect(check(cond, { x: {}, tz: 'UTC' })).toBe(false);
+      expect(check(cond, { x: { epochMilliseconds: '5' }, tz: 'UTC' })).toBe(false);
+      expect(check(cond, { x: { epochMilliseconds: Number.NaN }, tz: 'UTC' })).toBe(false);
+    });
+
+    test('direct eval of a canonical leaf: non-string rhs is false; invalid expr throws coded', () => {
+      const ctx = { now: '2026-07-20T10:00:00Z', tz: 'UTC' };
+      // bypassing the compiler: a non-string rhs fails closed
+      expect(evaluateCondition(['$.now', 'during', 42] as any, ctx)).toBe(false);
+      // …but a malformed expression string throws (the `matches` precedent)
+      helper.expectACError(() => evaluateCondition(['$.now', 'during', 'T9999'] as any, ctx));
+      try {
+        evaluateCondition(['$.now', 'during', 'T9999'] as any, ctx);
+      } catch (err: any) {
+        expect(err.code).toBe('INVALID_DTREXP');
+      }
+    });
+
+    test('async parity: the same leaves through evaluateConditionAsync', async () => {
+      const leaf = compileCondition(BH);
+      expect(await evaluateConditionAsync(leaf, { now: '2026-07-20T10:00:00Z', tz: 'UTC' })).toBe(
+        true
+      );
+      expect(await evaluateConditionAsync(leaf, { now: '2026-07-18T10:00:00Z', tz: 'UTC' })).toBe(
+        false
+      );
+      expect(
+        await evaluateConditionAsync(['$.x', 'during', 'E1:5'] as any, { x: 'nope', tz: 'UTC' })
+      ).toBe(false);
+    });
+
+    test('parse cache: identity on hit; FIFO eviction past the bound', () => {
+      // distinct valid one-minute windows: T0000:0001, T0001:0002, …
+      const expr = (i: number) => {
+        const pad = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}${String(m % 60).padStart(2, '0')}`;
+        return `T${pad(i)}:${pad(i + 1)}`;
+      };
+      const first = getDTRExp(expr(0));
+      expect(getDTRExp(expr(0))).toBe(first); // cache hit → same instance
+      // flood with 500 more distinct expressions (MAX_DTREXP_CACHE = 500):
+      // whatever else the suite cached, `first` is evicted by insertion order.
+      for (let i = 1; i <= 500; i++) getDTRExp(expr(i));
+      const last = getDTRExp(expr(500));
+      expect(getDTRExp(expr(500))).toBe(last); // recent entry still cached
+      expect(getDTRExp(expr(0))).not.toBe(first); // evicted → re-parsed instance
+    });
   });
 
   describe('async evaluator (evaluateConditionAsync, §5.5)', () => {

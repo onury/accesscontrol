@@ -124,4 +124,111 @@ describe('Test Suite: condition compiler', () => {
     helper.expectACError(() => compileCondition({ and: '$.a == 1' } as any)); // and not array
     helper.expectACError(() => compileCondition(42 as any));
   });
+
+  describe('during — dtrexp schedules (§5.7)', () => {
+    // Asserts both the AC error *and* its machine-readable code.
+    const expectCode = (fn: () => unknown, code: string, msgPart?: string) => {
+      helper.expectACError(fn, msgPart);
+      try {
+        fn();
+      } catch (err: any) {
+        expect(err.code).toBe(code);
+      }
+    };
+
+    test('quoted expression (spaces, `|`, `:`) compiles to the exact triple', () => {
+      expect(compileCondition('$.now during "T0900:1800 E1:5"')).toEqual([
+        '$.now',
+        'during',
+        'T0900:1800 E1:5'
+      ]);
+      // union + single quotes
+      expect(compileCondition("$.now during 'T0900:1800 E1:5 | T1000:1400 E6'")).toEqual([
+        '$.now',
+        'during',
+        'T0900:1800 E1:5 | T1000:1400 E6'
+      ]);
+      // any date-like LHS path, not just $.now
+      expect(compileCondition('$.booking.start during "E1:5"')).toEqual([
+        '$.booking.start',
+        'during',
+        'E1:5'
+      ]);
+    });
+
+    test('unquoted single-token expression compiles (quoting is still the documented form)', () => {
+      expect(compileCondition('$.now during T0900:1800')).toEqual([
+        '$.now',
+        'during',
+        'T0900:1800'
+      ]);
+    });
+
+    test('`not during` compiles to a { not: leaf } wrapper', () => {
+      expect(compileCondition('$.now not during "E6:7"')).toEqual({
+        not: ['$.now', 'during', 'E6:7']
+      });
+    });
+
+    test('idempotent — canonical during leaf validates and passes through', () => {
+      const leaf = ['$.now', 'during', 'T0900:1800 E1:5'];
+      expect(compileCondition(leaf as any)).toEqual(leaf);
+    });
+
+    test('throws INVALID_DTREXP on malformed expressions (carries dtrexp position)', () => {
+      // hour 99 out of range — dtrexp reports position 1
+      expectCode(() => compileCondition('$.now during "T9999"'), 'INVALID_DTREXP', 'position 1');
+      expectCode(() => compileCondition(['$.now', 'during', 'T9999'] as any), 'INVALID_DTREXP');
+    });
+
+    test('throws DTREXP_NEVER_MATCHES on unsatisfiable expressions', () => {
+      // Feb 30th parses but can never match (dtrexp unsatisfiability lint)
+      expectCode(
+        () => compileCondition('$.now during "D30 M2"'),
+        'DTREXP_NEVER_MATCHES',
+        'never matches'
+      );
+      expectCode(() => compileCondition(['$.now', 'during', 'D30 M2'] as any), 'DTREXP_NEVER_MATCHES');
+    });
+
+    test('throws INVALID_DTREXP on a non-string, empty, or path rhs (must be static)', () => {
+      // assert the guard's own message too — an empty/blank rhs must be caught
+      // by the static-string guard, not fall through to the dtrexp parser.
+      const GUARD = 'static dtrexp expression string';
+      expectCode(() => compileCondition(['$.now', 'during', 42] as any), 'INVALID_DTREXP', GUARD);
+      expectCode(
+        () => compileCondition(['$.now', 'during', ['E1']] as any),
+        'INVALID_DTREXP',
+        GUARD
+      );
+      expectCode(() => compileCondition(['$.now', 'during', ''] as any), 'INVALID_DTREXP', GUARD);
+      expectCode(
+        () => compileCondition(['$.now', 'during', '  '] as any),
+        'INVALID_DTREXP',
+        GUARD
+      );
+      expectCode(
+        () => compileCondition(['$.now', 'during', '$.user.schedule'] as any),
+        'INVALID_DTREXP',
+        'not a context path'
+      );
+    });
+
+    test('length bound: valid at exactly 1000 chars, rejected above', () => {
+      // 'T0900:1800' (10) + ' | E1' × 198 (990) = exactly 1000 chars, valid + satisfiable
+      const atBound = `T0900:1800${' | E1'.repeat(198)}`;
+      expect(atBound.length).toBe(1000);
+      expect(compileCondition(['$.now', 'during', atBound] as any)).toEqual([
+        '$.now',
+        'during',
+        atBound
+      ]);
+      // 1001 chars → rejected before parsing (content is irrelevant past the bound)
+      expectCode(
+        () => compileCondition(['$.now', 'during', `${atBound}x`] as any),
+        'INVALID_DTREXP',
+        'too long'
+      );
+    });
+  });
 });
