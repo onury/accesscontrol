@@ -4,8 +4,9 @@ import { NotationGlob } from 'notation';
 import { AccessControlError } from '../core/index.js';
 import { actions, ErrorCode, possessions } from '../enums/index.js';
 import type {
-  AccessReason,
+  ConditionFunction,
   ConditionJSON,
+  DenyReason,
   IAccessInfo,
   IGrant,
   IGrants,
@@ -17,7 +18,12 @@ import type {
   IResourceGrants,
   UnknownObject
 } from '../types/index.js';
-import { compileCondition, evaluateCondition, evaluateConditionAsync } from './condition.js';
+import {
+  assumeSchedules,
+  compileCondition,
+  evaluateCondition,
+  evaluateConditionAsync
+} from './condition.js';
 import { EXTEND_KEY, GROUP_SEPARATOR } from './constants.js';
 import {
   detail,
@@ -605,6 +611,8 @@ interface ResolveFlags {
   candidate: boolean;
   /** A candidate rule's `condition` failed. */
   condFail: boolean;
+  /** A candidate rule failed *only* because of its `during` schedule. */
+  schedFail: boolean;
   /** An `own` rule was skipped because ownership wasn't verified. */
   ownFail: boolean;
   /** A grant rule with `any` possession contributed to the allowed set. */
@@ -655,12 +663,67 @@ function hasGrant(attributes: string[]): boolean {
 }
 
 /** Derives the denial reason from the final attributes + diagnostic flags. */
-function reasonFor(attributes: string[], flags: ResolveFlags): AccessReason | undefined {
+function reasonFor(attributes: string[], flags: ResolveFlags): DenyReason | undefined {
   if (hasGrant(attributes)) return undefined;
   if (!flags.candidate) return 'no_grant';
   if (flags.ownFail) return 'ownership_failed';
+  // a rule blocked only by its schedule would grant at a covered instant —
+  // "granted, but not now" outranks the generic condition failure.
+  if (flags.schedFail) return 'out_of_schedule';
   if (flags.condFail) return 'condition_failed';
   return 'no_grant';
+}
+
+/**
+ * Whether a just-failed condition passes with its `during` leaves assumed
+ * satisfied — i.e. time was the *only* blocker ("granted, but not now").
+ * Fail-safe: any evaluation error from the transformed form (e.g. an async
+ * `{ fn }` reached only once a schedule is assumed true) reads as "not
+ * schedule-only", so the generic reason is reported instead.
+ */
+function failedOnScheduleOnly(
+  condition: ConditionJSON,
+  ctx: UnknownObject,
+  s: ResolutionScope
+): boolean {
+  let scheduleOnly = false;
+  try {
+    scheduleOnly = evaluateCondition(
+      assumeSchedules(condition),
+      ctx,
+      s.pathPrefix,
+      s.allowRegex,
+      s.nameOpts.errorCodePrefix
+    );
+  } catch {
+    // the probe reached something the real evaluation short-circuited past
+    // (e.g. an async `{ fn }` behind an assumed schedule) — not provably
+    // schedule-only, so the generic reason stands.
+  }
+  return scheduleOnly;
+}
+
+/** Async sibling of {@link failedOnScheduleOnly} (awaits `{ fn }` conditions). */
+async function failedOnScheduleOnlyAsync(
+  condition: ConditionJSON,
+  ctx: UnknownObject,
+  s: ResolutionScope,
+  registry: Record<string, ConditionFunction>
+): Promise<boolean> {
+  let scheduleOnly = false;
+  try {
+    scheduleOnly = await evaluateConditionAsync(
+      assumeSchedules(condition),
+      ctx,
+      s.pathPrefix,
+      registry,
+      s.allowRegex,
+      s.nameOpts.errorCodePrefix
+    );
+  } catch {
+    // see failedOnScheduleOnly — a probe error reads as "not schedule-only".
+  }
+  return scheduleOnly;
 }
 
 /**
@@ -680,7 +743,7 @@ function possessionFor(
 /** The result of a resolution: effective attributes, denial reason, possession. */
 export interface ResolveResult {
   attributes: string[];
-  reason?: AccessReason;
+  reason?: DenyReason;
   /** The possession that effectively granted access (the requested one on denial). */
   possession: 'own' | 'any';
 }
@@ -711,19 +774,22 @@ export function resolveAccess(
 ): ResolveResult {
   const s = prepareResolution(grants, query, options);
 
-  if (s.gates.length > 0) {
-    if (
-      !s.gates.every((g) =>
-        evaluateCondition(g, s.gateCtx, s.pathPrefix, s.allowRegex, s.nameOpts.errorCodePrefix)
-      )
-    ) {
-      return { attributes: [], reason: 'require_failed', possession: s.possession };
+  // gates short-circuit at the first failure (as before); the reason reflects
+  // that failing gate — out_of_schedule when only its `during` schedule failed.
+  for (const g of s.gates) {
+    if (!evaluateCondition(g, s.gateCtx, s.pathPrefix, s.allowRegex, s.nameOpts.errorCodePrefix)) {
+      return {
+        attributes: [],
+        reason: failedOnScheduleOnly(g, s.gateCtx, s) ? 'out_of_schedule' : 'require_failed',
+        possession: s.possession
+      };
     }
   }
 
   const flags: ResolveFlags = {
     candidate: false,
     condFail: false,
+    schedFail: false,
     ownFail: false,
     grantAny: false
   };
@@ -749,6 +815,7 @@ export function resolveAccess(
             )
           ) {
             flags.condFail = true;
+            if (failedOnScheduleOnly(rule.condition, r.ctx, s)) flags.schedFail = true;
             continue;
           }
           applyRule(rule, s, r.ctx, options, acc, flags);
@@ -789,13 +856,20 @@ export async function resolveAccessAsync(
         s.nameOpts.errorCodePrefix
       ))
     ) {
-      return { attributes: [], reason: 'require_failed', possession: s.possession };
+      return {
+        attributes: [],
+        reason: (await failedOnScheduleOnlyAsync(g, s.gateCtx, s, registry))
+          ? 'out_of_schedule'
+          : 'require_failed',
+        possession: s.possession
+      };
     }
   }
 
   const flags: ResolveFlags = {
     candidate: false,
     condFail: false,
+    schedFail: false,
     ownFail: false,
     grantAny: false
   };
@@ -822,6 +896,9 @@ export async function resolveAccessAsync(
             ))
           ) {
             flags.condFail = true;
+            if (await failedOnScheduleOnlyAsync(rule.condition, r.ctx, s, registry)) {
+              flags.schedFail = true;
+            }
             continue;
           }
           applyRule(rule, s, r.ctx, options, acc, flags);

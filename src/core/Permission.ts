@@ -2,7 +2,7 @@
 import { AccessControlError } from '../core/index.js';
 import { ErrorCode } from '../enums/index.js';
 import type {
-  AccessReason,
+  DenyReason,
   IGrants,
   IQueryInfo,
   IResolveOptions,
@@ -55,7 +55,7 @@ export class Permission {
   };
 
   /** Denial reason for the resolved attributes; set on resolution. */
-  private _reason?: AccessReason;
+  private _reason?: DenyReason;
 
   /** Retained for the async resolution path. */
   private readonly _grants: IGrants;
@@ -173,6 +173,32 @@ export class Permission {
    */
   get granted(): boolean {
     return Permission._hasGrant(this._resolvedSync());
+  }
+
+  /**
+   * Why the permission was denied — `undefined` when granted. Also carried on
+   * the `access` event for audit logs.
+   *
+   * `'out_of_schedule'` is worth distinguishing in UIs: the check failed *only*
+   * because of a `during` schedule, so the same request would be granted at a
+   * covered instant ("granted, but not now" — e.g. show *"outside access
+   * hours"* instead of a generic denial). Any other reason means the grant
+   * itself doesn't apply.
+   *
+   * @throws {AccessControlError} - If an applicable rule/gate has a custom/async
+   * `{ fn }` condition; resolve {@link Permission#grantedAsync} first.
+   *
+   * @example
+   * const permission = ac.can('editor', ctx).updateAny('post');
+   * if (!permission.granted) {
+   *   msg = permission.reason === 'out_of_schedule'
+   *     ? 'You are outside your access hours.'
+   *     : 'You do not have permission to do that.';
+   * }
+   */
+  get reason(): DenyReason | undefined {
+    this._resolvedSync();
+    return this._reason;
   }
 
   /**

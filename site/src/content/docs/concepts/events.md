@@ -31,8 +31,11 @@ ac.on('access', (e) => {
 | --- | --- |
 | `no_grant` | no matching grant for the role/resource/action |
 | `condition_failed` | a `.where()` condition didn't hold |
+| `out_of_schedule` | *only* a `during` schedule blocked it — would be granted at a covered instant |
 | `ownership_failed` | an `own` rule couldn't verify ownership |
 | `require_failed` | a `.require()` gate didn't pass |
+
+`out_of_schedule` is the actionable one — it means "granted, but not now", so a UI can say *"outside your access hours"* instead of a generic denial. It is reported only when time was the **only** blocker (a rule or gate that would pass with its schedule satisfied); if a value predicate also failed, the generic reason stands. The reason is also available directly on the permission object as `permission.reason`.
 
 ```js
 ac.on('access', (e) => {

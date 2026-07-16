@@ -3,6 +3,7 @@
  */
 
 import {
+  assumeSchedules,
   compileCondition,
   evaluateCondition,
   evaluateConditionAsync,
@@ -244,10 +245,19 @@ describe('Test Suite: condition evaluator', () => {
       ).toBe(false);
     });
 
+    test('assumeSchedules: non-node values pass through unchanged', () => {
+      // the transform maps structure only — it neither validates nor compiles
+      expect(assumeSchedules('$.a == 1' as any)).toBe('$.a == 1');
+      expect(assumeSchedules({ fn: 'vip' } as any)).toEqual({ fn: 'vip' });
+      expect(assumeSchedules(['$.a', '==', 1])).toEqual(['$.a', '==', 1]);
+      expect(assumeSchedules(['$.now', 'during', 'E1:5'])).toEqual([1, '==', 1]);
+    });
+
     test('parse cache: identity on hit; FIFO eviction past the bound', () => {
       // distinct valid one-minute windows: T0000:0001, T0001:0002, …
       const expr = (i: number) => {
-        const pad = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}${String(m % 60).padStart(2, '0')}`;
+        const pad = (m: number) =>
+          `${String(Math.floor(m / 60)).padStart(2, '0')}${String(m % 60).padStart(2, '0')}`;
         return `T${pad(i)}:${pad(i + 1)}`;
       };
       const first = getDTRExp(expr(0));

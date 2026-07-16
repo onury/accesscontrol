@@ -176,16 +176,81 @@ describe('during — temporal require() gates', () => {
     expect(ac2.can('user', monMorning).readAny('report').granted).toBe(true);
   });
 
-  test('a failed during gate reports reason "require_failed"', () => {
+  test('a schedule-only gate failure reports "out_of_schedule"; a value gate stays "require_failed"', () => {
     const ac = new AccessControl();
     ac.grant('admin').readAny('post', ['*']);
     ac.require(`$.now during "${BH}"`);
-    let reason = '';
+    let eventReason = '';
     ac.on('access', (e: any) => {
-      reason = e.reason ?? '';
+      eventReason = e.reason ?? '';
     });
-    ac.can('admin', satMorning).readAny('post');
-    expect(reason).toBe('require_failed');
+    expect(ac.can('admin', satMorning).readAny('post').reason).toBe('out_of_schedule');
+    expect(eventReason).toBe('out_of_schedule');
+
+    // a plain value gate failing is still the generic gate denial
+    const ac2 = new AccessControl();
+    ac2.grant('admin').readAny('post', ['*']);
+    ac2.require('$.env == "prod"');
+    expect(ac2.can('admin', { env: 'dev' }).readAny('post').reason).toBe('require_failed');
+
+    // a mixed gate (value AND schedule) failing on the value side: not time-only
+    const ac3 = new AccessControl();
+    ac3.grant('admin').readAny('post', ['*']);
+    ac3.require({ and: ['$.env == "prod"', `$.now during "${BH}"`] });
+    expect(ac3.can('admin', { ...monMorning, env: 'dev' }).readAny('post').reason).toBe(
+      'require_failed'
+    );
+    // …and failing only on the schedule side: out_of_schedule
+    expect(ac3.can('admin', { ...satMorning, env: 'prod' }).readAny('post').reason).toBe(
+      'out_of_schedule'
+    );
+  });
+
+  test('async gate path resolves the same reasons', async () => {
+    const ac = new AccessControl();
+    ac.grant('admin').readAny('post', ['*']);
+    ac.require(`$.now during "${BH}"`);
+    const q = (context: any) =>
+      ac.checkAsync({ role: 'admin', resource: 'post', action: 'read:any', context });
+    expect((await q(satMorning)).granted).toBe(false);
+    const denied = await q(satMorning);
+    await denied.grantedAsync;
+    expect(denied.reason).toBe('out_of_schedule');
+
+    // async value-gate failure stays the generic gate denial
+    const ac2 = new AccessControl();
+    ac2.grant('admin').readAny('post', ['*']);
+    ac2.require('$.env == "prod"');
+    const denied2 = await ac2.checkAsync({
+      role: 'admin',
+      resource: 'post',
+      action: 'read:any',
+      context: { env: 'dev' }
+    });
+    expect(denied2.reason).toBe('require_failed');
+  });
+
+  test('gates on the genuinely-async path (custom fn gate) report both reasons', async () => {
+    // an { fn } gate forces resolution through the async gate loop
+    const build = (secondGate: any) => {
+      const ac = new AccessControl();
+      ac.defineCondition('always', () => true);
+      ac.grant('admin').readAny('post', ['*']);
+      ac.require({ fn: 'always' });
+      ac.require(secondGate);
+      return ac;
+    };
+    const q = (ac: AccessControl, context: any) =>
+      ac.checkAsync({ role: 'admin', resource: 'post', action: 'read:any', context });
+
+    // schedule-only gate failure → out_of_schedule
+    const sched = await q(build(`$.now during "${BH}"`), satMorning);
+    expect(sched.granted).toBe(false);
+    expect(sched.reason).toBe('out_of_schedule');
+    // value gate failure → require_failed
+    const val = await q(build('$.env == "prod"'), { ...monMorning, env: 'dev' });
+    expect(val.granted).toBe(false);
+    expect(val.reason).toBe('require_failed');
   });
 
   test('async path: checkAsync honors during gates', async () => {

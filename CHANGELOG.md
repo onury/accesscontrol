@@ -10,11 +10,15 @@ All notable changes to this project will be documented in this file. The format 
 - **`.during(expression)` chainer** on grants — fluent shorthand that ANDs a `['$.now', 'during', …]` leaf into the grant's condition at commit; composes with `.where()` regardless of call order, and repeated calls AND together.
 - **Any date-like left side.** Beyond `$.now`, the checked instant can come from context data (`'$.booking.start during "…"'`) as a `Date`, epoch milliseconds, ISO string, or `{ epochMilliseconds }` object. A non-date-like value evaluates **false** (fail-closed), never throws at check time.
 - **`$.now.epochMilliseconds`** — the raw instant, now part of the derived `$.now.*` fields.
+- **The `out_of_schedule` deny reason + public `permission.reason`.** When a check fails *only* because of a `during` schedule — it would be granted at a covered instant — the reason is `'out_of_schedule'` instead of the generic `'condition_failed'` / `'require_failed'`, so a UI can say *"outside your access hours"* and mean it ("granted, but not now"). If a value predicate also failed, the generic reason stands. The denial reason (previously event-only) is now also exposed as a public `reason` getter on `Permission`.
 - **Error codes `INVALID_DTREXP` and `DTREXP_NEVER_MATCHES`.** Expressions are validated at every grants entry point (chainer commit, constructor, `setGrants`, grants-list, `require()`, `restore()`): malformed ones throw with dtrexp's message and character position; parseable-but-never-matching ones (`D30 M2`) are rejected as authoring bugs.
 
 ### Security
 - The `during` surface is bounded like the rest of the condition DSL: expression length cap (1000 chars), commit-time validation, and a bounded FIFO parse cache — untrusted serialized grants can't reach the check path unvalidated or grow memory through distinct expression strings.
 - Timezone comes from the reserved `context.tz` (IANA name), the same key `$.now.*` uses; with no `tz`, both evaluate in the **system zone** — one timezone story across the condition system.
+
+### Changed
+- **`AccessReason` is now `DenyReason`.** The type only ever describes a denial (`undefined` when granted), so it's named for what it is. `AccessReason` remains exported as a deprecated alias — existing imports keep compiling — and will be removed in v4.
 
 ### Dependencies
 - Added [`dtrexp`](https://github.com/DTRExp/dtrexp-js) `1.0.1` (exactly pinned, same author, zero transitive dependencies). Engines unchanged (Node ≥ 20).

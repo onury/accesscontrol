@@ -104,6 +104,8 @@ What to know:
 
 `during` works everywhere conditions do: in `{ and, or, not }` combinators, in [`require()` gates](/accesscontrol/concepts/gates/), on the sync *and* async check paths, and in serialized grants.
 
+And denials know about schedules: when a check fails **only** because of a `during` schedule, `permission.reason` (and the [`access` event](/accesscontrol/concepts/events/)) reports `'out_of_schedule'` instead of the generic `'condition_failed'` — "granted, but not now", so your UI can say *"outside your access hours"* and mean it.
+
 ## A Multi-clause Business Rule
 
 Real policies often combine several conditions. Take: *a senior buyer may

@@ -56,6 +56,8 @@ Gates take the same condition language as `.where()` — including [temporal sch
 ac.category('billing').require('$.now during "T0900:1800 E1:5"');
 ```
 
+A gate that fails *only* on its schedule reports `reason: 'out_of_schedule'` instead of `'require_failed'` — the caller can distinguish "come back during access hours" from a hard policy denial. With multiple gates, the reason reflects the first failing gate (gates short-circuit).
+
 ## Missing Context — Gates Fail Closed
 
 A gate's condition is evaluated against the check-time context. There is **no

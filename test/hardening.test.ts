@@ -360,8 +360,12 @@ describe('engine.errorCodePrefix', () => {
 });
 
 describe('during — hostile grants + fail-closed + code prefix', () => {
-  const BAD_SYNTAX = { r: { post: { read: [{ attributes: ['*'], condition: ['$.now', 'during', 'T9999'] }] } } };
-  const NEVER = { r: { post: { read: [{ attributes: ['*'], condition: ['$.now', 'during', 'D30 M2'] }] } } };
+  const BAD_SYNTAX = {
+    r: { post: { read: [{ attributes: ['*'], condition: ['$.now', 'during', 'T9999'] }] } }
+  };
+  const NEVER = {
+    r: { post: { read: [{ attributes: ['*'], condition: ['$.now', 'during', 'D30 M2'] }] } }
+  };
 
   test('hostile serialized grants throw coded at every load entry point', () => {
     // constructor (object form)
@@ -396,12 +400,12 @@ describe('during — hostile grants + fail-closed + code prefix', () => {
 
   test('engine.errorCodePrefix prefixes both new codes (commit + eval paths)', () => {
     const ac = new AccessControl({}, { engine: { errorCodePrefix: 'AC_' } });
-    expect(
-      grab(() => ac.grant('u').during('T9999').readAny('post', ['*'])).code
-    ).toBe('AC_INVALID_DTREXP');
-    expect(
-      grab(() => ac.grant('u').during('D30 M2').readAny('post', ['*'])).code
-    ).toBe('AC_DTREXP_NEVER_MATCHES');
+    expect(grab(() => ac.grant('u').during('T9999').readAny('post', ['*'])).code).toBe(
+      'AC_INVALID_DTREXP'
+    );
+    expect(grab(() => ac.grant('u').during('D30 M2').readAny('post', ['*'])).code).toBe(
+      'AC_DTREXP_NEVER_MATCHES'
+    );
     // eval-path restamp: uncompiled hostile leaf hits getDTRExp at check time
     ac.grant('u').readAny('post', ['*']);
     (ac as any)._grants.u.post.read[0].condition = ['$.now', 'during', 'T9999'];

@@ -707,6 +707,29 @@ function evalNode(
   });
 }
 
+/** A tautology leaf — stands in for a `during` leaf assumed satisfied. */
+const TRUE_LEAF: ConditionLeaf = [1, '==', 1];
+
+/**
+ * Returns the condition with every `during` (schedule) leaf assumed satisfied
+ * (replaced by a tautology). Used to derive the `out_of_schedule` deny reason:
+ * if a failed condition passes in this transformed form, time was the *only*
+ * blocker — "granted, but not now". A schedule-free condition is returned
+ * semantically unchanged (so re-evaluating it simply fails again). Note the
+ * polarity: a `during` under `not` becomes `not(true)` — a failing "only
+ * OUTSIDE the schedule" rule deliberately does not read as out-of-schedule.
+ */
+export function assumeSchedules(node: ConditionJSON): ConditionJSON {
+  if (Array.isArray(node)) return node[1] === 'during' ? TRUE_LEAF : node;
+  if (type(node) === 'object') {
+    const o = node as Record<string, unknown>;
+    if (Array.isArray(o.and)) return { and: (o.and as ConditionJSON[]).map(assumeSchedules) };
+    if (Array.isArray(o.or)) return { or: (o.or as ConditionJSON[]).map(assumeSchedules) };
+    if ('not' in o) return { not: assumeSchedules(o.not as ConditionJSON) };
+  }
+  return node;
+}
+
 /**
  * Evaluates a **canonical** condition (the {@link compileCondition} output)
  * against the merged check-time context, returning whether it holds.

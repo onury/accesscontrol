@@ -8,13 +8,25 @@ export type AccessControlEventName = 'access' | 'change' | 'error';
 /**
  * Why a check was denied — makes denials debuggable in the audit log.
  * `undefined` when granted.
+ *
+ * `'out_of_schedule'` is the special one: the check failed *only* because of a
+ * `during` schedule — it would have been granted at a covered instant
+ * ("granted, but not now"). When a value predicate also failed, the reason
+ * stays `'condition_failed'` / `'require_failed'`.
  */
-export type AccessReason =
+export type DenyReason =
   | 'no_grant'
   | 'condition_failed'
+  | 'out_of_schedule'
   | 'require_failed'
   | 'ownership_failed'
   | 'strict';
+
+/**
+ * @deprecated Renamed to {@link DenyReason} (the value only exists on denial);
+ * this alias remains for backward compatibility and will be removed in v4.
+ */
+export type AccessReason = DenyReason;
 
 /** Discriminator for a {@link ChangeEvent} (what kind of mutation occurred). */
 export type ChangeType =
@@ -51,7 +63,7 @@ export interface AccessEvent extends BaseEvent {
   granted: boolean;
   attributes: string[];
   /** Why it was denied (omitted when granted). */
-  reason?: AccessReason;
+  reason?: DenyReason;
   /** The merged check context (may contain PII). */
   context?: UnknownObject;
 }

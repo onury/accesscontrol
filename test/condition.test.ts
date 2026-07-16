@@ -188,7 +188,10 @@ describe('Test Suite: condition compiler', () => {
         'DTREXP_NEVER_MATCHES',
         'never matches'
       );
-      expectCode(() => compileCondition(['$.now', 'during', 'D30 M2'] as any), 'DTREXP_NEVER_MATCHES');
+      expectCode(
+        () => compileCondition(['$.now', 'during', 'D30 M2'] as any),
+        'DTREXP_NEVER_MATCHES'
+      );
     });
 
     test('throws INVALID_DTREXP on a non-string, empty, or path rhs (must be static)', () => {
@@ -202,11 +205,7 @@ describe('Test Suite: condition compiler', () => {
         GUARD
       );
       expectCode(() => compileCondition(['$.now', 'during', ''] as any), 'INVALID_DTREXP', GUARD);
-      expectCode(
-        () => compileCondition(['$.now', 'during', '  '] as any),
-        'INVALID_DTREXP',
-        GUARD
-      );
+      expectCode(() => compileCondition(['$.now', 'during', '  '] as any), 'INVALID_DTREXP', GUARD);
       expectCode(
         () => compileCondition(['$.now', 'during', '$.user.schedule'] as any),
         'INVALID_DTREXP',
