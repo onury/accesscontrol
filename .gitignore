@@ -7,7 +7,8 @@ test/stryker
 .stryker-tmp
 *.tsbuildinfo
 npm-debug.log
-backup
+_backup/
+.playwright-mcp/
 wiki
 tmp
 TODO.md
