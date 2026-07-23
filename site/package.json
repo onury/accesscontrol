@@ -11,8 +11,8 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "@onury/docs-kit": "github:onury/docs-kit#v1",
-    "astro": "^6.4.7"
+    "@onury/docs-kit": "github:onury/docs-kit#v2",
+    "astro": "^7.0.0"
   },
   "devDependencies": {
     "typescript": "^6.0.3"
