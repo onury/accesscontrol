@@ -18,6 +18,7 @@
     "typescript": "^6.0.3"
   },
   "overrides": {
-    "esbuild": "^0.28.1"
+    "esbuild": "^0.28.1",
+    "chokidar": "^5.0.0"
   }
 }
