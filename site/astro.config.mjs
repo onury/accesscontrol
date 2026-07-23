@@ -9,6 +9,7 @@
 // (the constructor-heading remark fix + TypeDoc wiring) is therefore kept inline.
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import { unified } from '@astrojs/markdown-remark';
 import { createStarlightTypeDocPlugin } from 'starlight-typedoc';
 
 const [starlightTypeDoc, typeDocSidebarGroup] = createStarlightTypeDocPlugin();
@@ -37,7 +38,7 @@ function remarkDropConstructorsHeading() {
 export default defineConfig({
   site: 'https://onury.io',
   base: '/accesscontrol',
-  markdown: { remarkPlugins: [remarkDropConstructorsHeading] },
+  markdown: { processor: unified({ remarkPlugins: [remarkDropConstructorsHeading] }) },
   integrations: [
     starlight({
       title: 'AccessControl',
