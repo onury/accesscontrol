@@ -38,6 +38,9 @@ jobs:
           cache-dependency-path: site/package-lock.json
       # Root deps so TypeDoc can resolve the library's imported types. Use
       # `install` (not `ci`) because the root lockfile isn't committed.
+      # npm 10 (bundled with Node 22) crashes resolving vitest's peer graph:
+      # "Cannot read properties of null (reading 'edgesOut')". npm 11 fixes it.
+      - run: npm i -g npm@11
       - run: npm install --no-audit --no-fund
       - name: Install docs deps
         working-directory: site
