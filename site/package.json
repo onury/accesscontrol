@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@onury/docs-kit": "github:onury/docs-kit#v2",
-    "astro": "^7.0.0"
+    "astro": "^7.3.2"
   },
   "devDependencies": {
     "typescript": "^6.0.3"
