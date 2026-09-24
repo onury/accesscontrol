@@ -787,9 +787,12 @@ describe('Mutation kills: validation util edges (round 2)', () => {
     ).toEqual(['*']); // null ⇒ ['*']
   });
 
-  test('resetAttributes: omitted/empty ⇒ ["*"]; explicit list preserved', () => {
+  test('resetAttributes: omitted ⇒ ["*"]; an explicit list, empty or not, preserved', () => {
     expect(resetAttributes({} as any).attributes).toEqual(['*']);
-    expect(resetAttributes({ attributes: [] } as any).attributes).toEqual(['*']);
+    expect(resetAttributes({ attributes: undefined } as any).attributes).toEqual(['*']);
+    expect(resetAttributes({ attributes: null } as any).attributes).toEqual(['*']);
+    expect(resetAttributes({ attributes: [] } as any).attributes).toEqual([]);
+    expect(resetAttributes({ attributes: '' } as any).attributes).toEqual('');
     expect(resetAttributes({ attributes: ['x'] } as any).attributes).toEqual(['x']);
   });
 });

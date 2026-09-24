@@ -9,15 +9,7 @@ import {
   POSSESSION_SEPARATOR,
   RESERVED_NAMES
 } from './constants.js';
-import {
-  detail,
-  ecode,
-  hasDefined,
-  impliedStar,
-  isEmptyArray,
-  toStringArray,
-  type
-} from './generic.js';
+import { detail, ecode, hasDefined, impliedStar, toStringArray, type } from './generic.js';
 
 // ----------------------
 // AC VALIDATION UTILS
@@ -286,12 +278,14 @@ export function normalizeAccessInfo(
 
 /**
  * Used to re-set (prepare) the `attributes` of an `IAccessInfo` object when it
- * is first initialized via the `.grant()` / `.deny()` chain. Omitted/empty
- * attributes default to `['*']`.
+ * is first initialized via the `.grant()` / `.deny()` chain. Omitted
+ * attributes default to `['*']`; an explicit `[]` (or `''`) is kept, as every
+ * other authoring path keeps it — an empty allow-list never widens to
+ * everything.
  * @param access
  */
 export function resetAttributes(access: IAccessInfo): IAccessInfo {
-  if (!access.attributes || isEmptyArray(access.attributes)) {
+  if (access.attributes === undefined || access.attributes === null) {
     access.attributes = ['*'];
   }
   return access;

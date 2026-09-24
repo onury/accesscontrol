@@ -286,10 +286,9 @@ export class Access {
    * denied for. This is only optional if the resource is previously defined.
    * If not defined and omitted, this will throw.
    * @param [attributes] - Defines the resource attributes for which the access
-   * is granted for. If access is denied previously by calling `.deny()`
-   * thiswill default to an empty array (which means no attributes allowed).
-   * Otherwise (if granted before via `.grant()`) this will default to `["*"]`
-   * (which means all attributes allowed.)
+   * is granted or denied. Omitted, it defaults to `["*"]`: every attribute,
+   * granted or denied. An explicit `[]` is kept: a grant of no attributes,
+   * or a deny of none.
    *
    * @throws {AccessControlError} - If the access instance to be committed has
    * any invalid data.
@@ -309,10 +308,9 @@ export class Access {
    * denied for. This is only optional if the resource is previously defined.
    * If not defined and omitted, this will throw.
    * @param [attributes] - Defines the resource attributes for which the access
-   * is granted for. If access is denied previously by calling `.deny()` this
-   * will default to an empty array (which means no attributes allowed).
-   * Otherwise (if granted before via `.grant()`) this will default to `["*"]`
-   * (which means all attributes allowed.)
+   * is granted or denied. Omitted, it defaults to `["*"]`: every attribute,
+   * granted or denied. An explicit `[]` is kept: a grant of no attributes,
+   * or a deny of none.
    *
    * @throws {AccessControlError} - If the access instance to be committed has
    * any invalid data.
@@ -339,10 +337,9 @@ export class Access {
    * denied for. This is only optional if the resource is previously defined.
    * If not defined and omitted, this will throw.
    * @param [attributes] - Defines the resource attributes for which the access
-   * is granted for. If access is denied previously by calling `.deny()` this
-   * will default to an empty array (which means no attributes allowed).
-   * Otherwise (if granted before via `.grant()`) this will default to `["*"]`
-   * (which means all attributes allowed.)
+   * is granted or denied. Omitted, it defaults to `["*"]`: every attribute,
+   * granted or denied. An explicit `[]` is kept: a grant of no attributes,
+   * or a deny of none.
    *
    * @throws {AccessControlError} - If the access instance to be committed has
    * any invalid data.
@@ -362,10 +359,9 @@ export class Access {
    * denied for. This is only optional if the resource is previously defined.
    * If not defined and omitted, this will throw.
    * @param [attributes] - Defines the resource attributes for which the access
-   * is granted for. If access is denied previously by calling `.deny()` this
-   * will default to an empty array (which means no attributes allowed).
-   * Otherwise (if granted before via `.grant()`) this will default to `["*"]`
-   * (which means all attributes allowed.)
+   * is granted or denied. Omitted, it defaults to `["*"]`: every attribute,
+   * granted or denied. An explicit `[]` is kept: a grant of no attributes,
+   * or a deny of none.
    *
    * @throws {AccessControlError} - If the access instance to be committed has
    * any invalid data.
@@ -391,11 +387,10 @@ export class Access {
    * @param [resource] -  Defines the target resource this access is granted or
    * denied for. This is only optional if the resource is previously defined.
    * If not defined and omitted, this will throw.
-   * @param [attributes] -  Defines the resource attributes for which the
-   * access is granted for. If access is denied previously by calling `.deny()`
-   * this will default to an empty array (which means no attributes allowed).
-   * Otherwise (if granted before via `.grant()`) this will default to `["*"]`
-   * (which means all attributes allowed.)
+   * @param [attributes] - Defines the resource attributes for which the access
+   * is granted or denied. Omitted, it defaults to `["*"]`: every attribute,
+   * granted or denied. An explicit `[]` is kept: a grant of no attributes,
+   * or a deny of none.
    *
    * @throws {AccessControlError} - If the access instance to be committed has
    * any invalid data.
@@ -414,11 +409,10 @@ export class Access {
    * @param [resource] -  Defines the target resource this access is granted or
    * denied for. This is only optional if the resource is previously defined.
    * If not defined and omitted, this will throw.
-   * @param [attributes] -  Defines the resource attributes for which the
-   * access is granted for. If access is denied previously by calling `.deny()`
-   * this will default to an empty array (which means no attributes allowed).
-   * Otherwise (if granted before via `.grant()`) this will default to `["*"]`
-   * (which means all attributes allowed.)
+   * @param [attributes] - Defines the resource attributes for which the access
+   * is granted or denied. Omitted, it defaults to `["*"]`: every attribute,
+   * granted or denied. An explicit `[]` is kept: a grant of no attributes,
+   * or a deny of none.
    *
    * @throws {AccessControlError} - If the access instance to be committed has
    * any invalid data.
@@ -444,11 +438,10 @@ export class Access {
    * @param [resource] -  Defines the target resource this access is granted or
    * denied for. This is only optional if the resource is previously defined.
    * If not defined and omitted, this will throw.
-   * @param [attributes] -  Defines the resource attributes for which the
-   * access is granted for. If access is denied previously by calling `.deny()`
-   * this will default to an empty array (which means no attributes allowed).
-   * Otherwise (if granted before via `.grant()`) this will default to `["*"]`
-   * (which means all attributes allowed.)
+   * @param [attributes] - Defines the resource attributes for which the access
+   * is granted or denied. Omitted, it defaults to `["*"]`: every attribute,
+   * granted or denied. An explicit `[]` is kept: a grant of no attributes,
+   * or a deny of none.
    *
    * @throws {AccessControlError} - If the access instance to be committed has
    * any invalid data.
@@ -467,11 +460,10 @@ export class Access {
    * @param [resource] -  Defines the target resource this access is granted or
    * denied for. This is only optional if the resource is previously defined.
    * If not defined and omitted, this will throw.
-   * @param [attributes] -  Defines the resource attributes for which the
-   * access is granted for. If access is denied previously by calling `.deny()`
-   * this will default to an empty array (which means no attributes allowed).
-   * Otherwise (if granted before via `.grant()`) this will default to `["*"]`
-   * (which means all attributes allowed.)
+   * @param [attributes] - Defines the resource attributes for which the access
+   * is granted or denied. Omitted, it defaults to `["*"]`: every attribute,
+   * granted or denied. An explicit `[]` is kept: a grant of no attributes,
+   * or a deny of none.
    *
    * @throws {AccessControlError} - If the access instance to be committed has
    * any invalid data.

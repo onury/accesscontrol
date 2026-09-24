@@ -412,3 +412,69 @@ describe('during — hostile grants + fail-closed + code prefix', () => {
     expect(grab(() => ac.can('u').readAny('post').granted).code).toBe('AC_INVALID_DTREXP');
   });
 });
+
+describe('an explicit empty attribute list never widens to everything', () => {
+  // `attributes: []` means "no attributes" on every authoring path. The
+  // object form used to turn it into ['*'] and grant everything — a
+  // privilege-escalation shape for a rule loaded from a data store.
+  const info = { role: 'u', resource: 'r', action: 'read:any', attributes: [] as string[] };
+
+  const paths: Array<[string, () => AccessControl]> = [
+    [
+      'object form, ac.grant(info)',
+      () => {
+        const ac = new AccessControl();
+        ac.grant({ ...info });
+        return ac;
+      }
+    ],
+    [
+      'object form, chained access.grant(info)',
+      () => {
+        const ac = new AccessControl();
+        ac.grant('seed')
+          .readAny('seed')
+          .grant({ ...info });
+        return ac;
+      }
+    ],
+    [
+      'builder, readAny(r, [])',
+      () => {
+        const ac = new AccessControl();
+        ac.grant('u').readAny('r', []);
+        return ac;
+      }
+    ],
+    ['grants list', () => new AccessControl([{ ...info }])],
+    [
+      'grants object',
+      () => new AccessControl({ u: { r: { read: [{ possession: 'any', attributes: [] }] } } })
+    ]
+  ];
+
+  test.each(paths)('%s: stores [] and denies', (_, make) => {
+    const ac = make();
+    const permission = ac.can('u').readAny('r');
+    expect(permission.granted).toBe(false);
+    expect(permission.attributes).toEqual([]);
+  });
+
+  test('the object form with attributes omitted still grants everything', () => {
+    const ac = new AccessControl();
+    ac.grant({ role: 'u', resource: 'r', action: 'read:any' });
+    expect(ac.can('u').readAny('r').attributes).toEqual(['*']);
+  });
+
+  test('deny mirror: a deny of [] denies nothing; an omitted list denies all', () => {
+    const none = new AccessControl();
+    none.grant('u').readAny('r');
+    none.deny({ role: 'u', resource: 'r', action: 'read:any', attributes: [] });
+    expect(none.can('u').readAny('r').granted).toBe(true);
+
+    const all = new AccessControl();
+    all.grant('u').readAny('r');
+    all.deny({ role: 'u', resource: 'r', action: 'read:any' });
+    expect(all.can('u').readAny('r').granted).toBe(false);
+  });
+});

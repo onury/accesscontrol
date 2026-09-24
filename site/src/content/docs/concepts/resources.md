@@ -43,9 +43,11 @@ A list with only negations gets an implied leading `*` — `['!password']` means
 "everything except password" (`['*', '!password']`), not "nothing".
 :::
 
-Omitting attributes defaults to `['*']` for a grant. An explicit empty array
-`[]` is preserved — a grant with `[]` (or a `deny` with omitted attributes)
-allows **no** attributes, so `granted` is `false`.
+Omitting attributes defaults to `['*']`, for a grant and a deny alike. An
+explicit empty array `[]` is preserved on every authoring path (the chain, the
+`grant({ … })` object form, the grants list and the grants object): a grant
+with `[]` allows **no** attributes, so `granted` is `false`, and a deny with
+`[]` denies none.
 
 ## Filtering Data
 

@@ -18,8 +18,10 @@ export interface IAccessInfo {
    */
   resource?: string | string[];
   /**
-   *  Defines the resource attributes which are granted. If denied, this will
-   *  default to an empty array.
+   *  Defines the resource attributes which are granted or denied. Omitted, it
+   *  defaults to `['*']`: every attribute, granted or denied. An explicit `[]`
+   *  is kept on every authoring path: a grant of no attributes, or a deny of
+   *  none.
    */
   attributes?: string | string[];
   /**
