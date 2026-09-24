@@ -13,5 +13,5 @@
     "!src/core/UnknownObject.ts"
   ],
   "htmlReporter": { "fileName": "test/stryker/mutation-report.html" },
-  "thresholds": { "high": 90, "low": 80, "break": 88 }
+  "thresholds": { "high": 90, "low": 80, "break": 89 }
 }
