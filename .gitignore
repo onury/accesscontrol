@@ -3,7 +3,7 @@ package-lock.json
 lib
 coverage
 test/coverage
-test/stryker
+test/mutation
 .stryker-tmp
 *.tsbuildinfo
 npm-debug.log
