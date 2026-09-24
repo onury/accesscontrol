@@ -8,8 +8,8 @@ export default defineConfig({
     include: ['test/**/*.{test,spec}.ts'],
     coverage: {
       provider: 'istanbul',
-      reporter: ['text', 'lcov'],
-      reportsDirectory: 'test/coverage',
+      reporter: ['text', 'lcov', 'json-summary'],
+      reportsDirectory: '_backup/reports/coverage',
       include: ['src/**/*.ts'],
       thresholds: {
         lines: 100,
