@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
 
+## 3.1.1 (2026-09-24)
+
+### Fixed
+- `grant()` and `deny()` given an `IAccessInfo` object with an explicit `attributes: []` now keep it, as the chain (`readAny('r', [])`), the grants list and the grants object always did. The object form used to turn `[]` into `['*']`, so `ac.grant({ role, resource, action, attributes: [] })` granted **every** attribute instead of none, and a deny of `[]` denied everything. Omitted attributes still default to `['*']`. This dates back to 2.0.0.
+- The attribute notes in the chain's TSDoc and on `IAccessInfo.attributes` said a deny defaults to an empty array; since 3.0 an omitted list defaults to `['*']` for a deny too. They now say so, and that an explicit `[]` is kept.
+
+### Security
+- The fix above closes a privilege-escalation shape on the object form: an empty allow-list loaded from a data store could grant full access. If you relied on `attributes: []` meaning every attribute on the object form, write `['*']` or leave the field out.
+
 ## 3.1.0 (2026-07-16)
 
 ### Added
