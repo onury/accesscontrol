@@ -259,7 +259,8 @@ export class Access {
    * (omit ⇒ `any`).
    * @param actionSpec - Action name, optionally `name:own`/`name:any`.
    * @param [resource] - Target resource(s).
-   * @param [attributes] - Granted attributes (defaults per grant/deny).
+   * @param [attributes] - Granted (or denied) attributes; omitted, the list
+   * set with `.attributes()`, else `['*']`.
    * @returns - Self instance of `Access`.
    *
    * @example
@@ -293,8 +294,9 @@ export class Access {
    * If not defined and omitted, this will throw.
    * @param [attributes] - Defines the resource attributes for which the access
    * is granted or denied. Omitted, it defaults to `["*"]`: every attribute,
-   * granted or denied. An explicit `[]` is kept: a grant of no attributes,
-   * or a deny of none.
+   * granted or denied, unless a list was set with `.attributes()` in the
+   * chain. An explicit `[]` is kept: a grant of no attributes, or a deny of
+   * none.
    *
    * @throws {AccessControlError} - If the access instance to be committed has
    * any invalid data.
@@ -315,8 +317,9 @@ export class Access {
    * If not defined and omitted, this will throw.
    * @param [attributes] - Defines the resource attributes for which the access
    * is granted or denied. Omitted, it defaults to `["*"]`: every attribute,
-   * granted or denied. An explicit `[]` is kept: a grant of no attributes,
-   * or a deny of none.
+   * granted or denied, unless a list was set with `.attributes()` in the
+   * chain. An explicit `[]` is kept: a grant of no attributes, or a deny of
+   * none.
    *
    * @throws {AccessControlError} - If the access instance to be committed has
    * any invalid data.
@@ -344,8 +347,9 @@ export class Access {
    * If not defined and omitted, this will throw.
    * @param [attributes] - Defines the resource attributes for which the access
    * is granted or denied. Omitted, it defaults to `["*"]`: every attribute,
-   * granted or denied. An explicit `[]` is kept: a grant of no attributes,
-   * or a deny of none.
+   * granted or denied, unless a list was set with `.attributes()` in the
+   * chain. An explicit `[]` is kept: a grant of no attributes, or a deny of
+   * none.
    *
    * @throws {AccessControlError} - If the access instance to be committed has
    * any invalid data.
@@ -366,8 +370,9 @@ export class Access {
    * If not defined and omitted, this will throw.
    * @param [attributes] - Defines the resource attributes for which the access
    * is granted or denied. Omitted, it defaults to `["*"]`: every attribute,
-   * granted or denied. An explicit `[]` is kept: a grant of no attributes,
-   * or a deny of none.
+   * granted or denied, unless a list was set with `.attributes()` in the
+   * chain. An explicit `[]` is kept: a grant of no attributes, or a deny of
+   * none.
    *
    * @throws {AccessControlError} - If the access instance to be committed has
    * any invalid data.
@@ -395,8 +400,9 @@ export class Access {
    * If not defined and omitted, this will throw.
    * @param [attributes] - Defines the resource attributes for which the access
    * is granted or denied. Omitted, it defaults to `["*"]`: every attribute,
-   * granted or denied. An explicit `[]` is kept: a grant of no attributes,
-   * or a deny of none.
+   * granted or denied, unless a list was set with `.attributes()` in the
+   * chain. An explicit `[]` is kept: a grant of no attributes, or a deny of
+   * none.
    *
    * @throws {AccessControlError} - If the access instance to be committed has
    * any invalid data.
@@ -417,8 +423,9 @@ export class Access {
    * If not defined and omitted, this will throw.
    * @param [attributes] - Defines the resource attributes for which the access
    * is granted or denied. Omitted, it defaults to `["*"]`: every attribute,
-   * granted or denied. An explicit `[]` is kept: a grant of no attributes,
-   * or a deny of none.
+   * granted or denied, unless a list was set with `.attributes()` in the
+   * chain. An explicit `[]` is kept: a grant of no attributes, or a deny of
+   * none.
    *
    * @throws {AccessControlError} - If the access instance to be committed has
    * any invalid data.
@@ -446,8 +453,9 @@ export class Access {
    * If not defined and omitted, this will throw.
    * @param [attributes] - Defines the resource attributes for which the access
    * is granted or denied. Omitted, it defaults to `["*"]`: every attribute,
-   * granted or denied. An explicit `[]` is kept: a grant of no attributes,
-   * or a deny of none.
+   * granted or denied, unless a list was set with `.attributes()` in the
+   * chain. An explicit `[]` is kept: a grant of no attributes, or a deny of
+   * none.
    *
    * @throws {AccessControlError} - If the access instance to be committed has
    * any invalid data.
@@ -468,8 +476,9 @@ export class Access {
    * If not defined and omitted, this will throw.
    * @param [attributes] - Defines the resource attributes for which the access
    * is granted or denied. Omitted, it defaults to `["*"]`: every attribute,
-   * granted or denied. An explicit `[]` is kept: a grant of no attributes,
-   * or a deny of none.
+   * granted or denied, unless a list was set with `.attributes()` in the
+   * chain. An explicit `[]` is kept: a grant of no attributes, or a deny of
+   * none.
    *
    * @throws {AccessControlError} - If the access instance to be committed has
    * any invalid data.

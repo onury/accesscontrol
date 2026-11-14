@@ -474,7 +474,7 @@ export function compileCondition(
 // ----------------------
 // Evaluates a *canonical* condition (the compiler's output) against the merged
 // check-time context, returning a boolean. Synchronous only —
-// custom-fn (`{ fn }`) conditions are deferred to the async phase (P8).
+// custom-fn (`{ fn }`) conditions are evaluated only on the async path.
 
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
@@ -783,7 +783,7 @@ export function assumeSchedules(node: ConditionJSON): ConditionJSON {
  * against the merged check-time context, returning whether it holds.
  * The reserved `now` key is auto-injected and expanded into `$.now.*` fields
  * (overridable via `context.now` for deterministic tests; timezone via
- * `context.tz`). Synchronous: `{ fn }` conditions throw (deferred to P8).
+ * `context.tz`). Synchronous: `{ fn }` conditions throw; use `evaluateConditionAsync`.
  *
  * @param condition - A canonical condition (compile string sugar first).
  * @param context - The merged data bag; `$.`-paths resolve against it.

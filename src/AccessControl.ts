@@ -806,8 +806,8 @@ export class AccessControl {
   /**
    * Extends the given role(s) with privileges of one or more other roles.
    * @param roles - Role(s) to be extended. Single role as a `String` or
-   * multiple roles as an `Array`. Note that if a role does not exist, it will
-   * be automatically created.
+   * multiple roles as an `Array`. Note that if a role does not exist, it
+   * throws (`ROLE_NOT_FOUND`).
    * @param extenderRoles - Role(s) to inherit from. Single role as a `String`
    * or multiple roles as an `Array`. Note that if a extender role does not
    * exist, it will throw.

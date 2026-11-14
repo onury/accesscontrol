@@ -10,7 +10,7 @@ type OnceWrapper = EventListener & { listener?: EventListener };
 
 /**
  * Tiny internal event emitter — no Node `EventEmitter` dependency, so it
- * is ESM/browser-safe and keeps the single-dep footprint.
+ * is ESM/browser-safe and adds no dependency.
  *
  * Guarantees:
  * - **Zero overhead when no listener** — callers gate on {@link Emitter#has}

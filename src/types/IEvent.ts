@@ -76,11 +76,11 @@ export interface ChangeEvent extends BaseEvent {
   detail?: UnknownObject;
 }
 
-/** Emitted when a check or operation throws. */
+/** Emitted when a check throws (also under `tryCan()`, which then denies). */
 export interface ErrorEvent extends BaseEvent {
   name: 'error';
   error: AccessControlError;
-  /** The operation that threw (e.g. `'check'`, `'grant'`). */
+  /** The operation that threw: always `'check'`, the only one that emits `error`. */
   operation: string;
   roles?: string[];
   resource?: string;
