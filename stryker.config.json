@@ -10,8 +10,7 @@
   "mutate": [
     "src/**/*.ts",
     "!src/**/index.ts",
-    "!src/core/I*.ts",
-    "!src/core/UnknownObject.ts"
+    "!src/types/**"
   ],
   "htmlReporter": { "fileName": "test/mutation/mutation-report.html" },
   "thresholds": { "high": 90, "low": 80, "break": 89 }
