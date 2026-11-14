@@ -205,7 +205,7 @@ AccessControl is held to a high bar because a wrong answer here is a
 vulnerability, not a bug:
 
 - **100%** coverage (statements, branches, functions, lines).
-- **Mutation tested** (Stryker, ≥ 88% and rising) — proves the *tests* actually
+- **Mutation tested** (Stryker, ≥ 89% and rising) — proves the *tests* actually
   catch regressions, not just execute lines.
 - An **adversarial security suite** and a **seeded property fuzzer** assert
   invariants 100%/mutation can't (see [Security › What testing can and cannot
