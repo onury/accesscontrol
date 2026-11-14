@@ -88,6 +88,24 @@ describe('Test Suite: events (P9)', () => {
     ]);
   });
 
+  test('change event fires on Access#extend() and removeResources(), as on the other mutators', () => {
+    const ac = new AccessControl();
+    ac.grant('user').readAny('post').readAny('page');
+    ac.grant('editor').readAny('post');
+    const events: any[] = [];
+    ac.on('change', (e: any) => events.push(e));
+
+    ac.grant('admin').extend('user');
+    ac.removeResources('page', 'user');
+    ac.removeResources(['post']);
+
+    expect(events.map((e) => [e.type, e.detail])).toEqual([
+      ['extend', { role: 'admin', $extend: 'user' }],
+      ['remove', { resources: ['page'], roles: ['user'] }],
+      ['remove', { resources: ['post'] }]
+    ]);
+  });
+
   test('error event fires when a check throws (e.g. strict unknown role)', () => {
     const ac = new AccessControl();
     ac.grant('admin').readAny('post', ['*']);

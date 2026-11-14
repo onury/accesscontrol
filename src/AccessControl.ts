@@ -875,6 +875,9 @@ export class AccessControl {
     // _removePermission has a third argument `actionPossession`. if
     // omitted (like below), removes the parent resource object.
     this._removePermission(resources, roles);
+    const removed: UnknownObject = { resources: toStringArray(resources) };
+    if (roles !== undefined) removed.roles = toStringArray(roles);
+    this._emitChange('remove', removed);
     return this;
   }
 

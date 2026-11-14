@@ -214,6 +214,7 @@ export class Access {
    */
   extend(roles: string | string[]): Access {
     extendRole(this._grants, this._.role as string, roles, this._nameOpts);
+    (this._ac as any)._emitChange('extend', { role: this._.role, $extend: roles });
     return this;
   }
 
