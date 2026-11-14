@@ -258,6 +258,20 @@ describe('Security: introspection getters are inert; the engine is fault-isolate
     expect(() => ac.grant('u2').readAny('post', ['*'])).not.toThrow();
   });
 
+  test('an IP gate never opens for an address with an octet over 255 (issue #153)', () => {
+    const ac = new AccessControl();
+    ac.grant('admin').readAny('server');
+    ac.require('$.ip cidr 10.0.0.0/8');
+    expect(ac.can('admin', { ip: '10.0.0.1' }).readAny('server').granted).toBe(true);
+    for (const ip of ['9.256.0.1', '9.255.255.256', '10.0.0.999']) {
+      expect(ac.can('admin', { ip }).readAny('server').granted).toBe(false);
+    }
+    const ac2 = new AccessControl();
+    ac2.grant('u').where('$.ip in ["192.168.0.0/16"]').readAny('server');
+    expect(ac2.can('u', { ip: '192.168.0.1' }).readAny('server').granted).toBe(true);
+    expect(ac2.can('u', { ip: '192.167.256.1' }).readAny('server').granted).toBe(false);
+  });
+
   test('pathologically deep condition trees are rejected, not stack-overflowed', () => {
     let cond: any = ['$.x', '==', 1];
     for (let i = 0; i < 500; i++) cond = { and: [cond] };

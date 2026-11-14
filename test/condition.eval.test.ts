@@ -112,6 +112,20 @@ describe('Test Suite: condition evaluator', () => {
     expect(check('$.ip cidr 10.1.2.3/32', { ip: '10.1.2.3' })).toBe(true);
   });
 
+  test('IP membership — a checked IP with an octet over 255 never matches (issue #153)', () => {
+    // each would carry into the octet before it and compute to an in-range address
+    expect(check('$.ip cidr 10.0.0.0/8', { ip: '9.256.0.1' })).toBe(false);
+    expect(check('$.ip cidr 10.0.0.0/8', { ip: '9.255.255.256' })).toBe(false);
+    expect(check('$.ip cidr 10.0.0.0/8', { ip: '10.0.0.256' })).toBe(false);
+    expect(check('$.ip in [192.168.0.0/16]', { ip: '192.167.256.1' })).toBe(false);
+    expect(check('$.ip in [10.0.0.0/8, 192.168.1.1]', { ip: '9.256.0.1' })).toBe(false);
+    // the octet boundary itself stays valid
+    expect(check('$.ip cidr 10.0.0.0/8', { ip: '10.255.255.255' })).toBe(true);
+    // a range base resolved from the context is held to the same rule
+    expect(check('$.ip cidr $.net', { ip: '10.0.0.1', net: '9.256.0.0/8' })).toBe(false);
+    expect(check('$.ip cidr $.net', { ip: '10.0.0.1', net: '10.0.0.0/8' })).toBe(true);
+  });
+
   test('$.now.* derived fields (deterministic via fixed now + tz)', () => {
     // 2026-06-19 is a Friday; 14:30 UTC
     const now = new Date('2026-06-19T14:30:00Z');

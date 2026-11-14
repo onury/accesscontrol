@@ -294,6 +294,11 @@ function isIpLike(v: unknown): boolean {
   return typeof v === 'string' && (IPV4_RE.test(v) || CIDR_RE.test(v));
 }
 
+/** Whether a string is a dotted-quad IPv4 address with every octet in 0–255. */
+function isIPv4(v: string): boolean {
+  return IPV4_RE.test(v) && v.split('.').every((o) => Number(o) <= 255);
+}
+
 /** Validates IP/CIDR literals so a malformed range throws at author time. */
 function validateIpMembers(members: unknown[]): void {
   members.forEach((m) => {
@@ -305,7 +310,7 @@ function validateIpMembers(members: unknown[]): void {
       if (bits < 0 || bits > 32) throw new AccessControlError(`Invalid CIDR prefix: "${m}".`);
     }
     const ip = slash >= 0 ? m.slice(0, slash) : m;
-    if (IPV4_RE.test(ip) && ip.split('.').some((o) => Number(o) > 255)) {
+    if (IPV4_RE.test(ip) && !isIPv4(ip)) {
       throw new AccessControlError(`Invalid IPv4 octet: "${m}".`);
     }
   });
@@ -575,7 +580,9 @@ function ipMatches(ip: string, member: string): boolean {
   if (slash < 0) return ip === member;
   const base = member.slice(0, slash);
   const bits = Number(member.slice(slash + 1));
-  if (!IPV4_RE.test(ip) || !IPV4_RE.test(base)) return false;
+  // fail-closed: an octet over 255 would carry into the next one in
+  // ipv4ToInt, so `9.256.0.1` would compute as `10.0.0.1`.
+  if (!isIPv4(ip) || !isIPv4(base)) return false;
   if (bits === 0) return true;
   const mask = bits === 32 ? 0xffffffff : (0xffffffff << (32 - bits)) >>> 0;
   return (ipv4ToInt(ip) & mask) === (ipv4ToInt(base) & mask);
