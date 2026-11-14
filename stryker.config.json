@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
   "packageManager": "npm",
+  "ignorePatterns": ["_blueprint"],
   "testRunner": "vitest",
   "reporters": ["html", "json", "clear-text", "progress", "event-recorder"],
   "jsonReporter": { "fileName": "test/mutation/mutation-report.json" },
