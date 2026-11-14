@@ -10,7 +10,7 @@ import type {
   ConditionLeaf,
   UnknownObject
 } from '../types/index.js';
-import { ecode, type } from './generic.js';
+import { detail, ecode, type } from './generic.js';
 
 /**
  * Re-stamps an error's `code` with the engine's `errorCodePrefix`. Used at the
@@ -30,6 +30,21 @@ function restampCode(err: unknown, prefix: string): unknown {
     asyncRequired: err.asyncRequired,
     cause: err.cause
   });
+}
+
+/** What a compile-time error needs: the prefixed code and `engine.safeErrors`. */
+interface CompileCx {
+  code: string;
+  safe: boolean;
+}
+
+/**
+ * A coded compile-time error. The offending value is appended only when
+ * `safeErrors` is off: an expression can come from a data store.
+ */
+function compileError(cx: CompileCx, message: string, value?: unknown): AccessControlError {
+  const suffix = value === undefined ? '' : detail(cx.safe, value);
+  return new AccessControlError(`${message}${suffix}`, { code: cx.code });
 }
 
 // ----------------------
@@ -166,7 +181,7 @@ const CIDR_RE = /^\d{1,3}(\.\d{1,3}){3}\/\d{1,2}$/;
  * splitting on whitespace.
  * @throws {AccessControlError} - On an unterminated quote or bracket.
  */
-function tokenize(s: string): string[] {
+function tokenize(s: string, cx: CompileCx): string[] {
   const tokens: string[] = [];
   const n = s.length;
   let i = 0;
@@ -177,7 +192,7 @@ function tokenize(s: string): string[] {
     if (ch === '"' || ch === "'") {
       let j = i + 1;
       while (j < n && s[j] !== ch) j++;
-      if (j >= n) throw new AccessControlError(`Unterminated quote in condition: "${s}".`);
+      if (j >= n) throw compileError(cx, 'Unterminated quote in condition.', s);
       tokens.push(s.slice(i, j + 1));
       i = j + 1;
     } else if (ch === '[') {
@@ -189,7 +204,7 @@ function tokenize(s: string): string[] {
         if (depth === 0) break;
         j++;
       }
-      if (depth !== 0) throw new AccessControlError(`Unterminated "[" in condition: "${s}".`);
+      if (depth !== 0) throw compileError(cx, 'Unterminated "[" in condition.', s);
       tokens.push(s.slice(i, j + 1));
       i = j + 1;
     } else {
@@ -229,10 +244,10 @@ function splitList(token: string): string[] {
  * becomes an array of parsed members. Use quotes to force the string form
  * (`"true"`, `"100"`, `"null"`).
  */
-function parseOperand(token: string, pathPrefix: string): unknown {
-  if (token === '') throw new AccessControlError('Empty operand in condition.');
+function parseOperand(token: string, pathPrefix: string, cx: CompileCx): unknown {
+  if (token === '') throw compileError(cx, 'Empty operand in condition.');
   if (isPath(token, pathPrefix)) return token;
-  if (token[0] === '[') return splitList(token).map((t) => parseOperand(t, pathPrefix));
+  if (token[0] === '[') return splitList(token).map((t) => parseOperand(t, pathPrefix, cx));
   if (isQuoted(token)) return token.slice(1, -1);
   if (token === 'true') return true;
   if (token === 'false') return false;
@@ -242,9 +257,9 @@ function parseOperand(token: string, pathPrefix: string): unknown {
 }
 
 /** Validates the `between` bounds: inclusive; static start>end is an error. */
-function validateBetween(rhs: unknown): void {
+function validateBetween(rhs: unknown, cx: CompileCx): void {
   if (!Array.isArray(rhs) || rhs.length !== 2) {
-    throw new AccessControlError('"between" expects a list of exactly two bounds.');
+    throw compileError(cx, '"between" expects a list of exactly two bounds.');
   }
   const [a, b] = rhs;
   // time-of-day (HH:MM) allows start>end (overnight wrapping window) — skip.
@@ -252,12 +267,12 @@ function validateBetween(rhs: unknown): void {
     typeof a === 'string' && TIME_RE.test(a) && typeof b === 'string' && TIME_RE.test(b);
   if (bothTime) return;
   if (typeof a === 'number' && typeof b === 'number' && a > b) {
-    throw new AccessControlError(`Invalid "between" range: ${a} > ${b}.`);
+    throw compileError(cx, 'Invalid "between" range: the start is after the end.', rhs);
   }
   const bothDate =
     typeof a === 'string' && DATE_RE.test(a) && typeof b === 'string' && DATE_RE.test(b);
   if (bothDate && a > b) {
-    throw new AccessControlError(`Invalid "between" range: ${a} > ${b}.`);
+    throw compileError(cx, 'Invalid "between" range: the start is after the end.', rhs);
   }
 }
 
@@ -300,18 +315,18 @@ function isIPv4(v: string): boolean {
 }
 
 /** Validates IP/CIDR literals so a malformed range throws at author time. */
-function validateIpMembers(members: unknown[]): void {
+function validateIpMembers(members: unknown[], cx: CompileCx): void {
   members.forEach((m) => {
     if (typeof m !== 'string') return; // a path member is resolved at check time
     const slash = m.indexOf('/');
     if (slash >= 0) {
-      if (!CIDR_RE.test(m)) throw new AccessControlError(`Malformed CIDR: "${m}".`);
+      if (!CIDR_RE.test(m)) throw compileError(cx, 'Malformed CIDR.', m);
       const bits = Number(m.slice(slash + 1));
-      if (bits < 0 || bits > 32) throw new AccessControlError(`Invalid CIDR prefix: "${m}".`);
+      if (bits < 0 || bits > 32) throw compileError(cx, 'Invalid CIDR prefix.', m);
     }
     const ip = slash >= 0 ? m.slice(0, slash) : m;
     if (IPV4_RE.test(ip) && !isIPv4(ip)) {
-      throw new AccessControlError(`Invalid IPv4 octet: "${m}".`);
+      throw compileError(cx, 'Invalid IPv4 octet.', m);
     }
   });
 }
@@ -320,13 +335,15 @@ function validateIpMembers(members: unknown[]): void {
 function compileExpression(
   expr: string,
   pathPrefix: string,
-  errorCodePrefix: string
+  errorCodePrefix: string,
+  safe: boolean
 ): ConditionJSON {
-  const t = tokenize(expr);
+  const cx: CompileCx = { code: ecode(errorCodePrefix, ErrorCode.INVALID_CONDITION), safe };
+  const t = tokenize(expr, cx);
   if (t.length < 3) {
-    throw new AccessControlError(`Invalid condition expression: "${expr}".`);
+    throw compileError(cx, 'Invalid condition expression.', expr);
   }
-  const lhs = parseOperand(t[0], pathPrefix);
+  const lhs = parseOperand(t[0], pathPrefix, cx);
   // `not` modifier compiles to a `{ not: leaf }` wrapper. The symbolic
   // `!=` stays its own operator and is handled below, not via this modifier.
   const negated = t[1] === 'not';
@@ -334,18 +351,18 @@ function compileExpression(
   const rawOp = t[opIdx];
   const op = OP_ALIASES[rawOp] ?? rawOp;
   if (!ALL_OPS.includes(op)) {
-    throw new AccessControlError(`Unknown operator "${rawOp}" in condition: "${expr}".`);
+    throw compileError(cx, 'Unknown operator in condition.', expr);
   }
   const rhsTokens = t.slice(opIdx + 1);
   if (rhsTokens.length === 0) {
-    throw new AccessControlError(`Missing right-hand operand in condition: "${expr}".`);
+    throw compileError(cx, 'Missing right-hand operand in condition.', expr);
   }
-  const rhs = parseOperand(rhsTokens.join(' '), pathPrefix);
+  const rhs = parseOperand(rhsTokens.join(' '), pathPrefix, cx);
 
-  if (op === 'between') validateBetween(rhs);
+  if (op === 'between') validateBetween(rhs, cx);
   if (op === 'during') validateDuring(rhs, pathPrefix, errorCodePrefix);
-  if (op === 'cidr' && typeof rhs === 'string') validateIpMembers([rhs]);
-  if (op === 'in' && Array.isArray(rhs) && rhs.some(isIpLike)) validateIpMembers(rhs);
+  if (op === 'cidr' && typeof rhs === 'string') validateIpMembers([rhs], cx);
+  if (op === 'in' && Array.isArray(rhs) && rhs.some(isIpLike)) validateIpMembers(rhs, cx);
 
   const leaf: ConditionLeaf = [lhs, op, rhs];
   return negated ? { not: leaf } : leaf;
@@ -355,22 +372,23 @@ function compileExpression(
 function normalizeLeaf(
   node: unknown[],
   pathPrefix: string,
-  errorCodePrefix: string
+  errorCodePrefix: string,
+  safe: boolean
 ): ConditionJSON {
+  const cx: CompileCx = { code: ecode(errorCodePrefix, ErrorCode.INVALID_CONDITION), safe };
   if (node.length !== 3) {
-    throw new AccessControlError(
-      `Invalid condition leaf (expected [lhs, op, rhs]): ${JSON.stringify(node)}.`
-    );
+    throw compileError(cx, 'Invalid condition leaf, expected [lhs, op, rhs].', node);
   }
   const rawOp = node[1];
   const op = typeof rawOp === 'string' ? (OP_ALIASES[rawOp] ?? rawOp) : rawOp;
   if (typeof op !== 'string' || !ALL_OPS.includes(op)) {
-    throw new AccessControlError(`Unknown operator "${String(rawOp)}" in condition leaf.`);
+    throw compileError(cx, 'Unknown operator in condition leaf.', rawOp);
   }
-  if (op === 'between') validateBetween(node[2]);
+  if (op === 'between') validateBetween(node[2], cx);
   if (op === 'during') validateDuring(node[2], pathPrefix, errorCodePrefix);
-  if (op === 'cidr' && typeof node[2] === 'string') validateIpMembers([node[2]]);
-  if (op === 'in' && Array.isArray(node[2]) && node[2].some(isIpLike)) validateIpMembers(node[2]);
+  if (op === 'cidr' && typeof node[2] === 'string') validateIpMembers([node[2]], cx);
+  if (op === 'in' && Array.isArray(node[2]) && node[2].some(isIpLike))
+    validateIpMembers(node[2], cx);
   // normalize an aliased operator (===/!==) into the canonical triple
   return (op === rawOp ? node : [node[0], op, node[2]]) as ConditionLeaf;
 }
@@ -383,6 +401,9 @@ function normalizeLeaf(
  *
  * @param input - The author-supplied condition.
  * @param pathPrefix - The notation path sentinel (default `'$'`).
+ * @param errorCodePrefix - The `engine.errorCodePrefix` stamped on every code.
+ * @param safeErrors - The `engine.safeErrors` setting: when on (default),
+ * messages leave out the expression and its values.
  * @returns The canonical, validated condition.
  * @throws {AccessControlError} - On malformed syntax, unknown operators or
  * statically-invalid ranges.
@@ -399,6 +420,7 @@ export function compileCondition(
   input: ConditionJSON,
   pathPrefix: string = '$',
   errorCodePrefix: string = '',
+  safeErrors: boolean = true,
   _depth: number = 0
 ): ConditionJSON {
   const ic = ecode(errorCodePrefix, ErrorCode.INVALID_CONDITION);
@@ -407,8 +429,9 @@ export function compileCondition(
       code: ic
     });
   }
-  if (typeof input === 'string') return compileExpression(input, pathPrefix, errorCodePrefix);
-  if (Array.isArray(input)) return normalizeLeaf(input, pathPrefix, errorCodePrefix);
+  if (typeof input === 'string')
+    return compileExpression(input, pathPrefix, errorCodePrefix, safeErrors);
+  if (Array.isArray(input)) return normalizeLeaf(input, pathPrefix, errorCodePrefix, safeErrors);
   if (type(input) === 'object') {
     const node = input as Record<string, unknown>;
     if ('fn' in node) return node as ConditionJSON; // custom fn — passthrough
@@ -417,7 +440,7 @@ export function compileCondition(
         throw new AccessControlError('"and" expects an array.', { code: ic });
       return {
         and: node.and.map((c) =>
-          compileCondition(c as ConditionJSON, pathPrefix, errorCodePrefix, _depth + 1)
+          compileCondition(c as ConditionJSON, pathPrefix, errorCodePrefix, safeErrors, _depth + 1)
         )
       };
     }
@@ -426,18 +449,24 @@ export function compileCondition(
         throw new AccessControlError('"or" expects an array.', { code: ic });
       return {
         or: node.or.map((c) =>
-          compileCondition(c as ConditionJSON, pathPrefix, errorCodePrefix, _depth + 1)
+          compileCondition(c as ConditionJSON, pathPrefix, errorCodePrefix, safeErrors, _depth + 1)
         )
       };
     }
     /* istanbul ignore next -- `in` arm mapping is imprecise through the TS transpile */
     if ('not' in node) {
       return {
-        not: compileCondition(node.not as ConditionJSON, pathPrefix, errorCodePrefix, _depth + 1)
+        not: compileCondition(
+          node.not as ConditionJSON,
+          pathPrefix,
+          errorCodePrefix,
+          safeErrors,
+          _depth + 1
+        )
       };
     }
   }
-  throw new AccessControlError(`Invalid condition: ${JSON.stringify(input)}.`, { code: ic });
+  throw compileError({ code: ic, safe: safeErrors }, 'Invalid condition.', input);
 }
 
 // ----------------------
@@ -669,7 +698,9 @@ function applyOp(
       return typeof lhs === 'string' && ipMatches(lhs, String(rhs));
     /* istanbul ignore next */
     default:
-      throw new AccessControlError(`Unknown operator "${op}".`);
+      throw new AccessControlError(`Unknown operator "${op}".`, {
+        code: ErrorCode.INVALID_CONDITION
+      });
   }
 }
 

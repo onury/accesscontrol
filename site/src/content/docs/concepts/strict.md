@@ -82,14 +82,14 @@ The **phase** column tells you *when* a code can reach you: **author** codes thr
 | `RESERVED_NAME` | a reserved keyword (`__proto__`, `prototype`, `constructor`, `_`) | both |
 | `INVALID_QUERY` | malformed check query (`IQueryInfo`), or a `context.tz` that is not an IANA time zone | check |
 | `INVALID_SETUP` | malformed `setup()` vocabulary | author |
-| `INVALID_GRANT` | invalid grant rule / grants object | author |
+| `INVALID_GRANT` | invalid grant rule / grants object, or `lock()` on an empty model | author |
 | `INVALID_ACTION` | invalid action name or possession | both |
 | `ROLE_NOT_FOUND` | referenced role doesn't exist | both |
 | `INVALID_INHERITANCE` | self / cross / non‑existent inheritance | author |
 | `UNKNOWN_ACTION` / `UNKNOWN_RESOURCE` | strict‑mode unknown name | check |
 | `LOCKED` | mutation attempted after `lock()` | author |
 | `ASYNC_REQUIRED` | a `{ fn }` condition was hit on the sync path | check |
-| `INVALID_CONDITION` | malformed / too‑deeply‑nested condition | author |
+| `INVALID_CONDITION` | malformed / too‑deeply‑nested condition: syntax, an unknown operator, bad `between` bounds or IP / CIDR literals | author |
 | `UNKNOWN_CONDITION_FN` | unregistered custom function name | check |
 | `REGEX_DISABLED` / `UNSAFE_REGEX` | `matches` disabled, or an unsafe pattern | check |
 | `INVALID_DTREXP` | malformed or over‑long [`during` expression](/accesscontrol/concepts/conditions/#temporal-scheduling--during) | author |

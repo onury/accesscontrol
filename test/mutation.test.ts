@@ -175,8 +175,8 @@ describe('Mutation kills: condition compiler messages & edges', () => {
     expect(compileCondition(['$.a', '===', 1])).toEqual(['$.a', '==', 1]);
     expect(compileCondition(['$.a', '!==', 1])).toEqual(['$.a', '!=', 1]);
     // a non-string op in a leaf is rejected (not treated as an alias lookup)
-    expect(grab(() => compileCondition(['$.a', 123, 1] as any)).message).toContain(
-      'Unknown operator "123"'
+    expect(grab(() => compileCondition(['$.a', 123, 1] as any)).message).toBe(
+      'Unknown operator in condition leaf.'
     );
   });
 
@@ -187,7 +187,7 @@ describe('Mutation kills: condition compiler messages & edges', () => {
       'Invalid condition expression'
     );
     expect(grab(() => compileCondition('$.x bogus 1')).message).toContain(
-      'Unknown operator "bogus"'
+      'Unknown operator in condition'
     );
     expect(grab(() => compileCondition('$.x in [a,,b]')).message).toContain('Empty operand');
     expect(grab(() => compileCondition('$.v between [1]')).message).toContain('exactly two bounds');
@@ -667,7 +667,7 @@ describe('Mutation kills: condition parser/validator edges (round 2)', () => {
       'Invalid condition leaf'
     );
     expect(grab(() => compileCondition(['$.x', 'bogus', 1] as any)).message).toContain(
-      'Unknown operator "bogus" in condition leaf'
+      'Unknown operator in condition leaf'
     );
     // canonical leaf round-trips (idempotent)
     expect(compileCondition(['$.x', '==', 1] as any)).toEqual(['$.x', '==', 1]);

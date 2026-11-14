@@ -12,7 +12,7 @@ export enum ErrorCode {
   RESERVED_NAME = 'RESERVED_NAME',
   /** A check query (`IQueryInfo` passed to `can`/`check`) is malformed, or its `context.tz` is not an IANA time zone. */
   INVALID_QUERY = 'INVALID_QUERY',
-  /** A grant rule / grants object / `IAccessInfo` has an invalid shape. */
+  /** A grant rule / grants object / `IAccessInfo` has an invalid shape, or `lock()` found an empty model. */
   INVALID_GRANT = 'INVALID_GRANT',
   /** The `setup()` vocabulary object is malformed. */
   INVALID_SETUP = 'INVALID_SETUP',

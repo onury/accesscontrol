@@ -118,7 +118,12 @@ function normalizeGrant(
   }
 
   if (r.condition !== undefined && r.condition !== null) {
-    grant.condition = compileCondition(r.condition, pathPrefix, opts.errorCodePrefix);
+    grant.condition = compileCondition(
+      r.condition,
+      pathPrefix,
+      opts.errorCodePrefix,
+      opts.safeErrors !== false
+    );
   }
 
   return grant;
@@ -338,7 +343,7 @@ export function commitToGrants(
   const condition =
     ai.condition === undefined
       ? undefined
-      : compileCondition(ai.condition, pathPrefix, opts.errorCodePrefix);
+      : compileCondition(ai.condition, pathPrefix, opts.errorCodePrefix, opts.safeErrors !== false);
 
   (ai.role as string[]).forEach((role: string) => {
     if (!Object.hasOwn(grants, role)) grants[role] = {};

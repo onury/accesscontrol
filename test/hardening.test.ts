@@ -570,3 +570,54 @@ describe('the chain .attributes() list is kept at commit, never widened to every
     expect(all.can('u').readAny('post').granted).toBe(false);
   });
 });
+
+describe('every condition compile error and lock() carry a code; safeErrors hides the expression', () => {
+  // Each expression embeds a marker so a leak into the message is visible.
+  const BAD: Array<string | unknown[]> = [
+    "$.s == 'SECRET",
+    '$.x in [SECRET, b',
+    '$.SECRET ==',
+    '$.x SECRET 1',
+    '$.x in [SECRET,,b]',
+    '$.v between [SECRET]',
+    '$.v between [5, 2]',
+    '$.ip cidr 10.0.0/8',
+    '$.ip cidr 10.0.0.0/99',
+    '$.ip cidr 10.0.0.256',
+    '$.SECRET not in',
+    ['$.SECRET', '=='],
+    ['$.x', 'SECRET', 1],
+    ['$.x', 'between', [9, 1]]
+  ];
+  const author = (engine: object, cond: unknown) => () =>
+    new AccessControl({}, { engine })
+      .grant('u')
+      .where(cond as any)
+      .readAny('post');
+
+  test.each(BAD.map((c) => [JSON.stringify(c), c]))('%s', (_, cond) => {
+    const safe = grab(author({ errorCodePrefix: 'AC_' }, cond));
+    expect(safe).toBeInstanceOf(AccessControlError);
+    expect(safe.code).toBe('AC_INVALID_CONDITION');
+    expect(safe.message).not.toMatch(/SECRET|10\.0\.0|\b9\b|\[5, 2\]/);
+    const verbose = grab(author({ safeErrors: false }, cond));
+    expect(verbose.code).toBe(ErrorCode.INVALID_CONDITION);
+    // these two messages name no value, so there is nothing to show
+    if (!['$.x in [SECRET,,b]', '$.v between [SECRET]'].includes(cond as string)) {
+      expect(verbose.message).toContain('Got:');
+    }
+  });
+
+  test('require() gates take the same code and safety', () => {
+    const err = grab(() => new AccessControl().require('$.x SECRET 1'));
+    expect(err.code).toBe(ErrorCode.INVALID_CONDITION);
+    expect(err.message).not.toContain('SECRET');
+  });
+
+  test('lock() on an empty model throws INVALID_GRANT, with the prefix', () => {
+    expect(grab(() => new AccessControl().lock()).code).toBe(ErrorCode.INVALID_GRANT);
+    expect(
+      grab(() => new AccessControl({}, { engine: { errorCodePrefix: 'AC_' } }).lock()).code
+    ).toBe('AC_INVALID_GRANT');
+  });
+});

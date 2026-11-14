@@ -555,7 +555,12 @@ export class AccessControl {
         code: ecode(this._policy.errorCodePrefix, ErrorCode.LOCKED)
       });
     this._requirements.global.push(
-      compileCondition(condition, this._policy.pathPrefix, this._policy.errorCodePrefix)
+      compileCondition(
+        condition,
+        this._policy.pathPrefix,
+        this._policy.errorCodePrefix,
+        this._policy.safeErrors
+      )
     );
     this._emitChange('require', { scope: 'global' });
     return this;
@@ -578,7 +583,12 @@ export class AccessControl {
     // would otherwise read a function here and crash the push below.
     if (!Object.hasOwn(bucket, key)) bucket[key] = [];
     bucket[key].push(
-      compileCondition(condition, this._policy.pathPrefix, this._policy.errorCodePrefix)
+      compileCondition(
+        condition,
+        this._policy.pathPrefix,
+        this._policy.errorCodePrefix,
+        this._policy.safeErrors
+      )
     );
     this._emitChange('require', { scope: key });
     return this;
