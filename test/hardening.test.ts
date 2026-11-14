@@ -7,7 +7,7 @@
  *  the stable err.code contract.
  */
 
-import { AccessControl, Charset, ErrorCode } from '../src/index.js';
+import { AccessControl, AccessControlError, Charset, ErrorCode } from '../src/index.js';
 
 function grab(fn: () => unknown): any {
   try {
@@ -476,6 +476,44 @@ describe('an explicit empty attribute list never widens to everything', () => {
     all.grant('u').readAny('r');
     all.deny({ role: 'u', resource: 'r', action: 'read:any' });
     expect(all.can('u').readAny('r').granted).toBe(false);
+  });
+});
+
+describe('an invalid context.tz is an AccessControlError, never a raw RangeError', () => {
+  const make = (engine = {}) => {
+    const ac = new AccessControl({}, { engine });
+    ac.grant('u').where('$.now.hour >= 0').readAny('post');
+    return ac;
+  };
+
+  test('can() throws INVALID_QUERY with the RangeError as its cause; the value stays out', () => {
+    const err = grab(() => make().can('u', { tz: 'Mars/Phobos' }).readAny('post').granted);
+    expect(err).toBeInstanceOf(AccessControlError);
+    expect(err.code).toBe(ErrorCode.INVALID_QUERY);
+    expect(err.cause).toBeInstanceOf(RangeError);
+    expect(err.message).not.toContain('Mars/Phobos');
+  });
+
+  test('the code takes engine.errorCodePrefix; tryCan() denies instead of throwing', () => {
+    expect(
+      grab(
+        () =>
+          make({ errorCodePrefix: 'AC_' }).can('u', { tz: 'Mars/Phobos' }).readAny('post').granted
+      ).code
+    ).toBe('AC_INVALID_QUERY');
+    expect(make().tryCan('u', { tz: 'Mars/Phobos' }).readAny('post').granted).toBe(false);
+  });
+
+  test('the async path surfaces the same error', async () => {
+    const ac = make();
+    let err: any;
+    try {
+      await ac.can('u', { tz: 'Mars/Phobos' }).readAny('post').grantedAsync;
+    } catch (e) {
+      err = e;
+    }
+    expect(err).toBeInstanceOf(AccessControlError);
+    expect(err.code).toBe(ErrorCode.INVALID_QUERY);
   });
 });
 

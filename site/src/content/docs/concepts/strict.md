@@ -80,7 +80,7 @@ The **phase** column tells you *when* a code can reach you: **author** codes thr
 | --- | --- | --- |
 | `INVALID_NAME` | empty/malformed name | both |
 | `RESERVED_NAME` | a reserved keyword (`__proto__`, `prototype`, `constructor`, `_`) | both |
-| `INVALID_QUERY` | malformed check query (`IQueryInfo`) | check |
+| `INVALID_QUERY` | malformed check query (`IQueryInfo`), or a `context.tz` that is not an IANA time zone | check |
 | `INVALID_SETUP` | malformed `setup()` vocabulary | author |
 | `INVALID_GRANT` | invalid grant rule / grants object | author |
 | `INVALID_ACTION` | invalid action name or possession | both |

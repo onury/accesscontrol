@@ -456,16 +456,26 @@ const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', '
  */
 function deriveNow(date: Date, tz?: string): UnknownObject {
   const parts: Record<string, string> = {};
-  const dtf = new Intl.DateTimeFormat('en-US', {
-    timeZone: tz,
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  });
+  let dtf: Intl.DateTimeFormat;
+  try {
+    dtf = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  } catch (cause) {
+    // `Intl`'s RangeError must not escape a check: an unknown `tz` is a bad
+    // query. The value stays out of the message (it is caller-supplied).
+    throw new AccessControlError('Invalid context.tz, expected an IANA time zone name.', {
+      code: ErrorCode.INVALID_QUERY,
+      cause
+    });
+  }
   for (const p of dtf.formatToParts(date)) parts[p.type] = p.value;
   let hour = parts.hour;
   /* istanbul ignore next -- defensive: some engines render midnight as 24 */

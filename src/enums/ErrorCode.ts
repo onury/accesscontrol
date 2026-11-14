@@ -10,7 +10,7 @@ export enum ErrorCode {
   INVALID_NAME = 'INVALID_NAME',
   /** A name is a reserved prototype-pollution keyword (`__proto__`, …). */
   RESERVED_NAME = 'RESERVED_NAME',
-  /** A check query (`IQueryInfo` passed to `can`/`check`) is malformed. */
+  /** A check query (`IQueryInfo` passed to `can`/`check`) is malformed, or its `context.tz` is not an IANA time zone. */
   INVALID_QUERY = 'INVALID_QUERY',
   /** A grant rule / grants object / `IAccessInfo` has an invalid shape. */
   INVALID_GRANT = 'INVALID_GRANT',
