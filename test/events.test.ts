@@ -129,6 +129,24 @@ describe('Test Suite: events (P9)', () => {
     expect(onCount).toBe(2); // not incremented after off
   });
 
+  test('off(name, listener) removes a pending once() listener, and only that one', () => {
+    const ac = new AccessControl();
+    ac.grant('admin').readAny('post', ['*']);
+    let removed = 0;
+    let kept = 0;
+    const listener = () => {
+      removed++;
+    };
+    ac.once('access', listener);
+    ac.once('access', () => {
+      kept++;
+    });
+    ac.off('access', listener);
+    ac.can('admin').readAny('post').granted;
+    expect(removed).toBe(0);
+    expect(kept).toBe(1);
+  });
+
   test('listeners are observational and isolated (a throwing listener never breaks a check)', () => {
     const ac = new AccessControl();
     ac.grant('admin').readAny('post', ['*']);

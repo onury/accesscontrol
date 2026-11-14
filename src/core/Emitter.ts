@@ -5,6 +5,9 @@ import type {
   EventListener
 } from '../types/index.js';
 
+/** A `once()` wrapper, carrying the listener it wraps. */
+type OnceWrapper = EventListener & { listener?: EventListener };
+
 /**
  * Tiny internal event emitter — no Node `EventEmitter` dependency, so it
  * is ESM/browser-safe and keeps the single-dep footprint.
@@ -38,10 +41,12 @@ export class Emitter {
 
   /** Registers a one-shot listener that removes itself after the first call. */
   once(name: AccessControlEventName, listener: EventListener): void {
-    const wrapper: EventListener = (event) => {
+    const wrapper: OnceWrapper = (event) => {
       this.off(name, wrapper);
       listener(event);
     };
+    // so `off(name, listener)` can find and remove a pending one-shot
+    wrapper.listener = listener;
     this.on(name, wrapper);
   }
 
@@ -52,8 +57,15 @@ export class Emitter {
   off(name: AccessControlEventName, listener?: EventListener): void {
     const set = this._listeners.get(name);
     if (!set) return;
-    if (listener) set.delete(listener);
-    else set.clear();
+    if (!listener) {
+      set.clear();
+      return;
+    }
+    set.delete(listener);
+    // a pending once() registration is a wrapper around the listener
+    for (const l of set) {
+      if ((l as OnceWrapper).listener === listener) set.delete(l);
+    }
   }
 
   /**
