@@ -617,7 +617,7 @@ describe('every condition compile error and lock() carry a code; safeErrors hide
   });
 
   test('a condition in a grants object takes the same safety', () => {
-    const grants = (cond: string) => ({
+    const grants = (cond: string): any => ({
       u: { post: { read: [{ possession: 'any', attributes: ['*'], condition: cond }] } }
     });
     const safe = grab(() => new AccessControl(grants('$.x SECRET 1')));
