@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
 
+## Unreleased
+
+### Fixed
+- `cidr` and the IP-aware `in` now reject a checked IP whose octet is over 255. The address from the context only had to look like a dotted quad, and an octet of 256 or more carried into the one before it, so `9.256.0.1` passed a `10.0.0.0/8` gate as if it were `10.0.0.1`. A CIDR base read from the context is held to the same rule. Policy literals were already validated. Reported in [#153](https://github.com/onury/accesscontrol/issues/153).
+- `permission.filter()` no longer mutates the record you pass in. With attributes that don't start with `*` (e.g. `['profile.*', '!profile.secret']`), the negated paths were removed from your own object, and the result shared its nested objects with it. It's now always a deep copy, as documented. The fix is in `notation` 3.0.2. Reported in [#153](https://github.com/onury/accesscontrol/issues/153).
+- The chain's `.attributes(list)` setter now takes effect. `ac.grant('u').attributes(['title']).readAny('post')` stored `['*']`, because the action method overwrote the list with its own default; this dates back to 2.0.0. The list applies to the next action in the chain, an attributes argument to the action method still wins, and on a deny it's the list of denied attributes.
+
+### Security
+- The `cidr` fix closes a fail-open on IP gates: the checked IP often comes from a header the client controls, so a crafted address could pass a gate such as "`billing/*` only from the VPN".
+- The `.attributes()` fix closes the same escalation shape as 3.1.1's: an allow-list set that way granted every attribute.
+
 ## 3.1.1 (2026-09-24)
 
 ### Fixed
