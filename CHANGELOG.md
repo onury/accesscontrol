@@ -69,7 +69,7 @@ All notable changes to this project will be documented in this file. The format 
   number / `true`/`false`/`null` / `$.path`.
 
 
-## 3.0.0 (2026-06-14)
+## 3.0.0 (2026-06-24)
 
 The release that turns AccessControl from RBAC-with-attribute-filtering into a
 full **policy engine** — landing the capabilities most requested since v2:
@@ -78,8 +78,8 @@ actions, deny-overrides, mandatory restriction gates, role groups & resource
 categories, async checks, an audit event stream, one-call serialization, and a
 hardened authorization path. The everyday API (`grant`/`deny`, `can`,
 `createAny`/`readOwn`/…, `permission.granted` / `.attributes` / `.filter()`) is
-unchanged — see [MIGRATION](./docs/MIGRATION.md) for the few breaking points and
-[WHATS-NEW](./docs/WHATS-NEW.md) for worked examples.
+unchanged — see [Migration](https://onury.io/accesscontrol/migration/) for the few breaking points and
+[What's New](https://onury.io/accesscontrol/whats-new/) for worked examples.
 
 ### Added
 - **Conditions (ABAC) — `.where()`.** Attach a declarative condition that decides
@@ -174,8 +174,9 @@ unchanged — see [MIGRATION](./docs/MIGRATION.md) for the few breaking points a
 - **Name handling is case-preserving and charset-validated** (`[A-Za-z0-9_-]`).
   `Admin` and `admin` are now distinct; `:` `/` `$`, spaces and dots are reserved
   and rejected. Opt into international names with `engine.charset: Charset.UNICODE`.
-- **`getGrants()` / `getGrantsList()` / `getRequirements()` return frozen deep
-  copies.** Mutate the model through the builder API instead.
+- **`getGrants()` returns a frozen deep copy; `getGrantsList()` and
+  `getRequirements()` return detached copies.** Mutate the model through the
+  builder API instead.
 - **`strict.roles` defaults on** (throws on an unknown role at check time, as v2
   did); set `policy.strict.roles = false` for lenient behavior.
 
