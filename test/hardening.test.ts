@@ -491,6 +491,7 @@ describe('an invalid context.tz is an AccessControlError, never a raw RangeError
     expect(err).toBeInstanceOf(AccessControlError);
     expect(err.code).toBe(ErrorCode.INVALID_QUERY);
     expect(err.cause).toBeInstanceOf(RangeError);
+    expect(err.message).toContain('context.tz');
     expect(err.message).not.toContain('Mars/Phobos');
   });
 
@@ -603,9 +604,29 @@ describe('every condition compile error and lock() carry a code; safeErrors hide
     const verbose = grab(author({ safeErrors: false }, cond));
     expect(verbose.code).toBe(ErrorCode.INVALID_CONDITION);
     // these two messages name no value, so there is nothing to show
-    if (!['$.x in [SECRET,,b]', '$.v between [SECRET]'].includes(cond as string)) {
-      expect(verbose.message).toContain('Got:');
-    }
+    const named = !['$.x in [SECRET,,b]', '$.v between [SECRET]'].includes(cond as string);
+    expect(verbose.message.includes('Got:')).toBe(named);
+    if (!named) expect(verbose.message).toMatch(/^[^!]*\.$/);
+  });
+
+  test('a condition of no known shape is coded and shown only with safeErrors off', () => {
+    const safe = grab(author({ errorCodePrefix: 'AC_' }, 4242));
+    expect(safe.code).toBe('AC_INVALID_CONDITION');
+    expect(safe.message).toBe('Invalid condition.');
+    expect(grab(author({ safeErrors: false }, 4242)).message).toContain('Got: 4242');
+  });
+
+  test('a condition in a grants object takes the same safety', () => {
+    const grants = (cond: string) => ({
+      u: { post: { read: [{ possession: 'any', attributes: ['*'], condition: cond }] } }
+    });
+    const safe = grab(() => new AccessControl(grants('$.x SECRET 1')));
+    expect(safe.code).toBe(ErrorCode.INVALID_CONDITION);
+    expect(safe.message).not.toContain('SECRET');
+    const verbose = grab(
+      () => new AccessControl(grants('$.x SECRET 1'), { engine: { safeErrors: false } })
+    );
+    expect(verbose.message).toContain('SECRET');
   });
 
   test('require() gates take the same code and safety', () => {

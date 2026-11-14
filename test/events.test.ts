@@ -147,6 +147,17 @@ describe('Test Suite: events (P9)', () => {
     expect(onCount).toBe(2); // not incremented after off
   });
 
+  test('off(name) with no listener removes on() and pending once() listeners alike', () => {
+    const ac = new AccessControl();
+    ac.grant('admin').readAny('post', ['*']);
+    let calls = 0;
+    ac.on('access', () => calls++);
+    ac.once('access', () => calls++);
+    ac.off('access');
+    ac.can('admin').readAny('post').granted;
+    expect(calls).toBe(0);
+  });
+
   test('off(name, listener) removes a pending once() listener, and only that one', () => {
     const ac = new AccessControl();
     ac.grant('admin').readAny('post', ['*']);
