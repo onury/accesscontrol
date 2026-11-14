@@ -516,6 +516,26 @@ describe('an invalid context.tz is an AccessControlError, never a raw RangeError
     expect(err).toBeInstanceOf(AccessControlError);
     expect(err.code).toBe(ErrorCode.INVALID_QUERY);
   });
+
+  test('a zone Intl takes but dtrexp rejects is the same error under during', () => {
+    const ac = new AccessControl();
+    ac.grant('u').during('T0000:2359').readAny('post');
+    for (const tz of ['+02:00', 'PST']) {
+      const err = grab(() => ac.can('u', { tz }).readAny('post').granted);
+      expect(err).toBeInstanceOf(AccessControlError);
+      expect(err.code).toBe(ErrorCode.INVALID_QUERY);
+      expect(err.cause).toBeInstanceOf(RangeError);
+    }
+  });
+
+  test('an impossible date-time on the during left side is false, never a throw', () => {
+    const ac = new AccessControl();
+    ac.grant('u').where('$.start during "T0000:2359"').readAny('post');
+    const check = (start: string) => ac.can('u', { start, tz: 'UTC' }).readAny('post').granted;
+    expect(check('2020-01-01T10:00:00Z')).toBe(true);
+    expect(check('2020-02-30T10:00:00Z')).toBe(false);
+    expect(check('2020-01-01T24:00:00Z')).toBe(false);
+  });
 });
 
 describe('the chain .attributes() list is kept at commit, never widened to everything', () => {

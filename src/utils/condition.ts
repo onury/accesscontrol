@@ -479,6 +479,18 @@ export function compileCondition(
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
 /**
+ * An unknown `context.tz` is a bad query: `Intl`'s or dtrexp's `RangeError`
+ * must not escape a check. The value stays out of the message (it is
+ * caller-supplied).
+ */
+function invalidTz(cause: unknown): AccessControlError {
+  return new AccessControlError('Invalid context.tz, expected an IANA time zone name.', {
+    code: ErrorCode.INVALID_QUERY,
+    cause
+  });
+}
+
+/**
  * Derives the `$.now.*` fields from a `Date`, computed in the given
  * timezone (via `Intl`, no extra dependency). Weekday/month are short, lowercase
  * names; numbers are numeric; `date`/`time` are zero-padded strings.
@@ -498,12 +510,7 @@ function deriveNow(date: Date, tz?: string): UnknownObject {
       hour12: false
     });
   } catch (cause) {
-    // `Intl`'s RangeError must not escape a check: an unknown `tz` is a bad
-    // query. The value stays out of the message (it is caller-supplied).
-    throw new AccessControlError('Invalid context.tz, expected an IANA time zone name.', {
-      code: ErrorCode.INVALID_QUERY,
-      cause
-    });
+    throw invalidTz(cause);
   }
   for (const p of dtf.formatToParts(date)) parts[p.type] = p.value;
   let hour = parts.hour;
@@ -692,7 +699,17 @@ function applyOp(
     case 'during': {
       const instant = toDateInput(lhs);
       if (typeof rhs !== 'string' || instant === undefined) return false; // fail-closed
-      return getDTRExp(rhs).covers(instant, { tz: tz ?? systemTz() });
+      const dtr = getDTRExp(rhs);
+      try {
+        return dtr.covers(instant, { tz: tz ?? systemTz() });
+      } catch (err) {
+        // a zone dtrexp rejects though Intl takes it (a fixed offset, a
+        // legacy ID such as PST) is a bad query, as an unknown one is
+        if (err instanceof RangeError) throw invalidTz(err);
+        // an instant that is not a real date-time ('2020-02-30T…') is not
+        // date-like: fail-closed, never a throw
+        return false;
+      }
     }
     case 'cidr':
       return typeof lhs === 'string' && ipMatches(lhs, String(rhs));
