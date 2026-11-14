@@ -502,7 +502,7 @@ export class AccessControl {
     require(condition: ConditionJSON): AccessControl;
   } {
     const cat = normalizeName(name, false, this._nameOpts());
-    const members = Object.hasOwn(this._categories, name) ? [...this._categories[name]] : [];
+    const members = Object.hasOwn(this._categories, cat) ? [...this._categories[cat]] : [];
     return {
       getResources: () => [...members],
       require: (condition: ConditionJSON) =>

@@ -139,6 +139,12 @@ describe('Test Suite: groups & categories (P6)', () => {
     expect(ac.getGroups()).toEqual([]);
   });
 
+  test('category(name) reads its members by the normalized name, as its require() does', () => {
+    const ac = new AccessControl();
+    ac.setup({ resources: { media: ['photo'] } });
+    expect(ac.category(' media ').getResources()).toEqual(['media/photo']);
+  });
+
   test('self-grant and group-grant on the same member are merged', () => {
     const ac = new AccessControl();
     ac.grant('admins').readAny('post', ['title']); // via group
