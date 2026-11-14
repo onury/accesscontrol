@@ -258,6 +258,16 @@ describe('Security: introspection getters are inert; the engine is fault-isolate
     expect(() => ac.grant('u2').readAny('post', ['*'])).not.toThrow();
   });
 
+  test('permission.filter() never mutates or shares the record it is given (issue #153)', () => {
+    const ac = new AccessControl();
+    ac.grant('user').readAny('account', ['profile.*', '!profile.secret']);
+    const record = { id: 1, profile: { name: 'x', secret: 's' } };
+    const out = ac.can('user').readAny('account').filter(record) as any;
+    expect(out).toEqual({ profile: { name: 'x' } });
+    expect(record).toEqual({ id: 1, profile: { name: 'x', secret: 's' } });
+    expect(out.profile).not.toBe(record.profile);
+  });
+
   test('an IP gate never opens for an address with an octet over 255 (issue #153)', () => {
     const ac = new AccessControl();
     ac.grant('admin').readAny('server');
