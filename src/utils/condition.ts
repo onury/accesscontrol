@@ -142,7 +142,11 @@ const dtrexpCache = new Map<string, DTRExp>();
  * @throws {AccessControlError} - If the expression is too long or malformed
  * (carries dtrexp's message and character position; original error as `cause`).
  */
-export function getDTRExp(expression: string, errorCodePrefix: string = ''): DTRExp {
+export function getDTRExp(
+  expression: string,
+  errorCodePrefix: string = '',
+  safeErrors: boolean = true
+): DTRExp {
   if (expression.length > MAX_DTREXP_LENGTH) {
     throw new AccessControlError(`"during" expression too long (> ${MAX_DTREXP_LENGTH}).`, {
       code: ecode(errorCodePrefix, ErrorCode.INVALID_DTREXP)
@@ -156,11 +160,14 @@ export function getDTRExp(expression: string, errorCodePrefix: string = ''): DTR
   } catch (err) {
     // per the dtrexp contract, parse() only throws DTRExpSyntaxError — wrap
     // unconditionally (the `matches` invalid-regex precedent).
+    // dtrexp's message quotes the expression, so it is shown only with
+    // safeErrors off; the position alone names no value.
     const { position, message } = err as DTRExpSyntaxError;
-    throw new AccessControlError(
-      `Invalid "during" expression at position ${position}: ${message}`,
-      { code: ecode(errorCodePrefix, ErrorCode.INVALID_DTREXP), cause: err }
-    );
+    const shown = safeErrors ? '' : ` ${message}`;
+    throw new AccessControlError(`Invalid "during" expression at position ${position}.${shown}`, {
+      code: ecode(errorCodePrefix, ErrorCode.INVALID_DTREXP),
+      cause: err
+    });
   }
   if (dtrexpCache.size >= MAX_DTREXP_CACHE) {
     dtrexpCache.delete(dtrexpCache.keys().next().value as string);
@@ -284,7 +291,12 @@ function validateBetween(rhs: unknown, cx: CompileCx): void {
  * unsatisfiability lint, e.g. `D30 M2`) is an authoring bug on a security
  * policy and is rejected outright — the `validateBetween` spirit.
  */
-function validateDuring(rhs: unknown, pathPrefix: string, errorCodePrefix: string): void {
+function validateDuring(
+  rhs: unknown,
+  pathPrefix: string,
+  errorCodePrefix: string,
+  safe: boolean
+): void {
   if (typeof rhs !== 'string' || rhs.trim() === '') {
     throw new AccessControlError('"during" expects a static dtrexp expression string.', {
       code: ecode(errorCodePrefix, ErrorCode.INVALID_DTREXP)
@@ -296,9 +308,11 @@ function validateDuring(rhs: unknown, pathPrefix: string, errorCodePrefix: strin
       { code: ecode(errorCodePrefix, ErrorCode.INVALID_DTREXP) }
     );
   }
-  const dtr = getDTRExp(rhs, errorCodePrefix);
+  const dtr = getDTRExp(rhs, errorCodePrefix, safe);
   if (dtr.warnings.length > 0) {
-    throw new AccessControlError(`"during" expression never matches: ${dtr.warnings[0].message}`, {
+    // the warning names parts of the expression: shown only with safeErrors off
+    const shown = safe ? '' : ` ${dtr.warnings[0].message}`;
+    throw new AccessControlError(`"during" expression never matches.${shown}`, {
       code: ecode(errorCodePrefix, ErrorCode.DTREXP_NEVER_MATCHES)
     });
   }
@@ -360,7 +374,7 @@ function compileExpression(
   const rhs = parseOperand(rhsTokens.join(' '), pathPrefix, cx);
 
   if (op === 'between') validateBetween(rhs, cx);
-  if (op === 'during') validateDuring(rhs, pathPrefix, errorCodePrefix);
+  if (op === 'during') validateDuring(rhs, pathPrefix, errorCodePrefix, safe);
   if (op === 'cidr' && typeof rhs === 'string') validateIpMembers([rhs], cx);
   if (op === 'in' && Array.isArray(rhs) && rhs.some(isIpLike)) validateIpMembers(rhs, cx);
 
@@ -385,7 +399,7 @@ function normalizeLeaf(
     throw compileError(cx, 'Unknown operator in condition leaf.', rawOp);
   }
   if (op === 'between') validateBetween(node[2], cx);
-  if (op === 'during') validateDuring(node[2], pathPrefix, errorCodePrefix);
+  if (op === 'during') validateDuring(node[2], pathPrefix, errorCodePrefix, safe);
   if (op === 'cidr' && typeof node[2] === 'string') validateIpMembers([node[2]], cx);
   if (op === 'in' && Array.isArray(node[2]) && node[2].some(isIpLike))
     validateIpMembers(node[2], cx);
@@ -624,8 +638,12 @@ function ipv4ToInt(ip: string): number {
 function ipMatches(ip: string, member: string): boolean {
   const slash = member.indexOf('/');
   if (slash < 0) return ip === member;
+  // a range read from the context gets the literal's checks: a malformed or
+  // out-of-range prefix (`10.0.0.0/`, `/33`) would parse as 0 or wrap the mask
+  if (!CIDR_RE.test(member)) return false;
   const base = member.slice(0, slash);
   const bits = Number(member.slice(slash + 1));
+  if (bits > 32) return false;
   // fail-closed: an octet over 255 would carry into the next one in
   // ipv4ToInt, so `9.256.0.1` would compute as `10.0.0.1`.
   if (!isIPv4(ip) || !isIPv4(base)) return false;
@@ -680,9 +698,12 @@ function applyOp(
       assertSafeRegex(src); // reject catastrophic patterns before compiling
       try {
         return new RegExp(src).test(String(lhs));
-      } catch {
-        throw new AccessControlError(`Invalid regular expression: "${src}".`, {
-          code: ErrorCode.UNSAFE_REGEX
+      } catch (cause) {
+        // the pattern stays out of the message (it may be caller-supplied);
+        // the SyntaxError, which quotes it, is the cause
+        throw new AccessControlError('Invalid regular expression.', {
+          code: ErrorCode.UNSAFE_REGEX,
+          cause
         });
       }
     }

@@ -258,6 +258,23 @@ describe('Security: introspection getters are inert; the engine is fault-isolate
     expect(() => ac.grant('u2').readAny('post', ['*'])).not.toThrow();
   });
 
+  test('a CIDR range read from the context never matches with a malformed or out-of-range prefix', () => {
+    const ac = new AccessControl();
+    ac.grant('u').where('$.ip cidr $.net').readAny('server');
+    const ok = (net: string) => ac.can('u', { ip: '1.2.3.4', net }).readAny('server').granted;
+    for (const net of ['10.0.0.0/', '10.0.0.0/-0', '10.0.0.0/33', '10.0.0.0/99', '10.0.0.0/ 8']) {
+      expect(ok(net)).toBe(false);
+    }
+    expect(ok('1.2.3.0/24')).toBe(true);
+    expect(ok('0.0.0.0/0')).toBe(true);
+    expect(ok('1.2.3.4/32')).toBe(true);
+    const inList = new AccessControl();
+    inList.grant('u').where('$.ip in [$.net, 192.168.0.0/16]').readAny('server');
+    expect(inList.can('u', { ip: '1.2.3.4', net: '10.0.0.0/99' }).readAny('server').granted).toBe(
+      false
+    );
+  });
+
   test('permission.filter() never mutates or shares the record it is given (issue #153)', () => {
     const ac = new AccessControl();
     ac.grant('user').readAny('account', ['profile.*', '!profile.secret']);

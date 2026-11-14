@@ -409,7 +409,10 @@ describe('during — hostile grants + fail-closed + code prefix', () => {
     // eval-path restamp: uncompiled hostile leaf hits getDTRExp at check time
     ac.grant('u').readAny('post', ['*']);
     (ac as any)._grants.u.post.read[0].condition = ['$.now', 'during', 'T9999'];
-    expect(grab(() => ac.can('u').readAny('post').granted).code).toBe('AC_INVALID_DTREXP');
+    const planted = grab(() => ac.can('u').readAny('post').granted);
+    expect(planted.code).toBe('AC_INVALID_DTREXP');
+    // the check path has no safeErrors setting: it never shows the expression
+    expect(planted.message).toMatch(/^Invalid "during" expression at position \d+\.$/);
   });
 });
 
@@ -647,6 +650,30 @@ describe('every condition compile error and lock() carry a code; safeErrors hide
       () => new AccessControl(grants('$.x SECRET 1'), { engine: { safeErrors: false } })
     );
     expect(verbose.message).toContain('SECRET');
+  });
+
+  test('during errors name no expression with safeErrors on, and show it with it off', () => {
+    const write = (engine: object, expr: string) => () =>
+      new AccessControl({}, { engine }).grant('u').during(expr).readAny('post');
+    const bad = grab(write({}, 'SECRETXYZ'));
+    expect(bad.code).toBe(ErrorCode.INVALID_DTREXP);
+    expect(bad.message).toBe('Invalid "during" expression at position 0.');
+    expect(grab(write({ safeErrors: false }, 'SECRETXYZ')).message).toContain('SECRETXYZ');
+    const never = grab(write({}, 'D30 M2'));
+    expect(never.code).toBe(ErrorCode.DTREXP_NEVER_MATCHES);
+    expect(never.message).toBe('"during" expression never matches.');
+    expect(grab(write({ safeErrors: false }, 'D30 M2')).message).toMatch(
+      /^"during" expression never matches\. \S/
+    );
+  });
+
+  test('an invalid regular expression is reported without its pattern', () => {
+    const ac = new AccessControl({}, { engine: { allowRegex: true } });
+    ac.grant('u').where('$.s matches "(SECRET"').readAny('post');
+    const err = grab(() => ac.can('u', { s: 'a' }).readAny('post').granted);
+    expect(err.code).toBe(ErrorCode.UNSAFE_REGEX);
+    expect(err.message).toBe('Invalid regular expression.');
+    expect(err.cause).toBeInstanceOf(SyntaxError);
   });
 
   test('require() gates take the same code and safety', () => {
