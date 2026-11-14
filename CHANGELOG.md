@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
 
-## Unreleased
+## 3.1.2 (2026-11-14)
 
 ### Fixed
 - `cidr` and the IP-aware `in` now reject a checked IP whose octet is over 255. The address from the context only had to look like a dotted quad, and an octet of 256 or more carried into the one before it, so `9.256.0.1` passed a `10.0.0.0/8` gate as if it were `10.0.0.1`. A CIDR range read from the context is held to the literal's rules too: its base octets, and its prefix, which must be 0–32 (`10.0.0.0/`, `/33` and `/99` used to match every address). Policy literals were already validated. An octet with a leading zero (`010.0.0.1`) is now invalid too, as Node's `net.isIPv4` says, since some parsers read it as octal: such an address never matches, and a literal with one throws `INVALID_CONDITION`. Reported in [#153](https://github.com/onury/accesscontrol/issues/153).
