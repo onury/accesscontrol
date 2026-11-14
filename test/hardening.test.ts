@@ -478,3 +478,57 @@ describe('an explicit empty attribute list never widens to everything', () => {
     expect(all.can('u').readAny('r').granted).toBe(false);
   });
 });
+
+describe('the chain .attributes() list is kept at commit, never widened to everything', () => {
+  // `.attributes(list)` was overwritten by the commit's own parameter, so a
+  // grant written as `.attributes(['title']).readAny('post')` stored ['*'].
+  test.each<[string, (ac: AccessControl) => void]>([
+    ['ac.grant(role)', (ac) => ac.grant('u').attributes(['title']).readAny('post')],
+    [
+      'chained access.grant(role)',
+      (ac) => ac.grant('seed').readAny('seed').grant('u').attributes(['title']).readAny('post')
+    ],
+    ['generic action()', (ac) => ac.grant('u').attributes(['title']).action('read', 'post')],
+    [
+      'object form without an action',
+      (ac) => ac.grant({ role: 'u', attributes: ['title'] }).readAny('post')
+    ]
+  ])('%s: grants only the listed attributes', (_, author) => {
+    const ac = new AccessControl();
+    author(ac);
+    expect(ac.can('u').readAny('post').attributes).toEqual(['title']);
+  });
+
+  test('an attributes argument wins over the chain list', () => {
+    const ac = new AccessControl();
+    ac.grant('u').attributes(['title']).readAny('post', ['body']);
+    expect(ac.can('u').readAny('post').attributes).toEqual(['body']);
+  });
+
+  test('the list applies to the next action only', () => {
+    const ac = new AccessControl();
+    ac.grant('u').attributes(['title']).readAny('post').updateAny('post');
+    expect(ac.can('u').readAny('post').attributes).toEqual(['title']);
+    expect(ac.can('u').updateAny('post').attributes).toEqual(['*']);
+  });
+
+  test('a fulfilled object form does not pass its list to a chained action', () => {
+    const ac = new AccessControl();
+    ac.grant({ role: 'u', resource: 'post', action: 'read:any', attributes: ['title'] }).updateAny(
+      'post'
+    );
+    expect(ac.can('u').readAny('post').attributes).toEqual(['title']);
+    expect(ac.can('u').updateAny('post').attributes).toEqual(['*']);
+  });
+
+  test('deny mirror: the list is what is denied; a chained deny still denies all', () => {
+    const some = new AccessControl();
+    some.grant('u').readAny('post');
+    some.deny('u').attributes(['secret']).readAny('post');
+    expect(some.can('u').readAny('post').attributes).toEqual(['*', '!secret']);
+
+    const all = new AccessControl();
+    all.grant('u').readAny('post').deny('u').readAny('post');
+    expect(all.can('u').readAny('post').granted).toBe(false);
+  });
+});

@@ -87,6 +87,9 @@ export class Access {
           resource: this._.resource,
           action: this._.action
         });
+        // the list belonged to the action just committed; a chained one
+        // starts from the default, as it does after any other commit.
+        this._.attributes = undefined;
       }
     } else if (roleOrInfo !== undefined) {
       // undefined is allowed (`roleOrInfo` can be omitted) but throw if
@@ -140,7 +143,9 @@ export class Access {
   }
 
   /**
-   * Sets the array of allowed attributes for this `Access` instance.
+   * Sets the attributes for the next action committed in this chain: the
+   * allowed ones on a grant, the denied ones on a deny. An attributes
+   * argument passed to the action method itself takes precedence.
    * @param value - Attributes to be set.
    * @returns - Self instance of `Access`.
    */
@@ -222,7 +227,7 @@ export class Access {
    *   .grant('admin').updateAny('video');
    */
   grant(roleOrInfo?: string | string[] | IAccessInfo): Access {
-    return new Access(this._ac, roleOrInfo, false).attributes(['*']);
+    return new Access(this._ac, roleOrInfo, false);
   }
 
   /**
@@ -235,7 +240,7 @@ export class Access {
    *   .deny('user').deleteAny('video');
    */
   deny(roleOrInfo?: string | string[] | IAccessInfo): Access {
-    return new Access(this._ac, roleOrInfo, true).attributes([]);
+    return new Access(this._ac, roleOrInfo, true);
   }
 
   /**
@@ -504,9 +509,11 @@ export class Access {
     this._.possession = possession;
     if (resource) this._.resource = resource;
 
+    // an argument wins, then a list set by `.attributes()` in the chain;
     // omitted ⇒ all attributes. For a grant this allows all; for a deny this
     // denies all (deny-overrides). Explicit `[]` is preserved.
-    this._.attributes = attributes ? toStringArray(attributes) : ['*'];
+    const attrs = attributes ?? this._.attributes;
+    this._.attributes = attrs ? toStringArray(attrs) : ['*'];
 
     // fold pending `.during()` schedules into the condition (AND semantics).
     if (this._during.length > 0) {
