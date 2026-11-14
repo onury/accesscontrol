@@ -15,6 +15,10 @@ All notable changes to this project will be documented in this file. The format 
 - `off(name, listener)` now removes a listener registered with `once()` that hasn't fired yet.
 - `Access#extend()` now emits a `change` event (type `extend`), and `removeResources()` one of type `remove`, as the other mutators always did.
 - `category(name)` now reads its resources by the trimmed name, as its `require()` already did, so `category(' media ')` no longer comes back empty.
+- A `during` check with a `context.tz` that dtrexp doesn't accept (a fixed offset such as `+02:00`, or a legacy ID such as `PST`) throws `INVALID_QUERY`, like any unknown zone, instead of a raw `RangeError`. A left side that isn't a real date-time (`'2020-02-30T10:00:00Z'`) evaluates `false`, as any other value that isn't date-like does.
+
+### Changed
+- [`dtrexp`](https://github.com/DTRExp/dtrexp-js) is now `1.3.0` (still exactly pinned). It is stricter: a tab between components, `M!*` and some expressions that can never match (e.g. `D-30 M2`, `M!4:6 Q2`) are rejected when the grant is written (`INVALID_DTREXP` / `DTREXP_NEVER_MATCHES`), and its error positions and warning messages, which those errors carry, have changed. See its [changelog](https://github.com/DTRExp/dtrexp-js/blob/main/CHANGELOG.md).
 
 ### Security
 - The `cidr` fix closes a fail-open on IP gates: the checked IP often comes from a header the client controls, so a crafted address could pass a gate such as "`billing/*` only from the VPN".
