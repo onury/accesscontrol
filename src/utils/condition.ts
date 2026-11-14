@@ -323,9 +323,16 @@ function isIpLike(v: unknown): boolean {
   return typeof v === 'string' && (IPV4_RE.test(v) || CIDR_RE.test(v));
 }
 
-/** Whether a string is a dotted-quad IPv4 address with every octet in 0–255. */
+/** An IPv4 octet: 0–255 in plain decimal, no leading zero. */
+const OCTET_RE = /^(0|[1-9]\d{0,2})$/;
+
+/**
+ * Whether a string is a dotted-quad IPv4 address with every octet in 0–255
+ * and none with a leading zero (`010` reads as octal 8 to some parsers, the
+ * CVE-2021-28918 ambiguity; Node's `net.isIPv4` rejects it too).
+ */
 function isIPv4(v: string): boolean {
-  return IPV4_RE.test(v) && v.split('.').every((o) => Number(o) <= 255);
+  return IPV4_RE.test(v) && v.split('.').every((o) => OCTET_RE.test(o) && Number(o) <= 255);
 }
 
 /** Validates IP/CIDR literals so a malformed range throws at author time. */

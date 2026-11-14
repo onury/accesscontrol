@@ -275,6 +275,24 @@ describe('Security: introspection getters are inert; the engine is fault-isolate
     );
   });
 
+  test('an IPv4 octet with a leading zero is invalid: never matched, rejected as a literal', () => {
+    const ac = new AccessControl();
+    ac.grant('u').where('$.ip cidr 10.0.0.0/8').readAny('server');
+    expect(ac.can('u', { ip: '10.0.0.1' }).readAny('server').granted).toBe(true);
+    expect(ac.can('u', { ip: '010.0.0.1' }).readAny('server').granted).toBe(false);
+    expect(ac.can('u', { ip: '10.0.00.1' }).readAny('server').granted).toBe(false);
+    expect(ac.can('u', { ip: '10.0.0.0' }).readAny('server').granted).toBe(true);
+    const ctx = new AccessControl();
+    ctx.grant('u').where('$.ip cidr $.net').readAny('server');
+    expect(ctx.can('u', { ip: '10.0.0.1', net: '010.0.0.0/8' }).readAny('server').granted).toBe(
+      false
+    );
+    expect(
+      grab(() => new AccessControl().grant('u').where('$.ip cidr 010.0.0.0/8').readAny('server'))
+        .code
+    ).toBe('INVALID_CONDITION');
+  });
+
   test('permission.filter() never mutates or shares the record it is given (issue #153)', () => {
     const ac = new AccessControl();
     ac.grant('user').readAny('account', ['profile.*', '!profile.secret']);
