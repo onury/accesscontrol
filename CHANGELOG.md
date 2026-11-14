@@ -6,11 +6,11 @@ All notable changes to this project will be documented in this file. The format 
 ## Unreleased
 
 ### Fixed
-- `cidr` and the IP-aware `in` now reject a checked IP whose octet is over 255. The address from the context only had to look like a dotted quad, and an octet of 256 or more carried into the one before it, so `9.256.0.1` passed a `10.0.0.0/8` gate as if it were `10.0.0.1`. A CIDR base read from the context is held to the same rule. Policy literals were already validated. Reported in [#153](https://github.com/onury/accesscontrol/issues/153).
+- `cidr` and the IP-aware `in` now reject a checked IP whose octet is over 255. The address from the context only had to look like a dotted quad, and an octet of 256 or more carried into the one before it, so `9.256.0.1` passed a `10.0.0.0/8` gate as if it were `10.0.0.1`. A CIDR range read from the context is held to the literal's rules too: its base octets, and its prefix, which must be 0–32 (`10.0.0.0/`, `/33` and `/99` used to match every address). Policy literals were already validated. Reported in [#153](https://github.com/onury/accesscontrol/issues/153).
 - `permission.filter()` no longer mutates the record you pass in. With attributes that don't start with `*` (e.g. `['profile.*', '!profile.secret']`), the negated paths were removed from your own object, and the result shared its nested objects with it. It's now always a deep copy, as documented. The fix is in `notation` 3.0.2. Reported in [#153](https://github.com/onury/accesscontrol/issues/153).
-- The chain's `.attributes(list)` setter now takes effect. `ac.grant('u').attributes(['title']).readAny('post')` stored `['*']`, because the action method overwrote the list with its own default; this dates back to 2.0.0. The list applies to the next action in the chain, an attributes argument to the action method still wins, and on a deny it's the list of denied attributes.
+- The chain's `.attributes(list)` setter now takes effect. `ac.grant('u').attributes(['title']).readAny('post')` stored `['*']`, because the action method overwrote the list with its own default; this dates back to 2.0.0. The list applies to the next action in the chain, and an attributes argument to the action method still wins. The same goes for an `IAccessInfo` object with `attributes` but no action, chained into an action method.
 - Every `AccessControlError` now carries a code, as documented. The condition tokenizer and compiler, `between` bounds and IP / CIDR literal checks throw `INVALID_CONDITION`, and `lock()` on an empty model throws `INVALID_GRANT`; all take `engine.errorCodePrefix`. Some of these messages changed wording.
-- Condition errors honor `engine.safeErrors`: they used to echo the raw expression no matter what. With `safeErrors` on (the default) they leave it out; turn it off to see the expression or value in a `Got: …` suffix.
+- Condition errors honor `engine.safeErrors`: they used to echo the raw expression no matter what. With `safeErrors` on (the default) they leave it out; turn it off to see the expression or value in a `Got: …` suffix. A `during` error then shows dtrexp's message, and an invalid `matches` pattern is never quoted (the `SyntaxError` that quotes it is the error's `cause`).
 - An invalid `context.tz` now throws an `AccessControlError` (`INVALID_QUERY`, with `Intl`'s `RangeError` as its `cause`) instead of letting the `RangeError` escape `can()`, and `tryCan()` denies.
 - `off(name, listener)` now removes a listener registered with `once()` that hasn't fired yet.
 - `Access#extend()` now emits a `change` event (type `extend`), and `removeResources()` one of type `remove`, as the other mutators always did.
@@ -22,7 +22,8 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Security
 - The `cidr` fix closes a fail-open on IP gates: the checked IP often comes from a header the client controls, so a crafted address could pass a gate such as "`billing/*` only from the VPN".
-- The `.attributes()` fix closes the same escalation shape as 3.1.1's: an allow-list set that way granted every attribute.
+- The `.attributes()` fix closes the same escalation shape as 3.1.1's: an allow-list set that way granted every attribute. **On a deny it works the other way:** `ac.deny('u').attributes(['secret']).readAny('post')` used to deny every attribute and now denies only `secret`, as written; a deny of `[]` set that way now denies nothing. If you relied on such a deny blocking everything, write `['*']` or leave the list out.
+- An address with an octet over 255, or a date-time that doesn't exist, no longer matches `cidr`, `in` or `during`. A negated condition on one (`$.ip not cidr 10.0.0.0/8`, or a deny whose `.where()` uses `cidr`) therefore holds for it now, as it already did for any other value that isn't an IP or a date. Don't build a block-list on an IP the client chooses.
 
 ## 3.1.1 (2026-09-24)
 

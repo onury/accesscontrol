@@ -52,9 +52,9 @@ export class Access {
    * @param ac - AccessControl instance.
    * @param [roleOrInfo] - Either an `IAccessInfo` object, a single or an array
    * of roles. If an object is passed, possession and attributes properties are
-   * optional. CAUTION: if attributes is omitted, and access is not denied, it
-   * will default to `["*"]` which means "all attributes allowed". If
-   * possession is omitted, it will default to `"any"`.
+   * optional. CAUTION: if attributes is omitted, it defaults to `["*"]`:
+   * every attribute, allowed on a grant and denied on a deny. If possession is
+   * omitted, it defaults to `"any"`.
    * @param denied - Specifies whether this `Access` is denied.
    */
   constructor(

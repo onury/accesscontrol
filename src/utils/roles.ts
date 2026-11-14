@@ -126,8 +126,8 @@ export function getCrossExtendingRole(
  * Extends the given role(s) with privileges of one or more other roles.
  *
  * @param grants
- * @param roles - Role(s) to be extended. If a role does not exist, it will be
- * automatically created.
+ * @param roles - Role(s) to be extended. If a role does not exist, it
+ * throws (`ROLE_NOT_FOUND`).
  * @param extenderRoles - Role(s) to inherit from. If an extender role does not
  * exist, it will throw.
  * @param [opts] - Charset / safe-errors policy.
